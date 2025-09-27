@@ -12,7 +12,7 @@
                                 <i class="material-icons">person</i>
                             </a>
                         </div>
-                        <p class="card-category">Jumlah siswa</p>
+                        <p class="card-category">Jumlah Karyawan</p>
                         <h3 class="card-title"><?= count($siswa); ?></h3>
                     </div>
                     <div class="card-footer">
@@ -31,7 +31,7 @@
                                 <i class="material-icons">person_4</i>
                             </a>
                         </div>
-                        <p class="card-category">Jumlah guru</p>
+                        <p class="card-category">Jumlah Admin</p>
                         <h3 class="card-title"><?= count($guru); ?></h3>
                     </div>
                     <div class="card-footer">
@@ -50,7 +50,7 @@
                                 <i class="material-icons">grade</i>
                             </a>
                         </div>
-                        <p class="card-category">Jumlah kelas</p>
+                        <p class="card-category">Jumlah Divisi</p>
                         <h3 class="card-title"><?= count($kelas); ?></h3>
                     </div>
                     <div class="card-footer">
@@ -85,7 +85,7 @@
             <div class="col-md-6">
                 <div class="card">
                     <div class="card-header card-header-primary">
-                        <h4 class="card-title"><b>Absensi Siswa Hari Ini</b></h4>
+                        <h4 class="card-title"><b>Absensi Karyawan Hari Ini</b></h4>
                         <p class="card-category"><?= $dateNow; ?></p>
                     </div>
                     <div class="card-body">
@@ -113,7 +113,7 @@
             <div class="col-md-6">
                 <div class="card">
                     <div class="card-header card-header-success">
-                        <h4 class="card-title"><b>Absensi Guru Hari Ini</b></h4>
+                        <h4 class="card-title"><b>Absensi Admin Hari Ini</b></h4>
                         <p class="card-category"><?= $dateNow; ?></p>
                     </div>
                     <div class="card-body">
@@ -147,8 +147,8 @@
                         <div class="ct-chart" id="kehadiranSiswa"></div>
                     </div>
                     <div class="card-body">
-                        <h4 class="card-title">Tingkat kehadiran siswa</h4>
-                        <p class="card-category">Jumlah kehadiran siswa dalam 7 hari terakhir</p>
+                        <h4 class="card-title">Tingkat kehadiran Karyawan</h4>
+                        <p class="card-category">Jumlah kehadiran Karyawan dalam 7 hari terakhir</p>
                     </div>
                     <div class="card-footer">
                         <div class="stats">
@@ -163,8 +163,8 @@
                         <div class="ct-chart" id="kehadiranGuru"></div>
                     </div>
                     <div class="card-body">
-                        <h4 class="card-title">Tingkat kehadiran guru</h4>
-                        <p class="card-category">Jumlah kehadiran guru dalam 7 hari terakhir</p>
+                        <h4 class="card-title">Tingkat kehadiran Admin</h4>
+                        <p class="card-category">Jumlah kehadiran Admin dalam 7 hari terakhir</p>
                     </div>
                     <div class="card-footer">
                         <div class="stats">
