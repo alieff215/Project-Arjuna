@@ -14,18 +14,18 @@
                         <form action="<?= base_url('admin/general-settings/update'); ?>" method="post" enctype="multipart/form-data">
                             <?= csrf_field() ?>
                             <div class="form-group mt-4">
-                                <label for="school_name">Nama Sekolah</label>
-                                <input type="text" id="school_name" class="form-control <?= invalidFeedback('school_name') ? 'is-invalid' : ''; ?>" name="school_name" placeholder="SMK 1 Indonesia" value="<?= $generalSettings->school_name; ?>" required>
+                                <label for="company_name">Nama Perusahaan</label>
+                                <input type="text" id="company_name" class="form-control <?= invalidFeedback('company_name') ? 'is-invalid' : ''; ?>" name="company_name" placeholder="SMK 1 Indonesia" value="<?= $generalSettings->company_name; ?>" required>
                                 <div class="invalid-feedback">
-                                    <?= invalidFeedback('school_name'); ?>
+                                    <?= invalidFeedback('company_name'); ?>
                                 </div>
                             </div>
 
                             <div class="form-group mt-4">
-                                <label for="school_year">Tahun Ajaran</label>
-                                <input type="text" id="school_year" class="form-control <?= invalidFeedback('school_year') ? 'is-invalid' : ''; ?>" name="school_year" placeholder="2024/2025" value="<?= $generalSettings->school_year; ?>" required>
+                                <label for="company_year">Tahun Ajaran</label>
+                                <input type="text" id="company_year" class="form-control <?= invalidFeedback('company_year') ? 'is-invalid' : ''; ?>" name="company_year" placeholder="2024/2025" value="<?= $generalSettings->company_year; ?>" required>
                                 <div class="invalid-feedback">
-                                    <?= invalidFeedback('school_year'); ?>
+                                    <?= invalidFeedback('company_year'); ?>
                                 </div>
                             </div>
 

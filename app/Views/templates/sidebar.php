@@ -1,13 +1,13 @@
 <?php
 $context = $ctx ?? 'dashboard';
 switch ($context) {
-   case 'absen-siswa':
-   case 'siswa':
-   case 'kelas':
+   case 'absen-karyawan':
+   case 'karyawan':
+   case 'departemen':
       $sidebarColor = 'purple';
       break;
-   case 'absen-guru':
-   case 'guru':
+   case 'absen-admin':
+   case 'admin':
       $sidebarColor = 'green';
       break;
 
@@ -39,32 +39,32 @@ switch ($context) {
                <p>Dashboard</p>
             </a>
          </li>
-         <li class="nav-item <?= $context == 'absen-siswa' ? 'active' : ''; ?>">
-            <a class="nav-link" href="<?= base_url('admin/absen-siswa'); ?>">
+         <li class="nav-item <?= $context == 'absen-karyawan' ? 'active' : ''; ?>">
+            <a class="nav-link" href="<?= base_url('admin/absen-karyawan'); ?>">
                <i class="material-icons">checklist</i>
                <p>Absensi Karyawan</p>
             </a>
          </li>
-         <li class="nav-item <?= $context == 'absen-guru' ? 'active' : ''; ?>">
-            <a class="nav-link" href="<?= base_url('admin/absen-guru'); ?>">
+         <li class="nav-item <?= $context == 'absen-admin' ? 'active' : ''; ?>">
+            <a class="nav-link" href="<?= base_url('admin/absen-admin'); ?>">
                <i class="material-icons">checklist</i>
                <p>Absensi Admin</p>
             </a>
          </li>
-         <li class="nav-item <?= $context == 'siswa' ? 'active' : ''; ?>">
-            <a class="nav-link" href="<?= base_url('admin/siswa'); ?>">
+         <li class="nav-item <?= $context == 'karyawan' ? 'active' : ''; ?>">
+            <a class="nav-link" href="<?= base_url('admin/karyawan'); ?>">
                <i class="material-icons">person</i>
                <p>Data Karyawan</p>
             </a>
          </li>
-         <li class="nav-item <?= $context == 'guru' ? 'active' : ''; ?>">
-            <a class="nav-link" href="<?= base_url('admin/guru'); ?>">
+         <li class="nav-item <?= $context == 'admin' ? 'active' : ''; ?>">
+            <a class="nav-link" href="<?= base_url('admin/admin'); ?>">
                <i class="material-icons">person_4</i>
                <p>Data Admin</p>
             </a>
          </li>
-         <li class="nav-item <?= $context == 'kelas' ? 'active' : ''; ?>">
-            <a class="nav-link" href="<?= base_url('admin/kelas'); ?>">
+         <li class="nav-item <?= $context == 'departemen' ? 'active' : ''; ?>">
+            <a class="nav-link" href="<?= base_url('admin/departemen'); ?>">
                <i class="material-icons">school</i>
                <p>Data Departemen & Jabatan</p>
             </a>

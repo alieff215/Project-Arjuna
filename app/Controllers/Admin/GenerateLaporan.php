@@ -8,74 +8,74 @@ use DateTime;
 use DateInterval;
 use DatePeriod;
 
-use App\Models\GuruModel;
-use App\Models\KelasModel;
-use App\Models\PresensiGuruModel;
-use App\Models\SiswaModel;
-use App\Models\PresensiSiswaModel;
+use App\Models\AdminModel;
+use App\Models\DepartemenModel;
+use App\Models\PresensiAdminModel;
+use App\Models\KaryawanModel;
+use App\Models\PresensiKaryawanModel;
 
 class GenerateLaporan extends BaseController
 {
-   protected SiswaModel $siswaModel;
-   protected KelasModel $kelasModel;
+   protected KaryawanModel $karyawanModel;
+   protected DepartemenModel $departemenModel;
 
-   protected GuruModel $guruModel;
+   protected AdminModel $adminModel;
 
-   protected PresensiSiswaModel $presensiSiswaModel;
-   protected PresensiGuruModel $presensiGuruModel;
+   protected PresensiKaryawanModel $presensiKaryawanModel;
+   protected PresensiAdminModel $presensiAdminModel;
 
    public function __construct()
    {
-      $this->siswaModel = new SiswaModel();
-      $this->kelasModel = new KelasModel();
+      $this->karyawanModel = new KaryawanModel();
+      $this->departemenModel = new DepartemenModel();
 
-      $this->guruModel = new GuruModel();
+      $this->adminModel = new AdminModel();
 
-      $this->presensiSiswaModel = new PresensiSiswaModel();
-      $this->presensiGuruModel = new PresensiGuruModel();
+      $this->presensiKaryawanModel = new PresensiKaryawanModel();
+      $this->presensiAdminModel = new PresensiAdminModel();
    }
 
    public function index()
    {
-      $kelas = $this->kelasModel->getDataKelas();
-      $guru = $this->guruModel->getAllGuru();
+      $departemen = $this->departemenModel->getDataDepartemen();
+      $admin = $this->adminModel->getAllAdmin();
 
-      $siswaPerKelas = [];
+      $karyawanPerDepartemen = [];
 
-      foreach ($kelas as $value) {
-         array_push($siswaPerKelas, $this->siswaModel->getSiswaByKelas($value['id_kelas']));
+      foreach ($departemen as $value) {
+         array_push($karyawanPerDepartemen, $this->karyawanModel->getKaryawanByDepartemen($value['id_departemen']));
       }
 
       $data = [
          'title' => 'Generate Laporan',
          'ctx' => 'laporan',
-         'siswaPerKelas' => $siswaPerKelas,
-         'kelas' => $kelas,
-         'guru' => $guru
+         'karyawanPerDepartemen' => $karyawanPerDepartemen,
+         'departemen' => $departemen,
+         'admin' => $admin
       ];
 
       return view('admin/generate-laporan/generate-laporan', $data);
    }
 
-   public function generateLaporanSiswa()
+   public function generateLaporanKaryawan()
    {
-      $idKelas = $this->request->getVar('kelas');
-      $siswa = $this->siswaModel->getSiswaByKelas($idKelas);
+      $idDepartemen = $this->request->getVar('departemen');
+      $karyawan = $this->karyawanModel->getKaryawanByDivisi($idDepartemen);
       $type = $this->request->getVar('type');
 
-      if (empty($siswa)) {
+      if (empty($Karyawan)) {
          session()->setFlashdata([
-            'msg' => 'Data siswa kosong!',
+            'msg' => 'Data karyawan kosong!',
             'error' => true
          ]);
          return redirect()->to('/admin/laporan');
       }
 
-      $kelas = $this->kelasModel->where(['id_kelas' => $idKelas])
-         ->join('tb_jurusan', 'tb_kelas.id_jurusan = tb_jurusan.id', 'left')
+      $departemen = $this->departemenModel->where(['id_departemen' => $idDepartemen])
+         ->join('tb_jabatan', 'tb_departemen.id_jabatan = tb_jabatan.id', 'left')
          ->first();
 
-      $bulan = $this->request->getVar('tanggalSiswa');
+      $bulan = $this->request->getVar('tanggalKaryawan');
 
       // hari pertama dalam 1 bulan
       $begin = new Time($bulan, locale: 'id');
@@ -94,8 +94,8 @@ class GenerateLaporan extends BaseController
          if (!($value->format('D') == 'Sat' || $value->format('D') == 'Sun')) {
             $lewat = Time::parse($value->format('Y-m-d'))->isAfter(Time::today());
 
-            $absenByTanggal = $this->presensiSiswaModel
-               ->getPresensiByKelasTanggal($idKelas, $value->format('Y-m-d'));
+            $absenByTanggal = $this->presensiKaryawanModel
+               ->getPresensiByDepartemenTanggal($idDepartemen, $value->format('Y-m-d'));
 
             $absenByTanggal['lewat'] = $lewat;
 
@@ -106,7 +106,7 @@ class GenerateLaporan extends BaseController
 
       $laki = 0;
 
-      foreach ($siswa as $value) {
+      foreach ($karyawan as $value) {
          if ($value['jenis_kelamin'] != 'Perempuan') {
             $laki++;
          }
@@ -116,42 +116,42 @@ class GenerateLaporan extends BaseController
          'tanggal' => $arrayTanggal,
          'bulan' => $begin->toLocalizedString('MMMM'),
          'listAbsen' => $dataAbsen,
-         'listSiswa' => $siswa,
-         'jumlahSiswa' => [
+         'listKaryawan' => $karyawan,
+         'jumlahKaryawan' => [
             'laki' => $laki,
-            'perempuan' => count($siswa) - $laki
+            'perempuan' => count($karyawan) - $laki
          ],
-         'kelas' => $kelas,
-         'grup' => "kelas " . $kelas['kelas'] . " " . $kelas['jurusan'],
+         'departemen' => $departemen,
+         'grup' => "departemen " . $departemen['departemen'] . " " . $departemen['jabatan'],
       ];
 
       if ($type == 'doc') {
          $this->response->setHeader('Content-type', 'application/vnd.ms-word');
          $this->response->setHeader(
             'Content-Disposition',
-            'attachment;Filename=laporan_absen_' . $kelas['kelas'] . " " . $kelas['jurusan'] . '_' . $begin->toLocalizedString('MMMM-Y') . '.doc'
+            'attachment;Filename=laporan_absen_' . $departemen['departemen'] . " " . $departemen['jabatan'] . '_' . $begin->toLocalizedString('MMMM-Y') . '.doc'
          );
 
-         return view('admin/generate-laporan/laporan-siswa', $data);
+         return view('admin/generate-laporan/laporan-karyawan', $data);
       }
 
-      return view('admin/generate-laporan/laporan-siswa', $data) . view('admin/generate-laporan/topdf');
+      return view('admin/generate-laporan/laporan-karyawan', $data) . view('admin/generate-laporan/topdf');
    }
 
-   public function generateLaporanGuru()
+   public function generateLaporanAdmin()
    {
-      $guru = $this->guruModel->getAllGuru();
+      $admin = $this->adminModel->getAllAdmin();
       $type = $this->request->getVar('type');
 
-      if (empty($guru)) {
+      if (empty($admin)) {
          session()->setFlashdata([
-            'msg' => 'Data guru kosong!',
+            'msg' => 'Data admin kosong!',
             'error' => true
          ]);
          return redirect()->to('/admin/laporan');
       }
 
-      $bulan = $this->request->getVar('tanggalGuru');
+      $bulan = $this->request->getVar('tanggalAdmin');
 
       // hari pertama dalam 1 bulan
       $begin = new Time($bulan, locale: 'id');
@@ -170,7 +170,7 @@ class GenerateLaporan extends BaseController
          if (!($value->format('D') == 'Sat' || $value->format('D') == 'Sun')) {
             $lewat = Time::parse($value->format('Y-m-d'))->isAfter(Time::today());
 
-            $absenByTanggal = $this->presensiGuruModel
+            $absenByTanggal = $this->presensiAdminModel
                ->getPresensiByTanggal($value->format('Y-m-d'));
 
             $absenByTanggal['lewat'] = $lewat;
@@ -182,7 +182,7 @@ class GenerateLaporan extends BaseController
 
       $laki = 0;
 
-      foreach ($guru as $value) {
+      foreach ($admin as $value) {
          if ($value['jenis_kelamin'] != 'Perempuan') {
             $laki++;
          }
@@ -192,24 +192,24 @@ class GenerateLaporan extends BaseController
          'tanggal' => $arrayTanggal,
          'bulan' => $begin->toLocalizedString('MMMM'),
          'listAbsen' => $dataAbsen,
-         'listGuru' => $guru,
-         'jumlahGuru' => [
+         'listAdmin' => $admin,
+         'jumlahAdmin' => [
             'laki' => $laki,
-            'perempuan' => count($guru) - $laki
+            'perempuan' => count($admin) - $laki
          ],
-         'grup' => 'guru',
+         'grup' => 'admin',
       ];
 
       if ($type == 'doc') {
          $this->response->setHeader('Content-type', 'application/vnd.ms-word');
          $this->response->setHeader(
             'Content-Disposition',
-            'attachment;Filename=laporan_absen_guru_' . $begin->toLocalizedString('MMMM-Y') . '.doc'
+            'attachment;Filename=laporan_absen_admin_' . $begin->toLocalizedString('MMMM-Y') . '.doc'
          );
 
-         return view('admin/generate-laporan/laporan-guru', $data);
+         return view('admin/generate-laporan/laporan-admin', $data);
       }
 
-      return view('admin/generate-laporan/laporan-guru', $data) . view('admin/generate-laporan/topdf');
+      return view('admin/generate-laporan/laporan-admin', $data) . view('admin/generate-laporan/topdf');
    }
 }

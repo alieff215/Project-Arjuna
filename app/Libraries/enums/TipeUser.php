@@ -4,6 +4,6 @@ namespace App\Libraries\enums;
 
 enum TipeUser: string
 {
-  case Siswa = 'id_siswa';
-  case Guru = 'id_guru';
+  case Karyawan = 'id_karyawan';
+  case Admin = 'id_admin';
 }
