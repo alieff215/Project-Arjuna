@@ -20,13 +20,13 @@ class GeneralSettings extends Migration
                 'constraint'     => 225,
                 'null'           => true
             ],
-            'school_name' => [
+            'company_name' => [
                 'type'           => 'VARCHAR',
                 'constraint'     => 225,
                 'null'           => true,
-                'default'        => 'SMK 1 Indonesia',
+                'default'        => 'PT ARjuna Wijaya Perkasa',
             ],
-            'school_year' => [
+            'company_year' => [
                 'type'           => 'VARCHAR',
                 'constraint'     => 225,
                 'null'           => true,
@@ -47,8 +47,8 @@ class GeneralSettings extends Migration
         $this->forge->createTable('general_settings', TRUE);
 
         // Insert Default Data
-        $default['school_name'] = 'SMK 1 Indonesia';
-        $default['school_year'] = '2024/2025';
+        $default['company_name'] = 'PT Arjuna Wijaya Perkasa';
+        $default['company_year'] = '2024/2025';
         $this->db->table('general_settings')->insert($default);
     }
 

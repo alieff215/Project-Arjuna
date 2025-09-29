@@ -19,13 +19,13 @@ class CreateDB extends Migration
             (3, 'Izin'),
             (4, 'Tanpa keterangan');");
 
-        $this->forge->getConnection()->query("INSERT INTO tb_jurusan (jurusan) VALUES
+        $this->forge->getConnection()->query("INSERT INTO tb_jabatan (jabatan) VALUES
             ('OTKP'),
             ('BDP'),
             ('AKL'),
             ('RPL');");
 
-        $this->forge->getConnection()->query("INSERT INTO tb_kelas (kelas, id_jurusan) VALUES
+        $this->forge->getConnection()->query("INSERT INTO tb_departemen (departemen, id_jabatan) VALUES
             ('X', 1),
             ('X', 2),
             ('X', 3),
@@ -39,19 +39,19 @@ class CreateDB extends Migration
             ('XII', 3),
             ('XII', 4);");
 
-        $this->forge->getConnection()->query("CREATE TABLE tb_guru (
-            id_guru int(11) NOT NULL,
+        $this->forge->getConnection()->query("CREATE TABLE tb_admin (
+            id_admin int(11) NOT NULL,
             nuptk varchar(24) NOT NULL,
-            nama_guru varchar(255) NOT NULL,
+            nama_admin varchar(255) NOT NULL,
             jenis_kelamin ENUM('Laki-laki','Perempuan') NOT NULL,
             alamat text NOT NULL,
             no_hp varchar(32) NOT NULL,
             unique_code varchar(64) NOT NULL
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
 
-        $this->forge->getConnection()->query("CREATE TABLE tb_presensi_guru (
+        $this->forge->getConnection()->query("CREATE TABLE tb_presensi_admin (
             id_presensi int(11) NOT NULL,
-            id_guru int(11) DEFAULT NULL,
+            id_admin int(11) DEFAULT NULL,
             tanggal date NOT NULL,
             jam_masuk time DEFAULT NULL,
             jam_keluar time DEFAULT NULL,
@@ -60,20 +60,20 @@ class CreateDB extends Migration
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
                         ");
 
-        $this->forge->getConnection()->query("CREATE TABLE tb_siswa (
-            id_siswa int(11) NOT NULL,
+        $this->forge->getConnection()->query("CREATE TABLE tb_karyawan (
+            id_karyawan int(11) NOT NULL,
             nis varchar(16) NOT NULL,
-            nama_siswa varchar(255) NOT NULL,
-            id_kelas int(11) UNSIGNED NOT NULL,
+            nama_karyawan varchar(255) NOT NULL,
+            id_departemen int(11) UNSIGNED NOT NULL,
             jenis_kelamin ENUM('Laki-laki','Perempuan') NOT NULL,
             no_hp varchar(32) NOT NULL,
             unique_code varchar(64) NOT NULL
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
 
-        $this->forge->getConnection()->query("CREATE TABLE tb_presensi_siswa (
+        $this->forge->getConnection()->query("CREATE TABLE tb_presensi_karyawan (
             id_presensi int(11) NOT NULL,
-            id_siswa int(11) NOT NULL,
-            id_kelas int(11) UNSIGNED DEFAULT NULL,
+            id_karyawan int(11) NOT NULL,
+            id_departemen int(11) UNSIGNED DEFAULT NULL,
             tanggal date NOT NULL,
             jam_masuk time DEFAULT NULL,
             jam_keluar time DEFAULT NULL,
@@ -81,64 +81,65 @@ class CreateDB extends Migration
             keterangan varchar(255) NOT NULL
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
 
-        $this->forge->getConnection()->query("ALTER TABLE tb_guru
-            ADD PRIMARY KEY (id_guru),
+        $this->forge->getConnection()->query("ALTER TABLE tb_admin
+            ADD PRIMARY KEY (id_admin),
             ADD UNIQUE KEY unique_code (unique_code);");
 
         $this->forge->getConnection()->query("ALTER TABLE tb_kehadiran
             ADD PRIMARY KEY (id_kehadiran);");
 
-        $this->forge->getConnection()->query("ALTER TABLE tb_presensi_guru
+        $this->forge->getConnection()->query("ALTER TABLE tb_presensi_admin
             ADD PRIMARY KEY (id_presensi),
             ADD KEY id_kehadiran (id_kehadiran),
-            ADD KEY id_guru (id_guru);");
+            ADD KEY id_admin (id_admin);");
 
-        $this->forge->getConnection()->query("ALTER TABLE tb_presensi_siswa
+        $this->forge->getConnection()->query("ALTER TABLE tb_presensi_karyawan
             ADD PRIMARY KEY (id_presensi),
-            ADD KEY id_siswa (id_siswa),
+            ADD KEY id_karyawan (id_karyawan),
             ADD KEY id_kehadiran (id_kehadiran),
-            ADD KEY id_kelas (id_kelas);");
+            ADD KEY id_departemen (id_departemen);");
 
-        $this->forge->getConnection()->query("ALTER TABLE tb_siswa
-            ADD PRIMARY KEY (id_siswa),
+        $this->forge->getConnection()->query("ALTER TABLE tb_karyawan
+            ADD PRIMARY KEY (id_karyawan),
             ADD UNIQUE KEY unique_code (unique_code),
-            ADD KEY id_kelas (id_kelas);");
+            ADD KEY id_karyawan (id_karyawan);");
 
-        $this->forge->getConnection()->query("ALTER TABLE tb_guru
-            MODIFY id_guru int(11) NOT NULL AUTO_INCREMENT;");
+        $this->forge->getConnection()->query("ALTER TABLE tb_admin
+            MODIFY id_admin int(11) NOT NULL AUTO_INCREMENT;");
 
         $this->forge->getConnection()->query("ALTER TABLE tb_kehadiran
             MODIFY id_kehadiran int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;");
 
-        $this->forge->getConnection()->query("ALTER TABLE tb_presensi_guru
+        $this->forge->getConnection()->query("ALTER TABLE tb_presensi_admin
             MODIFY id_presensi int(11) NOT NULL AUTO_INCREMENT;");
 
-        $this->forge->getConnection()->query("ALTER TABLE tb_presensi_siswa
+        $this->forge->getConnection()->query("ALTER TABLE tb_presensi_karyawan
             MODIFY id_presensi int(11) NOT NULL AUTO_INCREMENT;");
 
-        $this->forge->getConnection()->query("ALTER TABLE tb_siswa
-            MODIFY id_siswa int(11) NOT NULL AUTO_INCREMENT;");
+        $this->forge->getConnection()->query("ALTER TABLE tb_karyawan
+            MODIFY id_karyawan int(11) NOT NULL AUTO_INCREMENT;");
 
-        $this->forge->getConnection()->query("ALTER TABLE tb_presensi_guru
-            ADD CONSTRAINT tb_presensi_guru_ibfk_2 FOREIGN KEY (id_kehadiran) REFERENCES tb_kehadiran (id_kehadiran),
-            ADD CONSTRAINT tb_presensi_guru_ibfk_3 FOREIGN KEY (id_guru) REFERENCES tb_guru (id_guru) ON DELETE SET NULL;");
+        $this->forge->getConnection()->query("ALTER TABLE tb_presensi_admin
+            ADD CONSTRAINT tb_presensi_admin_ibfk_2 FOREIGN KEY (id_kehadiran) REFERENCES tb_kehadiran (id_kehadiran),
+            ADD CONSTRAINT tb_presensi_admin_ibfk_3 FOREIGN KEY (id_admin) REFERENCES tb_admin (id_admin) ON DELETE SET NULL;");
 
-        $this->forge->getConnection()->query("ALTER TABLE tb_presensi_siswa
-            ADD CONSTRAINT tb_presensi_siswa_ibfk_2 FOREIGN KEY (id_kehadiran) REFERENCES tb_kehadiran (id_kehadiran),
-            ADD CONSTRAINT tb_presensi_siswa_ibfk_3 FOREIGN KEY (id_siswa) REFERENCES tb_siswa (id_siswa) ON DELETE CASCADE,
-            ADD CONSTRAINT tb_presensi_siswa_ibfk_4 FOREIGN KEY (id_kelas) REFERENCES tb_kelas (id_kelas) ON DELETE SET NULL ON UPDATE CASCADE;");
+        $this->forge->getConnection()->query("ALTER TABLE tb_presensi_karyawan
+            ADD CONSTRAINT tb_presensi_karyawan_ibfk_2 FOREIGN KEY (id_kehadiran) REFERENCES tb_kehadiran (id_kehadiran),
+            ADD CONSTRAINT tb_presensi_karyawan_ibfk_3 FOREIGN KEY (id_karyawan) REFERENCES tb_karyawan (id_karyawan) ON DELETE CASCADE,
+            ADD CONSTRAINT tb_presensi_karyawan_ibfk_4 FOREIGN KEY (id_departemen) REFERENCES tb_departemen (id_departemen) ON DELETE SET NULL ON UPDATE CASCADE;");
 
-        $this->forge->getConnection()->query("ALTER TABLE tb_siswa
-            ADD CONSTRAINT tb_siswa_ibfk_1 FOREIGN KEY (id_kelas) REFERENCES tb_kelas (id_kelas);");
+        $this->forge->getConnection()->query("ALTER TABLE tb_karyawan
+            ADD CONSTRAINT tb_karyawan_ibfk_1 FOREIGN KEY (id_departemen) REFERENCES tb_departemen (id_departemen) ON DELETE CASCADE ON UPDATE CASCADE;");
+
     }
 
     public function down()
     {
         $tables = [
-            'tb_presensi_siswa',
-            'tb_presensi_guru',
-            'tb_siswa',
-            'tb_guru',
+            'tb_presensi_karyawan',
+            'tb_presensi_admin',
+            'tb_karyawan',
+            'tb_admin',
             'tb_kehadiran',
         ];
 

@@ -4,34 +4,34 @@ namespace App\Controllers\Admin;
 
 use App\Controllers\BaseController;
 
-use App\Models\GuruModel;
-use App\Models\SiswaModel;
-use App\Models\KelasModel;
+use App\Models\AdminModel;
+use App\Models\KaryawanModel;
+use App\Models\DepartemenModel;
 use App\Models\PetugasModel;
-use App\Models\PresensiGuruModel;
-use App\Models\PresensiSiswaModel;
+use App\Models\PresensiAdminModel;
+use App\Models\PresensiKaryawanModel;
 use CodeIgniter\I18n\Time;
 use Config\AbsensiSekolah as ConfigAbsensiSekolah;
 
 class Dashboard extends BaseController
 {
-   protected SiswaModel $siswaModel;
-   protected GuruModel $guruModel;
+   protected KaryawanModel $karyawanModel;
+   protected AdminModel $adminModel;
 
-   protected KelasModel $KelasModel;
+   protected DepartemenModel $DepartemenModel;
 
-   protected PresensiSiswaModel $presensiSiswaModel;
-   protected PresensiGuruModel $presensiGuruModel;
+   protected PresensiKaryawanModel $presensiKaryawanModel;
+   protected PresensiAdminModel $presensiAdminModel;
 
    protected PetugasModel $petugasModel;
 
    public function __construct()
    {
-      $this->siswaModel = new SiswaModel();
-      $this->guruModel = new GuruModel();
-      $this->KelasModel = new KelasModel();
-      $this->presensiSiswaModel = new PresensiSiswaModel();
-      $this->presensiGuruModel = new PresensiGuruModel();
+      $this->karyawanModel = new KaryawanModel();
+      $this->adminModel = new AdminModel();
+      $this->DepartemenModel = new DepartemenModel();
+      $this->presensiKaryawanModel = new PresensiKaryawanModel();
+      $this->presensiAdminModel = new PresensiAdminModel();
       $this->petugasModel = new PetugasModel();
    }
 
@@ -40,8 +40,8 @@ class Dashboard extends BaseController
       $now = Time::now();
 
       $dateRange = [];
-      $siswaKehadiranArray = [];
-      $guruKehadiranArray = [];
+      $karyawanKehadiranArray = [];
+      $adminKehadiranArray = [];
 
       for ($i = 6; $i >= 0; $i--) {
          $date = $now->subDays($i)->toDateString();
@@ -53,16 +53,16 @@ class Dashboard extends BaseController
          }
          array_push($dateRange, $formattedDate);
          array_push(
-            $siswaKehadiranArray,
-            count($this->presensiSiswaModel
-               ->join('tb_siswa', 'tb_presensi_siswa.id_siswa = tb_siswa.id_siswa', 'left')
-               ->where(['tb_presensi_siswa.tanggal' => "$date", 'tb_presensi_siswa.id_kehadiran' => '1'])->findAll())
+            $karyawanKehadiranArray,
+            count($this->presensiKaryawanModel
+               ->join('tb_karyawan', 'tb_presensi_karyawan.id_karyawan = tb_karyawan.id_karyawan', 'left')
+               ->where(['tb_presensi_karyawan.tanggal' => "$date", 'tb_presensi_karyawan.id_kehadiran' => '1'])->findAll())
          );
          array_push(
-            $guruKehadiranArray,
-            count($this->presensiGuruModel
-               ->join('tb_guru', 'tb_presensi_guru.id_guru = tb_guru.id_guru', 'left')
-               ->where(['tb_presensi_guru.tanggal' => "$date", 'tb_presensi_guru.id_kehadiran' => '1'])->findAll())
+            $adminKehadiranArray,
+            count($this->presensiAdminModel
+               ->join('tb_admin', 'tb_presensi_admin.id_admin = tb_admin.id_admin', 'left')
+               ->where(['tb_presensi_admin.tanggal' => "$date", 'tb_presensi_admin.id_kehadiran' => '1'])->findAll())
          );
       }
 
@@ -72,29 +72,29 @@ class Dashboard extends BaseController
          'title' => 'Dashboard',
          'ctx' => 'dashboard',
 
-         'siswa' => $this->siswaModel->getAllSiswaWithKelas(),
-         'guru' => $this->guruModel->getAllGuru(),
+         'karyawan' => $this->karyawanModel->getAllKaryawanWithDepartemen(),
+         'admin' => $this->adminModel->getAllAdmin(),
 
-         'kelas' => $this->KelasModel->getDataKelas(),
+         'departemen' => $this->DepartemenModel->getDataDepartemen(),
 
          'dateRange' => $dateRange,
          'dateNow' => $now->toLocalizedString('d MMMM Y'),
 
-         'grafikKehadiranSiswa' => $siswaKehadiranArray,
-         'grafikkKehadiranGuru' => $guruKehadiranArray,
+         'grafikKehadiranKaryawan' => $karyawanKehadiranArray,
+         'grafikkKehadiranAdmin' => $adminKehadiranArray,
 
-         'jumlahKehadiranSiswa' => [
-            'hadir' => count($this->presensiSiswaModel->getPresensiByKehadiran('1', $today)),
-            'sakit' => count($this->presensiSiswaModel->getPresensiByKehadiran('2', $today)),
-            'izin' => count($this->presensiSiswaModel->getPresensiByKehadiran('3', $today)),
-            'alfa' => count($this->presensiSiswaModel->getPresensiByKehadiran('4', $today))
+         'jumlahKehadiranKaryawan' => [
+            'hadir' => count($this->presensiKaryawanModel->getPresensiByKehadiran('1', $today)),
+            'sakit' => count($this->presensiKaryawanModel->getPresensiByKehadiran('2', $today)),
+            'izin' => count($this->presensiKaryawanModel->getPresensiByKehadiran('3', $today)),
+            'alfa' => count($this->presensiKaryawanModel->getPresensiByKehadiran('4', $today))
          ],
 
-         'jumlahKehadiranGuru' => [
-            'hadir' => count($this->presensiGuruModel->getPresensiByKehadiran('1', $today)),
-            'sakit' => count($this->presensiGuruModel->getPresensiByKehadiran('2', $today)),
-            'izin' => count($this->presensiGuruModel->getPresensiByKehadiran('3', $today)),
-            'alfa' => count($this->presensiGuruModel->getPresensiByKehadiran('4', $today))
+         'jumlahKehadiranAdmin' => [
+            'hadir' => count($this->presensiAdminModel->getPresensiByKehadiran('1', $today)),
+            'sakit' => count($this->presensiAdminModel->getPresensiByKehadiran('2', $today)),
+            'izin' => count($this->presensiAdminModel->getPresensiByKehadiran('3', $today)),
+            'alfa' => count($this->presensiAdminModel->getPresensiByKehadiran('4', $today))
          ],
 
          'petugas' => $this->petugasModel->getAllPetugas(),

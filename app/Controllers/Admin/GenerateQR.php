@@ -4,48 +4,48 @@ namespace App\Controllers\Admin;
 
 use App\Controllers\BaseController;
 
-use App\Models\GuruModel;
-use App\Models\KelasModel;
-use App\Models\SiswaModel;
+use App\Models\AdminModel;
+use App\Models\DepartemenModel;
+use App\Models\KaryawanModel;
 
 class GenerateQR extends BaseController
 {
-   protected SiswaModel $siswaModel;
-   protected KelasModel $kelasModel;
+   protected KaryawanModel $karyawanModel;
+   protected DepartemenModel $departemenModel;
 
-   protected GuruModel $guruModel;
+   protected AdminModel $adminModel;
 
    public function __construct()
    {
-      $this->siswaModel = new SiswaModel();
-      $this->kelasModel = new KelasModel();
+      $this->karyawanModel = new KaryawanModel();
+      $this->departemenModel = new DepartemenModel();
 
-      $this->guruModel = new GuruModel();
+      $this->adminModel = new AdminModel();
    }
 
    public function index()
    {
-      $siswa = $this->siswaModel->getAllSiswaWithKelas();
-      $kelas = $this->kelasModel->getDataKelas();
-      $guru = $this->guruModel->getAllGuru();
+      $karyawan = $this->karyawanModel->getAllKaryawanWithDepartemen();
+      $departemen = $this->departemenModel->getDataDepartemen();
+      $admin = $this->adminModel->getAllAdmin();
 
       $data = [
          'title' => 'Generate QR Code',
          'ctx' => 'qr',
-         'siswa' => $siswa,
-         'kelas' => $kelas,
-         'guru' => $guru
+         'karyawan' => $karyawan,
+         'departemen' => $departemen,
+         'admin' => $admin
       ];
 
       return view('admin/generate-qr/generate-qr', $data);
    }
 
-   public function getSiswaByKelas()
+   public function getKaryawanByDepartemen()
    {
-      $idKelas = $this->request->getVar('idKelas');
+      $idDepartemen = $this->request->getVar('idDepartemen');
 
-      $siswa = $this->siswaModel->getSiswaByKelas($idKelas);
+      $karyawan = $this->karyawanModel->getKaryawanByDepartemen($idDepartemen);
 
-      return $this->response->setJSON($siswa);
+      return $this->response->setJSON($karyawan);
    }
 }

@@ -29,26 +29,26 @@
                   <div class="row">
                      <div class="col-md-6">
                         <div class="card h-100">
-                           <form action="<?= base_url('admin/laporan/siswa'); ?>" method="post" class="card-body d-flex flex-column">
-                              <h4 class="text-primary"><b>Laporan Absen Siswa</b></h4>
+                           <form action="<?= base_url('admin/laporan/karyawan'); ?>" method="post" class="card-body d-flex flex-column">
+                              <h4 class="text-primary"><b>Laporan Absen Karyawan</b></h4>
                               <div class="row align-items-center">
                                  <div class="col-auto">
                                     <p class="d-inline"><b>Bulan :</b></p>
                                  </div>
                                  <div class="col-5">
-                                    <input type="month" name="tanggalSiswa" id="tanggalSiswa" class="form-control" value="<?= date('Y-m'); ?>">
+                                    <input type="month" name="tanggalKaryawan" id="tanggalKaryawan" class="form-control" value="<?= date('Y-m'); ?>">
                                  </div>
                               </div>
-                              <select name="kelas" class="custom-select mt-3">
-                                 <option value="">--Pilih kelas--</option>
-                                 <?php foreach ($kelas as $key => $value) : ?>
+                              <select name="departemen" class="custom-select mt-3">
+                                 <option value="">--Pilih departemen--</option>
+                                 <?php foreach ($departemen as $key => $value) : ?>
                                     <?php
-                                    $idKelas = $value['id_kelas'];
-                                    $kelas = "{$value['kelas']} {$value['jurusan']}";
-                                    $jumlahSiswa = count($siswaPerKelas[$key]);
+                                    $idDepartemen = $value['id_departemen'];
+                                    $departemen = "{$value['departemen']} {$value['jabatan']}";
+                                    $jumlahKaryawan = count($karyawanPerDepartemen[$key]);
                                     ?>
-                                    <option value="<?= $idKelas; ?>">
-                                       <?= "$kelas - {$jumlahSiswa} siswa"; ?>
+                                    <option value="<?= $idDepartemen; ?>">
+                                       <?= "$departemen - {$jumlahKaryawan} karyawan"; ?>
                                     </option>
                                  <?php endforeach; ?>
                               </select>
@@ -97,15 +97,15 @@
                      </div>
                      <div class="col-md-6">
                         <div class="card h-100">
-                           <form action="<?= base_url('admin/laporan/guru'); ?>" method="post" class="card-body d-flex flex-column">
-                              <h4 class="text-success"><b>Laporan Absen Guru</b></h4>
-                              <p>Total jumlah guru : <b><?= count($guru); ?></b></p>
+                           <form action="<?= base_url('admin/laporan/admin'); ?>" method="post" class="card-body d-flex flex-column">
+                              <h4 class="text-success"><b>Laporan Absen Admin</b></h4>
+                              <p>Total jumlah admin : <b><?= count($admin); ?></b></p>
                               <div class="row align-items-center">
                                  <div class="col-auto">
                                     <p class="d-inline"><b>Bulan :</b></p>
                                  </div>
                                  <div class="col-5">
-                                    <input type="month" name="tanggalGuru" id="tanggalGuru" class="form-control" value="<?= date('Y-m'); ?>">
+                                    <input type="month" name="tanggalAdmin" id="tanggalAdmin" class="form-control" value="<?= date('Y-m'); ?>">
                                  </div>
                               </div>
                               <div class="mt-auto d-flex flex-column">

@@ -8,12 +8,12 @@
                 <div class="card card-stats">
                     <div class="card-header card-header-primary card-header-icon">
                         <div class="card-icon">
-                            <a href="<?= base_url('admin/siswa'); ?>" class="text-white">
+                            <a href="<?= base_url('admin/karyawan'); ?>" class="text-white">
                                 <i class="material-icons">person</i>
                             </a>
                         </div>
                         <p class="card-category">Jumlah Karyawan</p>
-                        <h3 class="card-title"><?= count($siswa); ?></h3>
+                        <h3 class="card-title"><?= count($karyawan); ?></h3>
                     </div>
                     <div class="card-footer">
                         <div class="stats">
@@ -27,12 +27,12 @@
                 <div class="card card-stats">
                     <div class="card-header card-header-success card-header-icon">
                         <div class="card-icon">
-                            <a href="<?= base_url('admin/guru'); ?>" class="text-white">
+                            <a href="<?= base_url('admin/admin'); ?>" class="text-white">
                                 <i class="material-icons">person_4</i>
                             </a>
                         </div>
                         <p class="card-category">Jumlah Admin</p>
-                        <h3 class="card-title"><?= count($guru); ?></h3>
+                        <h3 class="card-title"><?= count($admin); ?></h3>
                     </div>
                     <div class="card-footer">
                         <div class="stats">
@@ -46,17 +46,17 @@
                 <div class="card card-stats">
                     <div class="card-header card-header-info card-header-icon">
                         <div class="card-icon">
-                            <a href="<?= base_url('admin/kelas'); ?>" class="text-white">
+                            <a href="<?= base_url('admin/departemen'); ?>" class="text-white">
                                 <i class="material-icons">grade</i>
                             </a>
                         </div>
-                        <p class="card-category">Jumlah Divisi</p>
-                        <h3 class="card-title"><?= count($kelas); ?></h3>
+                        <p class="card-category">Jumlah Departemen</p>
+                        <h3 class="card-title"><?= count($departemen); ?></h3>
                     </div>
                     <div class="card-footer">
                         <div class="stats">
                             <i class="material-icons">home</i>
-                            <?= $generalSettings->school_name; ?>
+                            <?= $generalSettings->company_name; ?>
                         </div>
                     </div>
                 </div>
@@ -92,19 +92,19 @@
                         <div class="row text-center">
                             <div class="col-md-3">
                                 <h4 class="text-success"><b>Hadir</b></h4>
-                                <h3><?= $jumlahKehadiranSiswa['hadir']; ?></h3>
+                                <h3><?= $jumlahKehadiranKaryawan['hadir']; ?></h3>
                             </div>
                             <div class="col-md-3">
                                 <h4 class="text-warning"><b>Sakit</b></h4>
-                                <h3><?= $jumlahKehadiranSiswa['sakit']; ?></h3>
+                                <h3><?= $jumlahKehadiranKaryawan['sakit']; ?></h3>
                             </div>
                             <div class="col-md-3">
                                 <h4 class="text-info"><b>Izin</b></h4>
-                                <h3><?= $jumlahKehadiranSiswa['izin']; ?></h3>
+                                <h3><?= $jumlahKehadiranKaryawan['izin']; ?></h3>
                             </div>
                             <div class="col-md-3">
                                 <h4 class="text-danger"><b>Alfa</b></h4>
-                                <h3><?= $jumlahKehadiranSiswa['alfa']; ?></h3>
+                                <h3><?= $jumlahKehadiranKaryawan['alfa']; ?></h3>
                             </div>
                         </div>
                     </div>
@@ -120,19 +120,19 @@
                         <div class="row text-center">
                             <div class="col-md-3">
                                 <h4 class="text-success"><b>Hadir</b></h4>
-                                <h3><?= $jumlahKehadiranGuru['hadir']; ?></h3>
+                                <h3><?= $jumlahKehadiranAdmin['hadir']; ?></h3>
                             </div>
                             <div class="col-md-3">
                                 <h4 class="text-warning"><b>Sakit</b></h4>
-                                <h3><?= $jumlahKehadiranGuru['sakit']; ?></h3>
+                                <h3><?= $jumlahKehadiranAdmin['sakit']; ?></h3>
                             </div>
                             <div class="col-md-3">
                                 <h4 class="text-info"><b>Izin</b></h4>
-                                <h3><?= $jumlahKehadiranGuru['izin']; ?></h3>
+                                <h3><?= $jumlahKehadiranAdmin['izin']; ?></h3>
                             </div>
                             <div class="col-md-3">
                                 <h4 class="text-danger"><b>Alfa</b></h4>
-                                <h3><?= $jumlahKehadiranGuru['alfa']; ?></h3>
+                                <h3><?= $jumlahKehadiranAdmin['alfa']; ?></h3>
                             </div>
                         </div>
                     </div>
@@ -144,7 +144,7 @@
             <div class="col-md-6">
                 <div class="card card-chart">
                     <div class="card-header card-header-primary">
-                        <div class="ct-chart" id="kehadiranSiswa"></div>
+                        <div class="ct-chart" id="kehadiranKaryawan"></div>
                     </div>
                     <div class="card-body">
                         <h4 class="card-title">Tingkat kehadiran Karyawan</h4>
@@ -152,7 +152,7 @@
                     </div>
                     <div class="card-footer">
                         <div class="stats">
-                            <i class="material-icons text-primary">checklist</i> <a class="text-primary" href="<?= base_url('admin/absen-siswa'); ?>">Lihat data</a>
+                            <i class="material-icons text-primary">checklist</i> <a class="text-primary" href="<?= base_url('admin/absen-karyawan'); ?>">Lihat data</a>
                         </div>
                     </div>
                 </div>
@@ -160,7 +160,7 @@
             <div class="col-md-6">
                 <div class="card card-chart">
                     <div class="card-header card-header-success">
-                        <div class="ct-chart" id="kehadiranGuru"></div>
+                        <div class="ct-chart" id="kehadiranAdmin"></div>
                     </div>
                     <div class="card-body">
                         <h4 class="card-title">Tingkat kehadiran Admin</h4>
@@ -168,7 +168,7 @@
                     </div>
                     <div class="card-footer">
                         <div class="stats">
-                            <i class="material-icons text-success">checklist</i> <a class="text-success" href="<?= base_url('admin/absen-guru'); ?>">Lihat data</a>
+                            <i class="material-icons text-success">checklist</i> <a class="text-success" href="<?= base_url('admin/absen-Admin'); ?>">Lihat data</a>
                         </div>
                     </div>
                 </div>
@@ -185,11 +185,11 @@
 
     function initDashboardPageCharts() {
 
-        if ($('#kehadiranSiswa').length != 0) {
-            /* ----------==========     Chart tingkat kehadiran siswa    ==========---------- */
-            const dataKehadiranSiswa = [<?php foreach ($grafikKehadiranSiswa as $value) echo "$value,"; ?>];
+        if ($('#kehadiranKaryawan').length != 0) {
+            /* ----------==========     Chart tingkat kehadiran Karyawan    ==========---------- */
+            const dataKehadiranKaryawan = [<?php foreach ($grafikKehadiranKaryawan as $value) echo "$value,"; ?>];
 
-            const chartKehadiranSiswa = {
+            const chartKehadiranKaryawan = {
                 labels: [
                     <?php
                     foreach ($dateRange as  $value) {
@@ -197,12 +197,12 @@
                     }
                     ?>
                 ],
-                series: [dataKehadiranSiswa]
+                series: [dataKehadiranKaryawan]
             };
 
             var highestData = 0;
 
-            dataKehadiranSiswa.forEach(e => {
+            dataKehadiranKaryawan.forEach(e => {
                 if (e >= highestData) {
                     highestData = e;
                 }
@@ -222,16 +222,16 @@
                 }
             }
 
-            var kehadiranSiswaChart = new Chartist.Line('#kehadiranSiswa', chartKehadiranSiswa, optionsChart);
+            var kehadiranKaryawanChart = new Chartist.Line('#kehadiranKaryawan', chartKehadiranKaryawan, optionsChart);
 
-            md.startAnimationForLineChart(kehadiranSiswaChart);
+            md.startAnimationForLineChart(kehadiranKaryawanChart);
         }
 
-        if ($('#kehadiranGuru').length != 0) {
-            /* ----------==========     Chart tingkat kehadiran guru    ==========---------- */
-            const dataKehadiranGuru = [<?php foreach ($grafikkKehadiranGuru as $value) echo "$value,"; ?>];
+        if ($('#kehadiranAdmin').length != 0) {
+            /* ----------==========     Chart tingkat kehadiran admin    ==========---------- */
+            const dataKehadiranAdmin = [<?php foreach ($grafikkKehadiranAdmin as $value) echo "$value,"; ?>];
 
-            const chartKehadiranGuru = {
+            const chartKehadiranAdmin = {
                 labels: [
                     <?php
                     foreach ($dateRange as  $value) {
@@ -239,12 +239,12 @@
                     }
                     ?>
                 ],
-                series: [dataKehadiranGuru]
+                series: [dataKehadiranAdmin]
             };
 
             var highestData = 0;
 
-            dataKehadiranGuru.forEach(e => {
+            dataKehadiranAdmin.forEach(e => {
                 if (e >= highestData) {
                     highestData = e;
                 }
@@ -264,9 +264,9 @@
                 }
             }
 
-            var kehadiranGuruChart = new Chartist.Line('#kehadiranGuru', chartKehadiranGuru, optionsChart);
+            var kehadiranAdminChart = new Chartist.Line('#kehadiranAdmin', chartKehadiranAdmin, optionsChart);
 
-            md.startAnimationForLineChart(kehadiranGuruChart);
+            md.startAnimationForLineChart(kehadiranAdminChart);
         }
     }
 </script>
