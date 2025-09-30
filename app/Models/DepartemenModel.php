@@ -44,7 +44,7 @@ class DepartemenModel extends BaseModel
       return $this->builder->join('tb_jabatan', 'tb_departemen.id_jabatan = tb_jabatan.id')->orderBy('tb_departemen.id_departemen')->get()->getResult('array');
    }
 
-   public function get  ($id)
+   public function getDepartemen($id)
    {
       return $this->builder->join('tb_jabatan', 'tb_departemen.id_jabatan = tb_jabatan.id')->where('id_departemen', cleanNumber($id))->get()->getRow();
    }

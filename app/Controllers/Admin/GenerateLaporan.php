@@ -60,10 +60,10 @@ class GenerateLaporan extends BaseController
    public function generateLaporanKaryawan()
    {
       $idDepartemen = $this->request->getVar('departemen');
-      $karyawan = $this->karyawanModel->getKaryawanByDivisi($idDepartemen);
+      $karyawan = $this->karyawanModel->getKaryawanByDepartemen($idDepartemen);
       $type = $this->request->getVar('type');
 
-      if (empty($Karyawan)) {
+      if (empty($karyawan)) {
          session()->setFlashdata([
             'msg' => 'Data karyawan kosong!',
             'error' => true

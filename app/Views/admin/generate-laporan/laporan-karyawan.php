@@ -6,8 +6,8 @@
       <td><img src="<?= getLogo(); ?>" width="100px" height="100px"></img></td>
       <td width="100%">
          <h2 align="center">DAFTAR HADIR KARYAWAN</h2>
-         <h4 align="center"><?= $generalSettings->school_name; ?></h4>
-         <h4 align="center">TAHUN PELAJARAN <?= $generalSettings->school_year; ?></h4>
+         <h4 align="center"><?= $generalSettings->company_name; ?></h4>
+         <h4 align="center">TAHUN PELAJARAN <?= $generalSettings->company_year; ?></h4>
       </td>
       <td>
          <div style="width:100px"></div>
