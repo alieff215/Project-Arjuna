@@ -45,7 +45,7 @@
                            </div>
                         </div>
                      </div>
-                     <div id="dataadmin">
+                     <div id="dataAdmin">
                         <p class="text-center mt-3">Daftar admin muncul disini</p>
                      </div>
                   </div>

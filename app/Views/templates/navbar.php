@@ -37,8 +37,8 @@
                   </p>
                </a>
                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownScan">
-                  <a class="dropdown-item" href="<?= base_url('scan/masuk'); ?>">Absen masuk</a>
-                  <a class="dropdown-item" href="<?= base_url('scan/pulang'); ?>">Absen pulang</a>
+                  <a class="dropdown-item" href="<?= base_url('scan/pulang'); ?>">Absen masuk</a>
+                  <a class="dropdown-item" href="<?= base_url('scan/masuk'); ?>">Absen pulang</a>
                </div>
             </li>
             <li class="nav-item dropdown">

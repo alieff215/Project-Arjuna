@@ -14,7 +14,7 @@
           <td><b><?= $value['divisi']; ?></b></td>
           <td><?= $value['jabatan']; ?></td>
           <td>
-            <a href="<?= base_url('admin/diepartemen/edit/' .  $value['id_departemen']); ?>" type="button" class="btn btn-primary p-2" id="<?= $value['id_departemen']; ?>">
+            <a href="<?= base_url('admin/departemen/edit/' .  $value['id_departemen']); ?>" type="button" class="btn btn-primary p-2" id="<?= $value['id_departemen']; ?>">
               <i class="material-icons">edit</i>
               Edit
             </a>

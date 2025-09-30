@@ -77,7 +77,7 @@ class PresensiKaryawanModel extends Model implements PresensiInterface
             'tb_presensi_karyawan.id_kehadiran = tb_kehadiran.id_kehadiran',
             'left'
          )
-         ->where("{$this->table}.id_departmen = $idDepartemen")
+         ->where("{$this->table}.id_departemen = $idDepartemen")
          ->orderBy("nama_karyawan")
          ->findAll();
    }

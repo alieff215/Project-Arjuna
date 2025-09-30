@@ -77,8 +77,8 @@
 
 <script>
   document.addEventListener('DOMContentLoaded', function() {
-    fetchDepartemenJabatanData('Departemen', '#dataDepartemen');
-    fetchDepartemenJabatanData('Jabatan', '#dataJabatan');
+    fetchDepartemenJabatanData('departemen', '#dataDepartemen');
+    fetchDepartemenJabatanData('jabatan', '#dataJabatan');
   });
 
   
