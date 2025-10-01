@@ -168,7 +168,7 @@
                     </div>
                     <div class="card-footer">
                         <div class="stats">
-                            <i class="material-icons text-success">checklist</i> <a class="text-success" href="<?= base_url('admin/absen-Admin'); ?>">Lihat data</a>
+                            <i class="material-icons text-success">checklist</i> <a class="text-success" href="<?= base_url('admin/absen-admin'); ?>">Lihat data</a>
                         </div>
                     </div>
                 </div>

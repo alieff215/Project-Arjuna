@@ -14,7 +14,7 @@
                                     <div class="row">
                                         <div class="col-md-4 col-lg-5">
                                             <h4 class="card-title"><b>Bulk Post Upload Karyawan</b></h4>
-                                            <p class="card-category">Angkatan <?= $generalSettings->school_year; ?></p>
+                                            <p class="card-category">Angkatan <?= $generalSettings->company_year; ?></p>
                                         </div>
                                     </div>
                                 </div>

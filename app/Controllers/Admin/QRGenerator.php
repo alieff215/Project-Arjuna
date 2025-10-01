@@ -47,7 +47,7 @@ class QRGenerator extends BaseController
 
       if (boolval(env('QR_LOGO'))) {
          // Create logo
-         $logo = (new \Config\School)::$generalSettings->logo;
+         $logo = (new \Config\Company)::$generalSettings->logo;
          if (empty($logo) || !file_exists(FCPATH . $logo)) {
             $logo = 'assets/img/logo_sekolah.jpg';
          }

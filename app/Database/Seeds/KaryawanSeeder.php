@@ -6,7 +6,7 @@ use CodeIgniter\Database\BaseConnection;
 use CodeIgniter\Database\Seeder;
 use Config\Database;
 
-class SiswaSeeder extends Seeder
+class KaryawanSeeder extends Seeder
 {
     private \Faker\Generator $faker;
     private array $departemen;
@@ -34,7 +34,7 @@ class SiswaSeeder extends Seeder
             array_push($data, [
                 'nis' => $this->faker->numerify('#######'),
                 'nama_karyawan' => $this->faker->name($gender == 'Laki-laki' ? 'male' : 'female'),
-                'id_departemen' => $this->faker->randomElement($this->departemen)['id_kelas'],
+                'id_departemen' => $this->faker->randomElement($this->departemen)['id_departemen'],
                 'jenis_kelamin' => $gender,
                 'no_hp' => $this->faker->numerify('08##########'),
                 'unique_code' => $this->faker->uuid()

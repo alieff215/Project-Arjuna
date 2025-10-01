@@ -239,7 +239,7 @@ class DataKaryawan extends BaseController
    {
       $data['title'] = 'Import Karyawan';
       $data['ctx'] = 'karyawan';
-      $data['departemen'] = $this->departemenModel->getDataKDepartemen();
+      $data['departemen'] = $this->departemenModel->getDataDepartemen();
 
       return view('/admin/data/import-karyawan', $data);
    }

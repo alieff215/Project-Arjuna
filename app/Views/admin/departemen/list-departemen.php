@@ -2,7 +2,7 @@
   <table class="table table-hover">
     <thead class="text-primary">
       <th><b>No</b></th>
-      <th><b>Divisi</b></th>
+      <th><b>Departemen</b></th>
       <th><b>Jabatan</b></th>
       <th><b>Aksi</b></th>
     </thead>
@@ -11,7 +11,7 @@
       foreach ($data as $value) : ?>
         <tr>
           <td><?= $i; ?></td>
-          <td><b><?= $value['divisi']; ?></b></td>
+          <td><b><?= $value['departemen']; ?></b></td>
           <td><?= $value['jabatan']; ?></td>
           <td>
             <a href="<?= base_url('admin/departemen/edit/' .  $value['id_departemen']); ?>" type="button" class="btn btn-primary p-2" id="<?= $value['id_departemen']; ?>">

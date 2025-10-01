@@ -18,19 +18,19 @@ class QRGeneratorTest extends CIUnitTestCase
     {
         parent::setUp();
 
-        $this->db->table('tb_jurusan')->insert([
-            'jurusan' => 'Z',
+        $this->db->table('tb_jabatan')->insert([
+            'jabatan' => 'Z',
         ]);
 
-        $this->db->table('tb_kelas')->insert([
-            'kelas' => 'Z',
-            'id_jurusan' => $this->db->table('tb_jurusan')->get(1)->getRowArray()['id'],
+        $this->db->table('tb_departemen')->insert([
+            'departemen' => 'Z',
+            'id_jabatan' => $this->db->table('tb_jabatan')->get(1)->getRowArray()['id'],
         ]);
 
-        $this->db->table('tb_siswa')->insert([
+        $this->db->table('tb_karyawan')->insert([
             'nis' => '1234567890',
-            'nama_siswa' => 'John Doe',
-            'id_kelas' => $kelasId ?? 1,
+            'nama_karyawan' => 'John Doe',
+            'id_departemen' => $departemenId ?? 1,
             'no_hp' => '081234567890',
             'unique_code' => '1234567890',
         ]);
@@ -38,9 +38,9 @@ class QRGeneratorTest extends CIUnitTestCase
 
     public function testGenerateQrCode(): void
     {
-        $kelas = $this->db->table('tb_kelas')->get(1)->getRowArray();
-        $siswa = $this->db->table('tb_siswa')
-            ->where('id_kelas', $kelas['id_kelas'])
+        $departemen = $this->db->table('tb_departemen')->get(1)->getRowArray();
+        $karyawan = $this->db->table('tb_karyawan')
+            ->where('id_departemen', $departemen['id_departemen'])
             ->get(1)
             ->getRowArray();
 
@@ -48,9 +48,9 @@ class QRGeneratorTest extends CIUnitTestCase
         $generator->setQrCodeFilePath(QRGenerator::UPLOADS_PATH . "test/");
 
         $result = $generator->generate(
-            $siswa['nama_siswa'],
-            $siswa['nis'],
-            $siswa['unique_code']
+            $karyawan['nama_karyawan'],
+            $karyawan['nis'],
+            $karyawan['unique_code']
         );
 
         $this->assertIsString($result);
