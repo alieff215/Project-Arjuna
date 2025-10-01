@@ -1,10 +1,10 @@
-<div id="dataSiswa" class="card-body table-responsive pb-5">
+<div id="dataKaryawan" class="card-body table-responsive pb-5">
    <?php if (!empty($data)) : ?>
       <table class="table table-hover">
          <thead class="text-success">
             <th><b>No.</b></th>
             <th><b>NUPTK</b></th>
-            <th><b>Nama Guru</b></th>
+            <th><b>Nama admin</b></th>
             <th><b>Kehadiran</b></th>
             <th><b>Jam masuk</b></th>
             <th><b>Jam pulang</b></th>
@@ -21,7 +21,7 @@
                <tr>
                   <td><?= $no; ?></td>
                   <td><?= $value['nuptk']; ?></td>
-                  <td><b><?= $value['nama_guru']; ?></b></td>
+                  <td><b><?= $value['nama_admin']; ?></b></td>
                   <td>
                      <p class="p-2 w-100 btn btn-<?= $kehadiran['color']; ?> text-center">
                         <b><?= $kehadiran['text']; ?></b>
@@ -32,7 +32,7 @@
                   <td><?= $value['keterangan'] ?? '-'; ?></td>
                   <td>
                      <?php if (!$lewat) : ?>
-                        <button data-toggle="modal" data-target="#ubahModal" onclick="getDataKehadiran(<?= $value['id_presensi'] ?? '-1'; ?>, <?= $value['id_guru']; ?>)" class="btn btn-info p-2" id="<?= $value['id_guru']; ?>">
+                        <button data-toggle="modal" data-target="#ubahModal" onclick="getDataKehadiran(<?= $value['id_presensi'] ?? '-1'; ?>, <?= $value['id_admin']; ?>)" class="btn btn-info p-2" id="<?= $value['id_admin']; ?>">
                            <i class="material-icons">edit</i>
                            Edit
                         </button>

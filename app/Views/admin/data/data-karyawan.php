@@ -45,7 +45,7 @@
                                     <?php if (!in_array($value['departemen'], $tempDepartemen)) : ?>
                                        <li class="nav-item">
                                           <a class="nav-link" onclick="departemen = '<?= $value['departemen']; ?>'; trig()" href="#" data-toggle="tab">
-                                             <i class="material-icons">school</i> <?= $value['departemen']; ?>
+                                             <i class="material-icons">company</i> <?= $value['departemen']; ?>
                                              <div class="ripple-container"></div>
                                           </a>
                                        </li>

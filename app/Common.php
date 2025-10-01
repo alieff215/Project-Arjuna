@@ -215,8 +215,8 @@ if (!function_exists('removeSpecialCharacters')) {
 if (!function_exists('getLogo')) {
     function getLogo()
     {
-        $schoolConfigurations  = new \Config\School();
-        $generalSettings = $schoolConfigurations::$generalSettings;
+        $companyConfigurations  = new \Config\Company();
+        $generalSettings = $companyConfigurations::$generalSettings;
         if (!empty($generalSettings)) {
             if (!empty($generalSettings->logo) && file_exists(FCPATH . $generalSettings->logo)) {
                 return base_url($generalSettings->logo);

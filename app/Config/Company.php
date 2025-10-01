@@ -6,7 +6,7 @@ namespace Config;
 
 use CodeIgniter\Config\BaseConfig;
 
-class School extends BaseConfig
+class Company extends BaseConfig
 {
     private $db;
 

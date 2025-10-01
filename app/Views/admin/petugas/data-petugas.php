@@ -56,8 +56,8 @@
    </div>
 </div>
 <script>
-   var kelas = null;
-   var jurusan = null;
+   var departemen = null;
+   var jabatan = null;
 
    getDataPetugas();
 

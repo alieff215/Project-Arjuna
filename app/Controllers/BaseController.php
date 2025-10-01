@@ -57,8 +57,8 @@ abstract class BaseController extends Controller
       // Preload any models, libraries, etc, here.
 
       $this->session = \Config\Services::session();
-      $schoolConfigurations  = new \Config\School();
-      $this->generalSettings = $schoolConfigurations::$generalSettings;
+      $companyConfigurations  = new \Config\Company();
+      $this->generalSettings = $companyConfigurations::$generalSettings;
 
 
       // Passing global variable to views

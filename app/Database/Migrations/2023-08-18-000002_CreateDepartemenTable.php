@@ -32,7 +32,7 @@ class CreateDepartemenTable extends Migration
         // primary key
         $this->forge->addKey('id_departemen', primary: TRUE);
 
-        // id_jurusan foreign key
+        // id_jabatan foreign key
         $this->forge->addForeignKey('id_jabatan', 'tb_jabatan', 'id', 'CASCADE', 'NO ACTION');
 
         $this->forge->createTable('tb_departemen', TRUE);
