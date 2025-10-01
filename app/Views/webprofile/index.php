@@ -158,7 +158,7 @@
       const name = document.getElementById("name").value;
       const message = document.getElementById("message").value;
 
-      // Buat elemen testimonial baru
+      // Buat elemen testimonial baruaaaaa
       const newTestimonial = document.createElement("div");
       newTestimonial.className = "bg-white shadow-lg rounded-lg p-6";
       newTestimonial.innerHTML = `
