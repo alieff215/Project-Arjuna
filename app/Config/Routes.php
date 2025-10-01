@@ -13,7 +13,7 @@ $routes = Services::routes();
  * --------------------------------------------------------------------
  */
 $routes->setDefaultNamespace('App\Controllers');
-$routes->setDefaultController('Home');
+$routes->setDefaultController('WebProfile');
 $routes->setDefaultMethod('index');
 $routes->setTranslateURIDashes(false);
 $routes->set404Override();
@@ -33,7 +33,12 @@ $routes->set404Override();
 // route since we don't have to scan directories.
 
 // Scan
-$routes->get('/', 'Scan::index');
+// Web Profile
+$routes->get('/', 'WebProfile::index');
+
+// Login route (sebelumnya default Scan)
+//$routes->get('/login', 'Home::index');
+
 
 $routes->group('scan', function (RouteCollection $routes) {
    $routes->get('', 'Scan::index');
