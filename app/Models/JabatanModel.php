@@ -55,4 +55,9 @@ class JabatanModel extends BaseModel
        }
        return false;
    }
+
+   public function getAllJabatan()
+   {
+       return $this->builder->get()->getResult();
+   }
 }

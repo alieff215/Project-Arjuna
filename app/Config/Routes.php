@@ -1,19 +1,15 @@
 <?php
-
 namespace Config;
-
 use CodeIgniter\Router\RouteCollection;
-
 // Create a new instance of our RouteCollection class.
 $routes = Services::routes();
-
 /*
  * --------------------------------------------------------------------
  * Router Setup
  * --------------------------------------------------------------------
  */
 $routes->setDefaultNamespace('App\Controllers');
-$routes->setDefaultController('WebProfile');
+$routes->setDefaultController('Home');
 $routes->setDefaultMethod('index');
 $routes->setTranslateURIDashes(false);
 $routes->set404Override();
@@ -22,34 +18,20 @@ $routes->set404Override();
 // If you don't want to define all routes, please use the Auto Routing (Improved).
 // Set `$autoRoutesImproved` to true in `app/Config/Feature.php` and set the following to true.
 // $routes->setAutoRoute(false);
-
 /*
  * --------------------------------------------------------------------
  * Route Definitions
  * --------------------------------------------------------------------
  */
-
 // We get a performance increase by specifying the default
 // route since we don't have to scan directories.
-
-// Scan
-// Web Profile
-$routes->get('/', 'WebProfile::index');
-
-// Login route (sebelumnya default Scan)
-//$routes->get('/login', 'Home::index');
-
-
+   $routes->get('/', 'webprofile::index');
 $routes->group('scan', function (RouteCollection $routes) {
    $routes->get('', 'Scan::index');
    $routes->get('masuk', 'Scan::index/Masuk');
    $routes->get('pulang', 'Scan::index/Pulang');
-
    $routes->post('cek', 'Scan::cekKode');
 });
-
-
-
 // Admin
 $routes->group('admin', function (RouteCollection $routes) {
    // Admin dashboard
@@ -76,6 +58,19 @@ $routes->group('admin', function (RouteCollection $routes) {
       $routes->post('editJabatanPost', 'JabatanController::editJabatanPost');
       $routes->post('deleteJabatanPost', 'JabatanController::deleteJabatanPost');
       $routes->post('list-data', 'JabatanController::listData');
+   });
+
+   // Gaji
+   $routes->group('gaji', ['namespace' => 'App\Controllers\Admin'], function ($routes) {
+      $routes->get('/', 'Gaji::index');
+      $routes->get('add', 'Gaji::add');
+      $routes->post('add', 'Gaji::add');
+      $routes->get('edit/(:num)', 'Gaji::edit/$1');
+      $routes->post('edit/(:num)', 'Gaji::edit/$1');
+      $routes->get('delete/(:num)', 'Gaji::delete/$1');
+      $routes->get('rekap', 'Gaji::rekap');
+      $routes->post('rekap', 'Gaji::rekap');
+      $routes->get('export', 'Gaji::export');
    });
 
    // admin lihat data karyawan
@@ -155,15 +150,12 @@ $routes->group('admin', function (RouteCollection $routes) {
    $routes->post('petugas/edit', 'Admin\DataPetugas::updatePetugas');
    // superadmin hapus data petugas
    $routes->delete('petugas/delete/(:any)', 'Admin\DataPetugas::delete/$1');
-
    // Settings
    $routes->group('general-settings', ['namespace' => 'App\Controllers\Admin'], function ($routes) {
       $routes->get('/', 'GeneralSettings::index');
       $routes->post('update', 'GeneralSettings::generalSettingsPost');
    });
 });
-
-
 /*
  * --------------------------------------------------------------------
  * Additional Routing

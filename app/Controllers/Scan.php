@@ -243,4 +243,5 @@ class Scan extends BaseController
       }
       $whatsapp->sendMessage($message);
    }
+   
 }

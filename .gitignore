@@ -24,6 +24,9 @@ $RECYCLE.BIN/
 *.msm
 *.msp
 
+# Environment file
+*.env
+
 # Windows shortcuts
 *.lnk
 
