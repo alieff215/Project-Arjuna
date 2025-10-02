@@ -81,6 +81,18 @@ switch ($context) {
                <p>Generate Laporan</p>
             </a>
          </li>
+         <li class="nav-item <?= $context == 'gaji' ? 'active' : ''; ?>">
+            <a class="nav-link" href="<?= base_url('admin/gaji'); ?>">
+               <i class="material-icons">payments</i>
+               <p>Manajemen Gaji</p>
+            </a>
+         </li>
+         <li class="nav-item <?= $context == 'rekap-gaji' ? 'active' : ''; ?>">
+            <a class="nav-link" href="<?= base_url('admin/gaji/rekap'); ?>">
+               <i class="material-icons">receipt_long</i>
+               <p>Rekap Gaji</p>
+            </a>
+         </li>
          <?php if (user()->toArray()['is_superadmin'] ?? '0' == '1') : ?>
             <li class="nav-item <?= $context == 'petugas' ? 'active' : ''; ?>">
                <a class="nav-link" href="<?= base_url('admin/petugas'); ?>">

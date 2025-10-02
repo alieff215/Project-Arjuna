@@ -19,7 +19,7 @@
         <a href="#products" class="px-4 py-2 text-gray-700 hover:text-blue-600">Products</a>
         <a href="#testimonials" class="px-4 py-2 text-gray-700 hover:text-blue-600">Testimonials</a>
         <a href="#faq" class="px-4 py-2 text-gray-700 hover:text-blue-600">FAQ</a>
-        <a href="#contact" class="ml-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Login</a>
+        <a href="<?= base_url('admin/dashboard'); ?>" class="ml-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Login</a>
       </div>
     </div>
   </nav>
