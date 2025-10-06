@@ -10,14 +10,14 @@
                 </div>
                 <div class="card-body">
                     <?= view('admin/_message_block') ?>
-                    <form action="<?= base_url('admin/gaji/add'); ?>" method="post">
+                    <form action="<?= base_url('admin/gaji/save'); ?>" method="post">
                         <?= csrf_field() ?>
                         <div class="form-group">
                             <label for="id_departemen">Departemen</label>
                             <select name="id_departemen" id="id_departemen" class="form-control" required>
                                 <option value="">Pilih Departemen</option>
                                 <?php foreach ($departemen as $d) : ?>
-                                    <option value="<?= $d->id_departemen; ?>"><?= $d->departemen; ?></option>
+                                    <option value="<?= $d['id_departemen']; ?>"><?= $d['departemen']; ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </div>

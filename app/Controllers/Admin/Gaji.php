@@ -75,15 +75,24 @@ class Gaji extends BaseController
 
     public function rekap()
     {
-        $filter = $this->request->getGet('filter') ?? 'day';
-        $start_date = $this->request->getGet('start_date') ?? date('Y-m-d');
-        $end_date = $this->request->getGet('end_date') ?? date('Y-m-d');
+        $filter      = $this->request->getGet('filter') ?? 'day';
+        $start_date  = $this->request->getGet('start_date') ?? date('Y-m-d');
+        $end_date    = $this->request->getGet('end_date') ?? date('Y-m-d');
+        $min_percentage = $this->request->getGet('min_percentage');
 
-        $data['title'] = 'Rekap Gaji Karyawan';
-        $data['rekap_gaji'] = $this->gajiModel->getRekapGaji($filter, $start_date, $end_date);
-        $data['filter'] = $filter;
-        $data['start_date'] = $start_date;
-        $data['end_date'] = $end_date;
+        // default 0 kalau null/kosong
+        if ($min_percentage === null || $min_percentage === '') {
+            $min_percentage = 0;
+        } else {
+            $min_percentage = (float)$min_percentage;
+        }
+
+        $data['title']        = 'Rekap Gaji Karyawan';
+        $data['rekap_gaji']   = $this->gajiModel->getRekapGaji($filter, $start_date, $end_date);
+        $data['filter']       = $filter;
+        $data['start_date']   = $start_date;
+        $data['end_date']     = $end_date;
+        $data['min_percentage'] = $min_percentage; // ⬅️ kirim ke view
 
         return view('admin/gaji/rekap', $data);
     }
@@ -91,9 +100,67 @@ class Gaji extends BaseController
     public function export()
     {
         $filter = $this->request->getGet('filter') ?? 'day';
-        $start_date = $this->request->getGet('start_date') ?? date('Y-m-d');
-        $end_date = $this->request->getGet('end_date') ?? date('Y-m-d');
+        $start_date = $this->request->getGet('start_date') ?? '';
+        $end_date = $this->request->getGet('end_date') ?? '';
+        $min_percentage = $this->request->getGet('min_percentage') ?? 100;
 
-        return $this->gajiModel->exportToCSV($filter, $start_date, $end_date);
+        // ambil data rekap dari model sesuai filter
+        $rekap_gaji = $this->gajiModel->getRekapGaji($filter, $start_date, $end_date);
+
+        // siapkan nama file
+        $filename = "rekap_gaji_" . date('Ymd_His') . ".csv";
+
+        // set header untuk download CSV
+        header("Content-Description: File Transfer");
+        header("Content-Disposition: attachment; filename=$filename");
+        header("Content-Type: application/csv; ");
+
+        // buka output buffer untuk menulis CSV
+        $file = fopen('php://output', 'w');
+
+        // header kolom CSV
+        $header = ["No", "Nama Karyawan", "Departemen", "Jabatan", "Jumlah Kehadiran", "Total Jam", "Gaji Per Jam", "Total Gaji (setelah potongan)", "Persentase"];
+        fputcsv($file, $header);
+
+        $i = 1;
+        foreach ($rekap_gaji as $rg) {
+            $gaji_setelah_persen = $rg['total_gaji'] * ($min_percentage / 100);
+
+            $row = [
+                $i++,
+                $rg['nama_karyawan'],
+                $rg['departemen'],
+                $rg['jabatan'],
+                $rg['jumlah_kehadiran'],
+                $rg['total_jam'] . " jam",
+                $rg['gaji_per_jam'],
+                $gaji_setelah_persen,
+                $min_percentage . "%"
+            ];
+
+            fputcsv($file, $row);
+        }
+
+        fclose($file);
+        exit;
+    }
+
+    public function save()
+    {
+        $id_departemen = $this->request->getPost('id_departemen');
+        $id_jabatan    = $this->request->getPost('id_jabatan');
+        $gaji_per_jam  = $this->request->getPost('gaji_per_jam');
+
+        $data = [
+            'id_departemen' => $id_departemen,
+            'id_jabatan'    => $id_jabatan,
+            'gaji_per_jam'  => $gaji_per_jam,
+            'tanggal_update' => date('Y-m-d H:i:s')
+        ];
+
+        $this->gajiModel->insert($data);
+
+        return redirect()->to(base_url('admin/gaji'))
+            ->with('message', 'Data gaji berhasil ditambahkan.');
     }
 }

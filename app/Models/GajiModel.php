@@ -9,6 +9,15 @@ class GajiModel extends BaseModel
    protected $builder;
    protected $builderKaryawan;
    protected $builderKehadiran;
+   protected $table = 'tb_gaji'; // ganti dengan nama tabelmu
+   protected $primaryKey = 'id_gaji'; // ganti dengan primary key tabel
+
+    protected $allowedFields = [
+        'id_departemen',
+        'id_jabatan',
+        'gaji_per_jam',
+        'tanggal_update',
+    ];
 
    public function __construct()
    {
