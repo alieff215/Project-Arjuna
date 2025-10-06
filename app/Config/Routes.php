@@ -71,6 +71,8 @@ $routes->group('admin', function (RouteCollection $routes) {
       $routes->get('rekap', 'Gaji::rekap');
       $routes->post('rekap', 'Gaji::rekap');
       $routes->get('export', 'Gaji::export');
+      $routes->post('save', 'Gaji::save');
+
    });
 
    // admin lihat data karyawan

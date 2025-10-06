@@ -6,6 +6,9 @@ switch ($context) {
    case 'departemen':
       $sidebarColor = 'purple';
       break;
+   case 'gaji':
+      $sidebarColor = 'purple';
+      break;   
    case 'absen-admin':
    case 'admin':
       $sidebarColor = 'green';
@@ -65,7 +68,7 @@ switch ($context) {
          </li>
          <li class="nav-item <?= $context == 'departemen' ? 'active' : ''; ?>">
             <a class="nav-link" href="<?= base_url('admin/departemen'); ?>">
-               <i class="material-icons">school</i>
+               <i class="material-icons">business</i>
                <p>Data Departemen & Jabatan</p>
             </a>
          </li>
@@ -85,12 +88,6 @@ switch ($context) {
             <a class="nav-link" href="<?= base_url('admin/gaji'); ?>">
                <i class="material-icons">payments</i>
                <p>Manajemen Gaji</p>
-            </a>
-         </li>
-         <li class="nav-item <?= $context == 'rekap-gaji' ? 'active' : ''; ?>">
-            <a class="nav-link" href="<?= base_url('admin/gaji/rekap'); ?>">
-               <i class="material-icons">receipt_long</i>
-               <p>Rekap Gaji</p>
             </a>
          </li>
          <?php if (user()->toArray()['is_superadmin'] ?? '0' == '1') : ?>
