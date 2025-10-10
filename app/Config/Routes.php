@@ -157,6 +157,15 @@ $routes->group('admin', function (RouteCollection $routes) {
       $routes->get('/', 'GeneralSettings::index');
       $routes->post('update', 'GeneralSettings::generalSettingsPost');
    });
+   // ================= INVENTORY =================
+   $routes->group('inventory', ['namespace' => 'App\Controllers\Admin'], function ($routes) {
+      $routes->get('/', 'InventoryController::index');
+      $routes->get('create', 'InventoryController::create');
+      $routes->post('store', 'InventoryController::store');
+      $routes->get('detail/(:num)', 'InventoryController::detail/$1');
+      $routes->post('updateProcess/(:num)', 'InventoryController::updateProcess/$1');
+      $routes->get('history', 'InventoryController::history');
+   });
 });
 /*
  * --------------------------------------------------------------------
