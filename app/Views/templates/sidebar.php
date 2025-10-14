@@ -97,6 +97,12 @@ switch ($context) {
                   <p>Data Petugas</p>
                </a>
             </li>
+            <li class="nav-item <?= $context == 'inventory' ? 'active' : ''; ?>">
+            <a class="nav-link" href="<?= base_url('admin/inventory'); ?>">
+               <i class="material-icons">inventory</i>
+               <p>Inventory</p>
+            </a>
+         </li>
             <li class="nav-item <?= $context == 'general_settings' ? 'active' : ''; ?>">
                <a class="nav-link" href="<?= base_url('admin/general-settings'); ?>">
                   <i class="material-icons">settings</i>

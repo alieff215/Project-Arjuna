@@ -1,64 +1,50 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Detail Inventory</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <style>
-    body {
-      background-color: #f5f6fa;
-      font-family: 'Segoe UI', sans-serif;
-      color: #2f3640;
-    }
-    .container {
-      max-width: 1200px;
-    }
-    .card {
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-      overflow: hidden;
-      margin-bottom: 2rem;
-    }
-    .card-header {
-      font-weight: 600;
-      letter-spacing: 0.3px;
-    }
-    .table th {
-      background-color: #f1f2f6;
-      font-weight: 600;
-    }
-    .table td {
-      vertical-align: middle;
-    }
-    .table-dark th {
-      background-color: #2f3640 !important;
-    }
-    .badge {
-      font-size: 0.85rem;
-      padding: 0.5em 0.8em;
-    }
-    h3 {
-      color: #273c75;
-      font-weight: 700;
-    }
-    .btn-custom {
-      border-radius: 8px;
-      font-weight: 500;
-    }
-    #exportPDF {
-      background-color: #fff;
-      border: 1px solid #ced6e0;
-    }
-    #exportPDF:hover {
-      background-color: #f1f2f6;
-    }
-  </style>
-</head>
+<?= $this->extend('templates/admin_page_layout'); ?>
 
-<body class="p-4">
-  <div class="container" id="export-area">
+<?= $this->section('content'); ?>
+<style>
+  .card {
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+    margin-bottom: 2rem;
+  }
+  .card-header {
+    font-weight: 600;
+    letter-spacing: 0.3px;
+  }
+  .table th {
+    background-color: #f1f2f6;
+    font-weight: 600;
+  }
+  .table td {
+    vertical-align: middle;
+  }
+  .table-dark th {
+    background-color: #2f3640 !important;
+  }
+  .badge {
+    font-size: 0.85rem;
+    padding: 0.5em 0.8em;
+  }
+  h3 {
+    color: #273c75;
+    font-weight: 700;
+  }
+  .btn-custom {
+    border-radius: 8px;
+    font-weight: 500;
+  }
+  #exportPDF {
+    background-color: #fff;
+    border: 1px solid #ced6e0;
+  }
+  #exportPDF:hover {
+    background-color: #f1f2f6;
+  }
+</style>
+
+<div class="content">
+  <div class="container-fluid" id="export-area">
     <!-- Header -->
     <div class="card border-0 shadow-sm">
       <div class="card-body">
@@ -639,26 +625,32 @@
   </div>
   <?php endif; ?>
 
-  <!-- Script Ekspor PDF -->
-  <script>
-    document.getElementById("exportPDF").addEventListener("click", async () => {
-      const { jsPDF } = window.jspdf;
-      const pdf = new jsPDF("p", "pt", "a4");
-      const element = document.getElementById("export-area");
+  </div>
+</div>
 
-      await html2canvas(element, { scale: 2, useCORS: true }).then((canvas) => {
-        const imgData = canvas.toDataURL("image/png");
-        const imgProps = pdf.getImageProperties(imgData);
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+<?= $this->section('scripts'); ?>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+  document.getElementById("exportPDF").addEventListener("click", async () => {
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF("p", "pt", "a4");
+    const element = document.getElementById("export-area");
 
-        pdf.setFontSize(16);
-        pdf.text("Laporan Detail Inventory", pdfWidth / 2, 30, { align: "center" });
-        pdf.text("<?= esc($inventory['order_name']) ?>", pdfWidth / 2, 50, { align: "center" });
-        pdf.addImage(imgData, "PNG", 0, 60, pdfWidth, pdfHeight);
-        pdf.save("Detail_Inventory_<?= esc($inventory['order_name']) ?>.pdf");
-      });
+    await html2canvas(element, { scale: 2, useCORS: true }).then((canvas) => {
+      const imgData = canvas.toDataURL("image/png");
+      const imgProps = pdf.getImageProperties(imgData);
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+      pdf.setFontSize(16);
+      pdf.text("Laporan Detail Inventory", pdfWidth / 2, 30, { align: "center" });
+      pdf.text("<?= esc($inventory['order_name']) ?>", pdfWidth / 2, 50, { align: "center" });
+      pdf.addImage(imgData, "PNG", 0, 60, pdfWidth, pdfHeight);
+      pdf.save("Detail_Inventory_<?= esc($inventory['order_name']) ?>.pdf");
     });
-  </script>
-</body>
-</html>
+  });
+</script>
+<?= $this->endSection(); ?>
+
+<?= $this->endSection(); ?>

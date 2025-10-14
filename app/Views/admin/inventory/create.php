@@ -1,12 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Tambah Inventory</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="p-4">
-  <div class="container">
+<?= $this->extend('templates/admin_page_layout'); ?>
+
+<?= $this->section('content'); ?>
+<div class="content">
+  <div class="container-fluid">
     <h3 class="mb-3">Tambah Inventory Baru</h3>
     <form method="post" action="/admin/inventory/store">
       <div class="row">
@@ -48,5 +44,6 @@
       <a href="/admin/inventory" class="btn btn-secondary mt-4">Kembali</a>
     </form>
   </div>
-</body>
-</html>
+</div>
+</div>
+<?= $this->endSection(); ?>
