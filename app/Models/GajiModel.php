@@ -11,6 +11,7 @@ class GajiModel extends BaseModel
    protected $builderKehadiran;
    protected $table = 'tb_gaji'; // ganti dengan nama tabelmu
    protected $primaryKey = 'id_gaji'; // ganti dengan primary key tabel
+   protected $returnType = 'object';
 
     protected $allowedFields = [
         'id_departemen',
@@ -44,15 +45,24 @@ class GajiModel extends BaseModel
       return $this->builder->insert($data);
    }
 
-   public function editGaji($id)
-   {
-      $gaji = $this->getGaji($id);
-      if (!empty($gaji)) {
-         $data = $this->inputValues();
-         return $this->builder->where('id_gaji', $gaji->id_gaji)->update($data);
+  // opsi B (builder baru, tidak reuse $this->builder)
+  public function editGaji(int $id, array $data): int
+  {
+      if (empty($data['tanggal_update'])) {
+          $data['tanggal_update'] = date('Y-m-d H:i:s');
       }
-      return false;
-   }
+
+      if (!$this->find($id)) {
+          return -1; // tidak ketemu
+      }
+
+      $this->db->table('tb_gaji')
+          ->where('id_gaji', $id)
+          ->update($data);
+
+      return $this->db->affectedRows(); // 0 kalau nilainya sama
+  }
+
 
    public function getDataGaji()
    {
@@ -65,14 +75,13 @@ class GajiModel extends BaseModel
    }
 
    public function getGaji($id)
-   {
-      return $this->builder
-         ->join('tb_departemen', 'tb_gaji.id_departemen = tb_departemen.id_departemen')
-         ->join('tb_jabatan', 'tb_gaji.id_jabatan = tb_jabatan.id')
-         ->where('id_gaji', cleanNumber($id))
-         ->get()
-         ->getRow();
-   }
+    {
+        return $this->db->table('tb_gaji')
+            ->join('tb_departemen','tb_gaji.id_departemen=tb_departemen.id_departemen')
+            ->join('tb_jabatan','tb_gaji.id_jabatan=tb_jabatan.id')
+            ->where('tb_gaji.id_gaji', (int)$id)
+            ->get()->getRow(); // object
+    }
 
    public function getGajiByDepartemenJabatan($id_departemen, $id_jabatan)
    {
@@ -116,8 +125,8 @@ class GajiModel extends BaseModel
       $query = $this->db->query("
          SELECT 
             k.id_karyawan,
-            k.nama_karyawan,
             k.nis,
+            k.nama_karyawan,
             d.departemen,
             j.jabatan,
             COUNT(pk.id_presensi) as jumlah_kehadiran,

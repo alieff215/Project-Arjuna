@@ -1,6 +1,6 @@
 <?= $this->extend('templates/admin_page_layout'); ?>
 
-<?= $this::section('content'); ?>
+<?= $this->section('content'); ?>
 <div class="container-fluid">
     <div class="row">
         <div class="col-12">
@@ -9,47 +9,30 @@
                     <h6 class="m-0 font-weight-bold text-primary">Edit Gaji</h6>
                 </div>
                 <div class="card-body">
-                    <?= view('admin/_message_block') ?>
                     <form action="<?= base_url('admin/gaji/edit/' . $gaji->id_gaji); ?>" method="post">
                         <?= csrf_field() ?>
-                        <input type="hidden" name="id_gaji" value="<?= $gaji->id_gaji; ?>">
-                        
-                        <!-- Departemen -->
                         <div class="form-group">
                             <label for="id_departemen">Departemen</label>
                             <select name="id_departemen" id="id_departemen" class="form-control" required>
                                 <option value="">Pilih Departemen</option>
-                                <?php foreach ($departemen as $d): ?>
-                                    <option value="<?= $d->id_departemen; ?>"
-                                        <?= ($d->id_departemen == $gaji->id_departemen) ? 'selected' : ''; ?>>
-                                        <?= $d->departemen; ?>
-                                    </option>
+                                <?php foreach ($departemen as $d) : ?>
+                                    <option value="<?= $d->id_departemen; ?>" <?= ($d->id_departemen == $gaji->id_departemen) ? 'selected' : ''; ?>><?= $d->departemen; ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
-
-                        <!-- Jabatan -->
                         <div class="form-group">
                             <label for="id_jabatan">Jabatan</label>
                             <select name="id_jabatan" id="id_jabatan" class="form-control" required>
                                 <option value="">Pilih Jabatan</option>
-                                <?php foreach ($jabatan as $j): ?>
-                                    <option value="<?= $j->id; ?>"
-                                        <?= ($j->id == $gaji->id_jabatan) ? 'selected' : ''; ?>>
-                                        <?= $j->jabatan; ?>
-                                    </option>
+                                <?php foreach ($jabatan as $j) : ?>
+                                    <option value="<?= $j->id; ?>" <?= ($j->id == $gaji->id_jabatan) ? 'selected' : ''; ?>><?= $j->jabatan; ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
-
-                        <!-- Gaji -->
                         <div class="form-group">
                             <label for="gaji_per_jam">Gaji Per Jam (Rp)</label>
-                            <input type="number" class="form-control" id="gaji_per_jam"
-                                   name="gaji_per_jam" value="<?= $gaji->gaji_per_jam; ?>" 
-                                   min="0" step="100" required>
+                            <input type="number" class="form-control" id="gaji_per_jam" name="gaji_per_jam" value="<?= $gaji->gaji_per_jam; ?>" required>
                         </div>
-
                         <button type="submit" class="btn btn-primary">Simpan</button>
                         <a href="<?= base_url('admin/gaji'); ?>" class="btn btn-secondary">Kembali</a>
                     </form>

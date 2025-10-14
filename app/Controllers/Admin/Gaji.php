@@ -46,25 +46,45 @@ class Gaji extends BaseController
     }
 
     public function edit($id)
-    {
-        if ($this->request->getMethod() === 'post') {
-            $this->gajiModel->editGaji($id);
-            session()->setFlashdata('success', 'Gaji berhasil diperbarui');
+{
+    if ($this->request->getMethod() === 'post') {
+        $payload = [
+            'id_departemen'  => (int)$this->request->getPost('id_departemen'),
+            'id_jabatan'     => (int)$this->request->getPost('id_jabatan'),
+            'gaji_per_jam'   => $this->request->getPost('gaji_per_jam'),
+            'tanggal_update' => date('Y-m-d H:i:s'),
+        ];
+
+        $affected = $this->gajiModel->editGaji((int)$id, $payload);
+
+        if ($affected === -1) {
+            session()->setFlashdata('error', 'Data gaji tidak ditemukan.');
+            return redirect()->to(base_url('admin/gaji'));
+        }
+        if ($affected === 0) {
+            // tidak ada nilai yang berubah (sama persis) — ini bukan error DB
+            session()->setFlashdata('info', 'Tidak ada perubahan (nilai sama seperti sebelumnya).');
             return redirect()->to(base_url('admin/gaji'));
         }
 
-        $data['title'] = 'Edit Gaji';
-        $data['gaji'] = $this->gajiModel->getGaji($id);
-        $data['departemen'] = $this->departemenModel->getAllDepartemen();
-        $data['jabatan'] = $this->jabatanModel->getAllJabatan();
-
-        if (empty($data['gaji'])) {
-            session()->setFlashdata('error', 'Gaji tidak ditemukan');
-            return redirect()->to(base_url('admin/gaji'));
-        }
-
-        return view('admin/gaji/edit', $data);
+        session()->setFlashdata('success', 'Gaji berhasil diperbarui');
+        return redirect()->to(base_url('admin/gaji'));
     }
+
+    // GET: tampilkan form
+    $data['title']      = 'Edit Gaji';
+    $data['gaji']       = $this->gajiModel->getGaji($id);         // object
+    $data['departemen'] = $this->departemenModel->getAllDepartemen(); // sebaiknya object (getResult())
+    $data['jabatan']    = $this->jabatanModel->getAllJabatan();      // sebaiknya object (getResult())
+
+    if (empty($data['gaji'])) {
+        session()->setFlashdata('error', 'Gaji tidak ditemukan');
+        return redirect()->to(base_url('admin/gaji'));
+    }
+
+    return view('admin/gaji/edit', $data);
+}
+
 
     public function delete($id)
     {
