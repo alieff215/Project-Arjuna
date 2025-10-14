@@ -27,7 +27,7 @@
                      <?php endif; ?>
 
                      <div class="form-group mt-4">
-                        <label for="nis">NIS</label>
+                        <label for="nis">NIP</label>
                         <input type="text" id="nis" class="form-control <?= $validation->getError('nis') ? 'is-invalid' : ''; ?>" name="nis" placeholder="1234" value="<?= old('nis') ?? $oldInput['nis']  ?? '' ?>">
                         <div class="invalid-feedback">
                            <?= $validation->getError('nis'); ?>

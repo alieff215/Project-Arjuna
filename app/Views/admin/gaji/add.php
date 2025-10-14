@@ -12,28 +12,26 @@
                     <?= view('admin/_message_block') ?>
                     <form action="<?= base_url('admin/gaji/save'); ?>" method="post">
                         <?= csrf_field() ?>
+
+                        <!-- Dropdown gabungan Departemen & Jabatan -->
                         <div class="form-group">
-                            <label for="id_departemen">Departemen</label>
+                            <label for="id_departemen">Departemen & Jabatan</label>
                             <select name="id_departemen" id="id_departemen" class="form-control" required>
-                                <option value="">Pilih Departemen</option>
+                                <option value="">Pilih Departemen & Jabatan</option>
                                 <?php foreach ($departemen as $d) : ?>
-                                    <option value="<?= $d['id_departemen']; ?>"><?= $d['departemen']; ?></option>
+                                    <option value="<?= $d['id_departemen']; ?>">
+                                        <?= $d['departemen']; ?> - <?= $d['jabatan']; ?>
+                                    </option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
-                        <div class="form-group">
-                            <label for="id_jabatan">Jabatan</label>
-                            <select name="id_jabatan" id="id_jabatan" class="form-control" required>
-                                <option value="">Pilih Jabatan</option>
-                                <?php foreach ($jabatan as $j) : ?>
-                                    <option value="<?= $j->id; ?>"><?= $j->jabatan; ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
+
+                        <!-- Gaji -->
                         <div class="form-group">
                             <label for="gaji_per_jam">Gaji Per Jam (Rp)</label>
                             <input type="number" class="form-control" id="gaji_per_jam" name="gaji_per_jam" required>
                         </div>
+
                         <button type="submit" class="btn btn-primary">Simpan</button>
                         <a href="<?= base_url('admin/gaji'); ?>" class="btn btn-secondary">Kembali</a>
                     </form>

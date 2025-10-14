@@ -133,6 +133,7 @@
                                 <thead>
                                     <tr>
                                         <th>No</th>
+                                        <th>NIP</th>
                                         <th>Nama Karyawan</th>
                                         <th>Departemen</th>
                                         <th>Jabatan</th>
@@ -160,6 +161,7 @@
                                         ?>
                                         <tr>
                                             <td><?= $i++; ?></td>
+                                            <td><?= $rg['nis']; ?></td>
                                             <td><?= $rg['nama_karyawan']; ?></td>
                                             <td><?= $rg['departemen']; ?></td>
                                             <td><?= $rg['jabatan']; ?></td>
@@ -172,7 +174,7 @@
                                     <?php endforeach; ?>
                                 <tfoot>
                                     <tr>
-                                        <th colspan="7" class="text-right">Total Gaji (Setelah Potongan <?= $persentase_filter; ?>%):</th>
+                                        <th colspan="7" class="text-right">Total Gaji <?= $persentase_filter; ?>%:</th>
                                         <th>Rp <?= number_format($totalFilteredGaji, 0, ',', '.'); ?></th>
                                         <th><?= $persentase_filter; ?>%</th>
                                     </tr>

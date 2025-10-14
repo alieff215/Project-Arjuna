@@ -86,6 +86,6 @@ class DepartemenModel extends BaseModel
 
    public function getAllDepartemen()
    {
-      return $this->join('tb_jabatan', 'tb_departemen.id_jabatan = tb_jabatan.id', 'left')->findAll();
+      return $this->builder->join('tb_jabatan', 'tb_departemen.id_jabatan = tb_jabatan.id', 'left')->get()->getResult();
    }
 }

@@ -108,6 +108,34 @@ class PresensiKaryawanModel extends Model implements PresensiInterface
       }
    }
 
+   public function getPresensiAllDepartemenTanggal($tanggal)
+   {
+      return $this->setTable('tb_karyawan')
+         ->select('*')
+         ->join(
+            "(SELECT id_presensi, id_karyawan AS id_karyawan_presensi, tanggal, jam_masuk, jam_keluar, id_kehadiran, keterangan FROM tb_presensi_karyawan)tb_presensi_karyawan",
+            "{$this->table}.id_karyawan = tb_presensi_karyawan.id_karyawan_presensi AND tb_presensi_karyawan.tanggal = '$tanggal'",
+            'left'
+         )
+         ->join(
+            'tb_kehadiran',
+            'tb_presensi_karyawan.id_kehadiran = tb_kehadiran.id_kehadiran',
+            'left'
+         )
+         ->join(
+            'tb_departemen',
+            'tb_karyawan.id_departemen = tb_departemen.id_departemen',
+            'left'
+         )
+         ->join(
+            'tb_jabatan',
+            'tb_departemen.id_jabatan = tb_jabatan.id',
+            'left'
+         )
+         ->orderBy("tb_departemen.departemen, tb_jabatan.jabatan, nama_karyawan")
+         ->findAll();
+   }
+
    public function updatePresensi(
       $idPresensi,
       $idKaryawan,

@@ -636,7 +636,7 @@
                  </div>
                  <div class="panel__foot">
                      <span>Jumlah kehadiran admin dalam 7 hari terakhir.</span>
-                     <a href="<?= base_url('admin/absen-Admin'); ?>" style="text-decoration:none;color:var(--success)">
+                     <a href="<?= base_url('admin/absen-admin'); ?>" style="text-decoration:none;color:var(--success)">
                          <i class="material-icons" style="vertical-align:middle;margin-right:6px;">query_stats</i>Lihat data
                      </a>
                  </div>

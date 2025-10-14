@@ -119,7 +119,7 @@
                   <input type="checkbox" class="checkbox-table" id="checkAll">
                </th>
                <th class="sticky-top"><b>No</b></th>
-               <th class="sticky-top"><b>NIS</b></th>
+               <th class="sticky-top"><b>NIP</b></th>
                <th class="sticky-top"><b>Nama Karyawan</b></th>
                <th class="sticky-top"><b>Jenis Kelamin</b></th>
                <th class="sticky-top"><b>Departemen</b></th>
@@ -136,7 +136,7 @@
                      <input type="checkbox" name="checkbox-table" class="checkbox-table" value="<?= $value['id_karyawan']; ?>">
                   </td>
                   <td data-label="No"><?= $i; ?></td>
-                  <td data-label="NIS"><?= $value['nis']; ?></td>
+                  <td data-label="NIP"><?= $value['nis']; ?></td>
                   <td data-label="Nama Karyawan"><b><?= $value['nama_karyawan']; ?></b></td>
                   <td data-label="Jenis Kelamin"><?= $value['jenis_kelamin']; ?></td>
                   <td data-label="Departemen"><?= $value['departemen']; ?></td>
