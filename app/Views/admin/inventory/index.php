@@ -25,7 +25,7 @@
           <th>#</th>
           <th>Brand</th>
           <th>Order</th>
-          <th>progress</th>
+          <th>Progress</th>
           <th>Status</th>
           <th>Aksi</th>
         </tr>
@@ -36,9 +36,28 @@
           <td><?= $i + 1 ?></td>
           <td><?= esc($inv['brand']) ?></td>
           <td><?= esc($inv['order_name']) ?></td>
-          <td><?= $inv['progress_percent'] ?? 0 ?>%</td>
-          <td><span class="badge bg-<?= $inv['status'] == 'done' ? 'success' : 'warning' ?>">
-              <?= ucfirst($inv['status']) ?></span></td>
+          <td>
+            <div class="progress" style="height: 25px;">
+              <div class="progress-bar <?= ($inv['is_completed'] ?? false) ? 'bg-success' : 'bg-info' ?>" 
+                   role="progressbar" 
+                   style="width: <?= $inv['progress_percent'] ?? 0 ?>%;" 
+                   aria-valuenow="<?= $inv['progress_percent'] ?? 0 ?>" 
+                   aria-valuemin="0" 
+                   aria-valuemax="100">
+                <strong><?= $inv['progress_percent'] ?? 0 ?>%</strong>
+              </div>
+            </div>
+            <small class="text-muted">
+              <?= $inv['finishing_qty'] ?? 0 ?> / <?= $inv['total_target'] ?? 0 ?> pcs
+            </small>
+          </td>
+          <td>
+            <?php if ($inv['is_completed'] ?? false): ?>
+              <span class="badge bg-success fs-6">✅ Selesai</span>
+            <?php else: ?>
+              <span class="badge bg-warning text-dark fs-6">⏳ Progress</span>
+            <?php endif; ?>
+          </td>
           <td>
             <a href="/admin/inventory/detail/<?= $inv['id'] ?>" class="btn btn-sm btn-info">Detail</a>
           </td>
