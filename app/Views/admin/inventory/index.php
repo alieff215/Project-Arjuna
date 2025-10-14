@@ -1,12 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Inventory List</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="p-4">
-  <div class="container">
+<?= $this->extend('templates/admin_page_layout'); ?>
+
+<?= $this->section('content'); ?>
+<div class="content">
+  <div class="container-fluid">
     <h3 class="mb-3">Daftar Inventory</h3>
     <a href="/admin/inventory/create" class="btn btn-primary mb-3">Tambah Inventory</a>
     <form method="get" class="mb-3">
@@ -66,5 +62,6 @@
       </tbody>
     </table>
   </div>
-</body>
-</html>
+</div>
+</div>
+<?= $this->endSection(); ?>

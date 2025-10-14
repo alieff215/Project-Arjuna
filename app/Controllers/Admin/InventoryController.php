@@ -2,10 +2,10 @@
 
 namespace App\Controllers\Admin;
 
+use App\Controllers\BaseController;
 use App\Models\InventoryModel;
-use CodeIgniter\Controller;
 
-class InventoryController extends Controller
+class InventoryController extends BaseController
 {
     protected $inventory;
 
@@ -39,6 +39,8 @@ class InventoryController extends Controller
             $item['is_completed'] = $totalQty >= $totalTarget;
         }
 
+        $data['title'] = 'Inventory Management';
+        $data['context'] = 'inventory';
         return view('admin/inventory/index', $data);
     }
 
@@ -47,7 +49,9 @@ class InventoryController extends Controller
     // ===========================
     public function create()
     {
-        return view('admin/inventory/create');
+        $data['title'] = 'Tambah Inventory';
+        $data['context'] = 'inventory';
+        return view('admin/inventory/create', $data);
     }
 
     // ===========================
@@ -132,6 +136,8 @@ class InventoryController extends Controller
             'progress_percent' => $progressPercent,
             'hasTodayLog'      => $hasTodayLog,
             'histories'        => $histories,
+            'title'            => 'Detail Inventory: ' . $inventory['order_name'],
+            'context'          => 'inventory',
         ];
 
         return view('admin/inventory/detail', $data);
@@ -271,6 +277,8 @@ class InventoryController extends Controller
     public function history()
     {
         $data['histories'] = $this->inventory->where('status', 'done')->findAll();
+        $data['title'] = 'History Inventory';
+        $data['context'] = 'inventory';
         return view('admin/inventory/history', $data);
     }
 }
