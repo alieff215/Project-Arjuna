@@ -107,45 +107,154 @@
         <h5 class="mb-0">🛠️ Update Progres</h5>
       </div>
       <div class="card-body">
+        <!-- Alert peringatan jika melebihi target -->
+        <?php
+          $cuttingExceeded = $inventory['cutting_qty'] > $inventory['cutting_target'];
+          $produksiExceeded = $inventory['produksi_qty'] > $inventory['produksi_target'];
+          $finishingExceeded = $inventory['finishing_qty'] > $inventory['finishing_target'];
+          
+          if ($cuttingExceeded || $produksiExceeded || $finishingExceeded):
+        ?>
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+          <h6 class="alert-heading"> Input sudah Melebihi Target</h6>
+          <ul class="mb-0">
+            <?php if ($cuttingExceeded): ?>
+              <li>Cutting: <?= $inventory['cutting_qty'] ?> (Target: <?= $inventory['cutting_target'] ?>)</li>
+            <?php endif; ?>
+            <?php if ($produksiExceeded): ?>
+              <li>Produksi: <?= $inventory['produksi_qty'] ?> (Target: <?= $inventory['produksi_target'] ?>)</li>
+            <?php endif; ?>
+            <?php if ($finishingExceeded): ?>
+              <li>Finishing: <?= $inventory['finishing_qty'] ?> (Target: <?= $inventory['finishing_target'] ?>)</li>
+            <?php endif; ?>
+          </ul>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <?php endif; ?>
         <form method="post" action="/admin/inventory/updateProcess/<?= $inventory['id'] ?>">
           <div class="row g-3">
             <div class="col-md-4">
               <label class="form-label fw-semibold">Cutting (Qty)</label>
-              <input type="number" name="cutting_qty" value="<?= $inventory['cutting_qty'] ?>" class="form-control">
+              <input type="number" name="cutting_qty" value="<?= $inventory['cutting_qty'] ?>" 
+                     class="form-control <?= $cuttingExceeded ? 'border-warning' : '' ?>"
+                     <?= $cuttingExceeded ? 'title="⚠️ Melebihi target: ' . $inventory['cutting_target'] . '"' : '' ?>>
+              <?php if ($cuttingExceeded): ?>
+                <small class="text-warning">⚠️ Melebihi target (<?= $inventory['cutting_target'] ?>)</small>
+              <?php endif; ?>
             </div>
             <div class="col-md-4">
               <label class="form-label fw-semibold">Produksi (Qty)</label>
-              <input type="number" name="produksi_qty" value="<?= $inventory['produksi_qty'] ?>" class="form-control">
+              <input type="number" name="produksi_qty" value="<?= $inventory['produksi_qty'] ?>" 
+                     class="form-control <?= $produksiExceeded ? 'border-warning' : '' ?>"
+                     <?= $produksiExceeded ? 'title="⚠️ Melebihi target: ' . $inventory['produksi_target'] . '"' : '' ?>>
+              <?php if ($produksiExceeded): ?>
+                <small class="text-warning">⚠️ Melebihi target (<?= $inventory['produksi_target'] ?>)</small>
+              <?php endif; ?>
             </div>
             <div class="col-md-4">
               <label class="form-label fw-semibold">Finishing (Qty)</label>
-              <input type="number" name="finishing_qty" value="<?= $inventory['finishing_qty'] ?>" class="form-control">
+              <input type="number" name="finishing_qty" value="<?= $inventory['finishing_qty'] ?>" 
+                     class="form-control <?= $finishingExceeded ? 'border-warning' : '' ?>"
+                     <?= $finishingExceeded ? 'title="⚠️ Melebihi target: ' . $inventory['finishing_target'] . '"' : '' ?>>
+              <?php if ($finishingExceeded): ?>
+                <small class="text-warning">⚠️ Melebihi target (<?= $inventory['finishing_target'] ?>)</small>
+              <?php endif; ?>
             </div>
           </div>
-          <button class="btn btn-primary mt-4 btn-custom px-4">💾 Simpan Perubahan</button>
+          <button class="btn btn-primary mt-4 btn-custom px-4">
+            <?= isset($hasTodayLog) && $hasTodayLog ? '✏️ Simpan Koreksi Hari Ini' : '💾 Simpan Perubahan' ?>
+          </button>
         </form>
       </div>
     </div>
 
     <?php
-      $cutting_income = $inventory['cutting_qty'] * $inventory['cutting_price_per_pcs'];
-      $produksi_income = $inventory['produksi_qty'] * $inventory['produksi_price_per_pcs'];
-      $finishing_income = $inventory['finishing_qty'] * $inventory['finishing_price_per_pcs'];
-      $total_income = $cutting_income + $produksi_income + $finishing_income;
+      // Hitung pendapatan HARI INI berdasarkan update progres terbaru pada hari ini
+      $today = date('Y-m-d');
+
+      $latestTodayCut = null; $latestTodayProd = null; $latestTodayFin = null;
+      $prevBeforeCut = 0; $prevBeforeProd = 0; $prevBeforeFin = 0;
+
+      if (isset($logs) && is_array($logs) && count($logs) > 0) {
+        foreach ($logs as $log) {
+          if ($log['created_at'] === $today) {
+            // Ambil qty terbesar di hari ini (update terakhir umumnya qty terbesar)
+            $latestTodayCut = max((int)($latestTodayCut ?? 0), (int)$log['cutting_qty']);
+            $latestTodayProd = max((int)($latestTodayProd ?? 0), (int)$log['produksi_qty']);
+            $latestTodayFin = max((int)($latestTodayFin ?? 0), (int)$log['finishing_qty']);
+          } else {
+            // Karena $logs diurutkan DESC, entri pertama yang bukan hari ini adalah qty terakhir sebelum hari ini
+            if ($prevBeforeCut === 0 && $prevBeforeProd === 0 && $prevBeforeFin === 0) {
+              $prevBeforeCut = (int)$log['cutting_qty'];
+              $prevBeforeProd = (int)$log['produksi_qty'];
+              $prevBeforeFin = (int)$log['finishing_qty'];
+            }
+          }
+        }
+      }
+
+      // Hitung delta (selisih) harian - ini yang akan ditampilkan di kolom Qty
+      $deltaCut = 0; $deltaProd = 0; $deltaFin = 0;
+      
+      if ($latestTodayCut !== null) {
+        $deltaCut = max(0, $latestTodayCut - (int)$prevBeforeCut);
+      }
+      if ($latestTodayProd !== null) {
+        $deltaProd = max(0, $latestTodayProd - (int)$prevBeforeProd);
+      }
+      if ($latestTodayFin !== null) {
+        $deltaFin = max(0, $latestTodayFin - (int)$prevBeforeFin);
+      }
+
+      // Untuk capaian, gunakan qty kumulatif terakhir hari ini (bukan delta)
+      $cuttingQtyToday = ($latestTodayCut !== null) ? (int)$latestTodayCut : (int)$prevBeforeCut;
+      $produksiQtyToday = ($latestTodayProd !== null) ? (int)$latestTodayProd : (int)$prevBeforeProd;
+      $finishingQtyToday = ($latestTodayFin !== null) ? (int)$latestTodayFin : (int)$prevBeforeFin;
+
+      $cutting_income_today = $deltaCut * (float)$inventory['cutting_price_per_pcs'];
+      $produksi_income_today = $deltaProd * (float)$inventory['produksi_price_per_pcs'];
+      $finishing_income_today = $deltaFin * (float)$inventory['finishing_price_per_pcs'];
+      $total_income_today = $cutting_income_today + $produksi_income_today + $finishing_income_today;
+
+      // Target harian sudah diinput langsung saat create inventory (bukan dibagi 30)
+      $target_harian_cutting = (int)$inventory['cutting_target'];
+      $target_harian_produksi = (int)$inventory['produksi_target'];
+      $target_harian_finishing = (int)$inventory['finishing_target'];
+
+      // Evaluasi capaian HARI INI terhadap target harian per divisi
+      // Peringatan jika qty harian (delta) masih di bawah target harian
+      $cut_not_meet_daily = ($deltaCut < $target_harian_cutting);
+      $prod_not_meet_daily = ($deltaProd < $target_harian_produksi);
+      $fin_not_meet_daily  = ($deltaFin < $target_harian_finishing);
     ?>
 
     <!-- Total Pendapatan per Divisi + Capaian Target -->
 <div class="card border-info">
   <div class="card-header bg-info text-white">
-    <h5 class="mb-0">📈 Total Pendapatan per Divisi</h5>
+    <h5 class="mb-0">📈 Total Pendapatan per Divisi (Hari Ini)</h5>
   </div>
   <div class="card-body p-0">
     <?php 
-      // Hitung persentase capaian tiap divisi
-      $cutting_progress   = $inventory['cutting_target'] > 0 ? round(($inventory['cutting_qty'] / $inventory['cutting_target']) * 100, 2) : 0;
-      $produksi_progress  = $inventory['produksi_target'] > 0 ? round(($inventory['produksi_qty'] / $inventory['produksi_target']) * 100, 2) : 0;
-      $finishing_progress = $inventory['finishing_target'] > 0 ? round(($inventory['finishing_qty'] / $inventory['finishing_target']) * 100, 2) : 0;
+      // Hitung persentase capaian berdasarkan qty harian (delta) terhadap target harian
+      $cutting_progress   = $target_harian_cutting > 0 ? round(($deltaCut / $target_harian_cutting) * 100, 2) : 0;
+      $produksi_progress  = $target_harian_produksi > 0 ? round(($deltaProd / $target_harian_produksi) * 100, 2) : 0;
+      $finishing_progress = $target_harian_finishing > 0 ? round(($deltaFin / $target_harian_finishing) * 100, 2) : 0;
+      
+      // Batasi progress maksimal 100%
+      if ($cutting_progress > 100) $cutting_progress = 100;
+      if ($produksi_progress > 100) $produksi_progress = 100;
+      if ($finishing_progress > 100) $finishing_progress = 100;
     ?>
+    <?php if ($cut_not_meet_daily || $prod_not_meet_daily || $fin_not_meet_daily): ?>
+    <div class="alert alert-danger m-3">
+      Beberapa divisi belum mencapai target pada hari ini:
+      <b>
+        <?= $cut_not_meet_daily ? 'Cutting ' : '' ?>
+        <?= $prod_not_meet_daily ? 'Produksi ' : '' ?>
+        <?= $fin_not_meet_daily ? 'Finishing' : '' ?>
+      </b>
+    </div>
+    <?php endif; ?>
     <table class="table table-bordered text-center mb-0">
       <thead>
         <tr>
@@ -160,8 +269,11 @@
       <tbody>
         <tr>
           <td>Cutting</td>
-          <td><?= $inventory['cutting_qty'] ?></td>
-          <td><?= $inventory['cutting_target'] ?></td>
+          <td class="<?= $cut_not_meet_daily ? 'table-danger' : '' ?>">
+            <?= $deltaCut ?>
+            <?php if ($cut_not_meet_daily): ?><span class="badge bg-danger ms-2">Belum capai target harian</span><?php endif; ?>
+          </td>
+          <td><?= $target_harian_cutting ?></td>
           <td>
             <div class="progress" style="height: 20px;">
               <div class="progress-bar bg-primary" role="progressbar" style="width: <?= $cutting_progress ?>%;" aria-valuenow="<?= $cutting_progress ?>" aria-valuemin="0" aria-valuemax="100">
@@ -170,12 +282,15 @@
             </div>
           </td>
           <td><?= number_format($inventory['cutting_price_per_pcs'], 0, ',', '.') ?></td>
-          <td><?= number_format($cutting_income, 0, ',', '.') ?></td>
+          <td class="<?= $cut_not_meet_daily ? 'table-danger' : '' ?>"><?= number_format($cutting_income_today, 0, ',', '.') ?></td>
         </tr>
         <tr>
           <td>Produksi</td>
-          <td><?= $inventory['produksi_qty'] ?></td>
-          <td><?= $inventory['produksi_target'] ?></td>
+          <td class="<?= $prod_not_meet_daily ? 'table-danger' : '' ?>">
+            <?= $deltaProd ?>
+            <?php if ($prod_not_meet_daily): ?><span class="badge bg-danger ms-2">Belum capai target harian</span><?php endif; ?>
+          </td>
+          <td><?= $target_harian_produksi ?></td>
           <td>
             <div class="progress" style="height: 20px;">
               <div class="progress-bar bg-success" role="progressbar" style="width: <?= $produksi_progress ?>%;" aria-valuenow="<?= $produksi_progress ?>" aria-valuemin="0" aria-valuemax="100">
@@ -184,12 +299,15 @@
             </div>
           </td>
           <td><?= number_format($inventory['produksi_price_per_pcs'], 0, ',', '.') ?></td>
-          <td><?= number_format($produksi_income, 0, ',', '.') ?></td>
+          <td class="<?= $prod_not_meet_daily ? 'table-danger' : '' ?>"><?= number_format($produksi_income_today, 0, ',', '.') ?></td>
         </tr>
         <tr>
           <td>Finishing</td>
-          <td><?= $inventory['finishing_qty'] ?></td>
-          <td><?= $inventory['finishing_target'] ?></td>
+          <td class="<?= $fin_not_meet_daily ? 'table-danger' : '' ?>">
+            <?= $deltaFin ?>
+            <?php if ($fin_not_meet_daily): ?><span class="badge bg-danger ms-2">Belum capai target harian</span><?php endif; ?>
+          </td>
+          <td><?= $target_harian_finishing ?></td>
           <td>
             <div class="progress" style="height: 20px;">
               <div class="progress-bar bg-warning text-dark" role="progressbar" style="width: <?= $finishing_progress ?>%;" aria-valuenow="<?= $finishing_progress ?>" aria-valuemin="0" aria-valuemax="100">
@@ -198,17 +316,191 @@
             </div>
           </td>
           <td><?= number_format($inventory['finishing_price_per_pcs'], 0, ',', '.') ?></td>
-          <td><?= number_format($finishing_income, 0, ',', '.') ?></td>
+          <td class="<?= $fin_not_meet_daily ? 'table-danger' : '' ?>"><?= number_format($finishing_income_today, 0, ',', '.') ?></td>
         </tr>
         <tr class="table-dark text-white">
           <td colspan="5"><b>Total Keseluruhan</b></td>
-          <td><b><?= number_format($total_income, 0, ',', '.') ?></b></td>
+          <td><b><?= number_format($total_income_today, 0, ',', '.') ?></b></td>
         </tr>
       </tbody>
     </table>
   </div>
 </div>
 
+<!-- Progress Keseluruhan Proyek -->
+<div class="card border-warning">
+  <div class="card-header bg-warning text-dark">
+    <h5 class="mb-0">📊 Progress Keseluruhan Proyek</h5>
+  </div>
+  <div class="card-body p-0">
+    <?php
+      // Hitung progress keseluruhan berdasarkan qty kumulatif terakhir vs total_target
+      $total_cutting_progress = $inventory['total_target'] > 0 ? round(($cuttingQtyToday / $inventory['total_target']) * 100, 2) : 0;
+      $total_produksi_progress = $inventory['total_target'] > 0 ? round(($produksiQtyToday / $inventory['total_target']) * 100, 2) : 0;
+      $total_finishing_progress = $inventory['total_target'] > 0 ? round(($finishingQtyToday / $inventory['total_target']) * 100, 2) : 0;
+      
+      // Batasi progress maksimal 100%
+      if ($total_cutting_progress > 100) $total_cutting_progress = 100;
+      if ($total_produksi_progress > 100) $total_produksi_progress = 100;
+      if ($total_finishing_progress > 100) $total_finishing_progress = 100;
+      
+      // Status selesai per divisi berdasarkan total_target
+      $cutting_done = $cuttingQtyToday >= $inventory['total_target'];
+      $produksi_done = $produksiQtyToday >= $inventory['total_target'];
+      $finishing_done = $finishingQtyToday >= $inventory['total_target'];
+    ?>
+    <table class="table table-bordered text-center mb-0">
+      <thead>
+        <tr>
+          <th>Divisi</th>
+          <th>Qty Saat Ini</th>
+          <th>Target Total</th>
+          <th>Progress (%)</th>
+          <th>Status</th>
+          <th>Keterangan</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Cutting</strong></td>
+          <td class="<?= $cutting_done ? 'table-success' : 'table-warning' ?>">
+            <strong><?= $cuttingQtyToday ?></strong>
+          </td>
+          <td><?= $inventory['total_target'] ?></td>
+          <td>
+            <div class="progress" style="height: 25px;">
+              <div class="progress-bar <?= $cutting_done ? 'bg-success' : 'bg-primary' ?>" 
+                   role="progressbar" 
+                   style="width: <?= $total_cutting_progress ?>%;" 
+                   aria-valuenow="<?= $total_cutting_progress ?>" 
+                   aria-valuemin="0" 
+                   aria-valuemax="100">
+                <strong><?= $total_cutting_progress ?>%</strong>
+              </div>
+            </div>
+          </td>
+          <td>
+            <?php if ($cutting_done): ?>
+              <span class="badge bg-success fs-6">✅ Selesai</span>
+            <?php else: ?>
+              <span class="badge bg-warning text-dark fs-6">⏳ Progress</span>
+            <?php endif; ?>
+          </td>
+          <td>
+            <?php if ($cutting_done): ?>
+              <span class="text-success">Target tercapai!</span>
+            <?php else: ?>
+              <span class="text-warning">Kurang <?= $inventory['total_target'] - $cuttingQtyToday ?> pcs</span>
+            <?php endif; ?>
+          </td>
+        </tr>
+        <tr>
+          <td><strong>Produksi</strong></td>
+          <td class="<?= $produksi_done ? 'table-success' : 'table-warning' ?>">
+            <strong><?= $produksiQtyToday ?></strong>
+          </td>
+          <td><?= $inventory['total_target'] ?></td>
+          <td>
+            <div class="progress" style="height: 25px;">
+              <div class="progress-bar <?= $produksi_done ? 'bg-success' : 'bg-success' ?>" 
+                   role="progressbar" 
+                   style="width: <?= $total_produksi_progress ?>%;" 
+                   aria-valuenow="<?= $total_produksi_progress ?>" 
+                   aria-valuemin="0" 
+                   aria-valuemax="100">
+                <strong><?= $total_produksi_progress ?>%</strong>
+              </div>
+            </div>
+          </td>
+          <td>
+            <?php if ($produksi_done): ?>
+              <span class="badge bg-success fs-6">✅ Selesai</span>
+            <?php else: ?>
+              <span class="badge bg-warning text-dark fs-6">⏳ Progress</span>
+            <?php endif; ?>
+          </td>
+          <td>
+            <?php if ($produksi_done): ?>
+              <span class="text-success">Target tercapai!</span>
+            <?php else: ?>
+              <span class="text-warning">Kurang <?= $inventory['total_target'] - $produksiQtyToday ?> pcs</span>
+            <?php endif; ?>
+          </td>
+        </tr>
+        <tr>
+          <td><strong>Finishing</strong></td>
+          <td class="<?= $finishing_done ? 'table-success' : 'table-warning' ?>">
+            <strong><?= $finishingQtyToday ?></strong>
+          </td>
+          <td><?= $inventory['total_target'] ?></td>
+          <td>
+            <div class="progress" style="height: 25px;">
+              <div class="progress-bar <?= $finishing_done ? 'bg-success' : 'bg-warning text-dark' ?>" 
+                   role="progressbar" 
+                   style="width: <?= $total_finishing_progress ?>%;" 
+                   aria-valuenow="<?= $total_finishing_progress ?>" 
+                   aria-valuemin="0" 
+                   aria-valuemax="100">
+                <strong><?= $total_finishing_progress ?>%</strong>
+              </div>
+            </div>
+          </td>
+          <td>
+            <?php if ($finishing_done): ?>
+              <span class="badge bg-success fs-6">✅ Selesai</span>
+            <?php else: ?>
+              <span class="badge bg-warning text-dark fs-6">⏳ Progress</span>
+            <?php endif; ?>
+          </td>
+          <td>
+            <?php if ($finishing_done): ?>
+              <span class="text-success">Target tercapai!</span>
+            <?php else: ?>
+              <span class="text-warning">Kurang <?= $inventory['total_target'] - $finishingQtyToday ?> pcs</span>
+            <?php endif; ?>
+          </td>
+        </tr>
+        <tr class="table-dark text-white">
+          <td><strong>Total Keseluruhan</strong></td>
+          <td><strong><?= $finishingQtyToday ?></strong></td>
+          <td><strong><?= $inventory['total_target'] ?></strong></td>
+          <td>
+            <?php
+              $total_qty = $finishingQtyToday; // Menggunakan data finishing sebagai perbandingan
+              $total_target = $inventory['total_target']; // Menggunakan total_target dari database
+              $overall_progress = $total_target > 0 ? round(($total_qty / $total_target) * 100, 2) : 0;
+              if ($overall_progress > 100) $overall_progress = 100;
+            ?>
+            <div class="progress" style="height: 25px;">
+              <div class="progress-bar bg-info" 
+                   role="progressbar" 
+                   style="width: <?= $overall_progress ?>%;" 
+                   aria-valuenow="<?= $overall_progress ?>" 
+                   aria-valuemin="0" 
+                   aria-valuemax="100">
+                <strong><?= $overall_progress ?>%</strong>
+              </div>
+            </div>
+          </td>
+          <td>
+            <?php if ($overall_progress >= 100): ?>
+              <span class="badge bg-success fs-6">🎉 Proyek Selesai!</span>
+            <?php else: ?>
+              <span class="badge bg-info fs-6">📈 Dalam Progress</span>
+            <?php endif; ?>
+          </td>
+          <td>
+            <?php if ($overall_progress >= 100): ?>
+              <span class="text-success">Semua target tercapai!</span>
+            <?php else: ?>
+              <span class="text-info">Total kurang <?= $total_target - $total_qty ?> pcs</span>
+            <?php endif; ?>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
 
     <!-- Rekapan Harian -->
     <div class="card border-0 shadow-sm" id="rekapan-harian">
@@ -265,12 +557,18 @@
               <td><?= $log['cutting_qty'] ?></td>
               <td><?= $log['produksi_qty'] ?></td>
               <td><?= $log['finishing_qty'] ?></td>
-              <td class="text-primary"><?= $selisihCut ?></td>
-              <td class="text-primary"><?= $selisihProd ?></td>
-              <td class="text-primary"><?= $selisihFin ?></td>
-              <td><?= number_format($incomeCut, 0, ',', '.') ?></td>
-              <td><?= number_format($incomeProd, 0, ',', '.') ?></td>
-              <td><?= number_format($incomeFin, 0, ',', '.') ?></td>
+              <?php 
+                // Not meet status berdasarkan qty saat itu vs target
+                $cutRowNotMeetTarget  = ($log['cutting_qty'] < (int)$inventory['cutting_target']);
+                $prodRowNotMeetTarget = ($log['produksi_qty'] < (int)$inventory['produksi_target']);
+                $finRowNotMeetTarget  = ($log['finishing_qty'] < (int)$inventory['finishing_target']);
+              ?>
+              <td class="<?= $cutRowNotMeetTarget ? 'table-danger' : 'text-primary' ?>"><?= $selisihCut ?></td>
+              <td class="<?= $prodRowNotMeetTarget ? 'table-danger' : 'text-primary' ?>"><?= $selisihProd ?></td>
+              <td class="<?= $finRowNotMeetTarget ? 'table-danger' : 'text-primary' ?>"><?= $selisihFin ?></td>
+              <td class="<?= $cutRowNotMeetTarget ? 'table-danger' : '' ?>"><?= number_format($incomeCut, 0, ',', '.') ?></td>
+              <td class="<?= $prodRowNotMeetTarget ? 'table-danger' : '' ?>"><?= number_format($incomeProd, 0, ',', '.') ?></td>
+              <td class="<?= $finRowNotMeetTarget ? 'table-danger' : '' ?>"><?= number_format($incomeFin, 0, ',', '.') ?></td>
               <td><b><?= number_format($totalIncomeToday, 0, ',', '.') ?></b></td>
             </tr>
             <?php endforeach; ?>
@@ -286,12 +584,60 @@
         </table>
       </div>
     </div>
+  </div>
 
+  <!-- Riwayat Koreksi -->
+  <?php if (!empty($histories)): ?>
+  <div class="container mt-4">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-secondary text-white">
+        <h5 class="mb-0">🕘 Riwayat Koreksi</h5>
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-bordered text-center mb-0">
+          <thead class="table-light">
+            <tr>
+              <th width="16%">Waktu Perubahan</th>
+              <th>Prev Cutting</th>
+              <th>Prev Produksi</th>
+              <th>Prev Finishing</th>
+              <th>New Cutting</th>
+              <th>New Produksi</th>
+              <th>New Finishing</th>
+              <th>Δ Cutting</th>
+              <th>Δ Produksi</th>
+              <th>Δ Finishing</th>
+            </tr>
+          </thead>
+          <tbody>
+            <?php foreach ($histories as $h): 
+              $dCut = (int)$h['new_cutting_qty'] - (int)$h['previous_cutting_qty'];
+              $dProd = (int)$h['new_produksi_qty'] - (int)$h['previous_produksi_qty'];
+              $dFin = (int)$h['new_finishing_qty'] - (int)$h['previous_finishing_qty'];
+            ?>
+            <tr>
+              <td><?= esc($h['changed_at']) ?></td>
+              <td><?= (int)$h['previous_cutting_qty'] ?></td>
+              <td><?= (int)$h['previous_produksi_qty'] ?></td>
+              <td><?= (int)$h['previous_finishing_qty'] ?></td>
+              <td><?= (int)$h['new_cutting_qty'] ?></td>
+              <td><?= (int)$h['new_produksi_qty'] ?></td>
+              <td><?= (int)$h['new_finishing_qty'] ?></td>
+              <td class="<?= $dCut>=0?'text-success':'text-danger' ?>"><?= $dCut ?></td>
+              <td class="<?= $dProd>=0?'text-success':'text-danger' ?>"><?= $dProd ?></td>
+              <td class="<?= $dFin>=0?'text-success':'text-danger' ?>"><?= $dFin ?></td>
+            </tr>
+            <?php endforeach; ?>
+          </tbody>
+        </table>
+      </div>
+    </div>
     <!-- Tombol Kembali -->
     <div class="text-center mt-4">
       <a href="/admin/inventory" class="btn btn-outline-secondary btn-custom px-4">⬅️ Kembali</a>
     </div>
   </div>
+  <?php endif; ?>
 
   <!-- Script Ekspor PDF -->
   <script>

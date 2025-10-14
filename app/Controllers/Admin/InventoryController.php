@@ -27,15 +27,16 @@ class InventoryController extends Controller
             $data['inventories'] = $this->inventory->findAll();
         }
 
-        // Hitung progress per inventory
+        // Hitung progress per inventory menggunakan total_target dan finishing_qty
         foreach ($data['inventories'] as &$item) {
-            $totalTarget = max(1, $item['cutting_target'] + $item['produksi_target'] + $item['finishing_target']);
-            $totalQty = $item['cutting_qty'] + $item['produksi_qty'] + $item['finishing_qty'];
+            $totalTarget = $item['total_target'];
+            $totalQty = $item['finishing_qty']; // Menggunakan finishing_qty sebagai perbandingan
 
-            $progress = round(($totalQty / $totalTarget) * 100, 1);
+            $progress = $totalTarget > 0 ? round(($totalQty / $totalTarget) * 100, 1) : 0;
             if ($progress > 100) $progress = 100;
 
             $item['progress_percent'] = $progress;
+            $item['is_completed'] = $totalQty >= $totalTarget;
         }
 
         return view('admin/inventory/index', $data);
@@ -84,9 +85,7 @@ class InventoryController extends Controller
             'finishing_income'        => 0,
             'total_income'            => 0,
 
-            'total_target'            => (int)$this->request->getPost('cutting_target')
-                                        + (int)$this->request->getPost('produksi_target')
-                                        + (int)$this->request->getPost('finishing_target'),
+            'total_target'            => (int)$this->request->getPost('total_target'),
 
             'created_at'              => date('Y-m-d H:i:s'),
         ]);
@@ -108,6 +107,19 @@ class InventoryController extends Controller
             ->get()
             ->getResultArray();
 
+        // Ambil riwayat koreksi (jika ada)
+        $histories = $db->table('inventory_log_histories')
+            ->where('inventory_id', $id)
+            ->orderBy('changed_at', 'DESC')
+            ->get()
+            ->getResultArray();
+
+        // Cek apakah sudah ada log untuk hari ini (untuk opsi edit/koreksi)
+        $hasTodayLog = $db->table('inventory_logs')
+            ->where('inventory_id', $id)
+            ->where('created_at', date('Y-m-d'))
+            ->countAllResults() > 0;
+
         // Hitung progress
         $totalTarget = max(1, $inventory['cutting_target'] + $inventory['produksi_target'] + $inventory['finishing_target']);
         $totalQty = $inventory['cutting_qty'] + $inventory['produksi_qty'] + $inventory['finishing_qty'];
@@ -117,7 +129,9 @@ class InventoryController extends Controller
         $data = [
             'inventory'        => $inventory,
             'logs'             => $logs,
-            'progress_percent' => $progressPercent
+            'progress_percent' => $progressPercent,
+            'hasTodayLog'      => $hasTodayLog,
+            'histories'        => $histories,
         ];
 
         return view('admin/inventory/detail', $data);
@@ -138,10 +152,15 @@ class InventoryController extends Controller
         $produksiInput  = (int)$this->request->getPost('produksi_qty');
         $finishingInput = (int)$this->request->getPost('finishing_qty');
 
-        // Hitung total baru
-        $newCutting   = min($cuttingInput, $inventory['cutting_target']);
-        $newProduksi  = min($produksiInput, $inventory['produksi_target']);
-        $newFinishing = min($finishingInput, $inventory['finishing_target']);
+        // Simpan input asli tanpa batasan
+        $newCutting   = $cuttingInput;
+        $newProduksi  = $produksiInput;
+        $newFinishing = $finishingInput;
+
+        // Cek apakah ada yang melebihi target
+        $cuttingExceeded = $cuttingInput > $inventory['cutting_target'];
+        $produksiExceeded = $produksiInput > $inventory['produksi_target'];
+        $finishingExceeded = $finishingInput > $inventory['finishing_target'];
 
 
         // Hitung delta (selisih harian)
@@ -167,6 +186,18 @@ class InventoryController extends Controller
         $isFinishingDone = $inventory['finishing_target'] > 0 && $newFinishing >= $inventory['finishing_target'];
         $status = ($isCuttingDone && $isProduksiDone && $isFinishingDone) ? 'done' : 'onprogress';
 
+        // Buat pesan peringatan jika ada yang melebihi target
+        $warningMessages = [];
+        if ($cuttingExceeded) {
+            $warningMessages[] = "Cutting melebihi target ({$inventory['cutting_target']}) dengan nilai {$cuttingInput}";
+        }
+        if ($produksiExceeded) {
+            $warningMessages[] = "Produksi melebihi target ({$inventory['produksi_target']}) dengan nilai {$produksiInput}";
+        }
+        if ($finishingExceeded) {
+            $warningMessages[] = "Finishing melebihi target ({$inventory['finishing_target']}) dengan nilai {$finishingInput}";
+        }
+
         // Update data kumulatif ke tabel inventories
         $this->inventory->update($id, [
             'cutting_qty'      => $newCutting,
@@ -180,19 +211,58 @@ class InventoryController extends Controller
             'updated_at'       => date('Y-m-d H:i:s'),
         ]);
 
-        // Simpan log harian (delta/selisih)
+        // Simpan/update log harian: hanya satu baris per hari per inventory
         $db = db_connect();
-        $db->table('inventory_logs')->insert([
-            'inventory_id' => $id,
-            'cutting_qty'  => $newCutting,
-            'produksi_qty' => $newProduksi,
-            'finishing_qty'=> $newFinishing,
+        $today = date('Y-m-d');
+        $existingToday = $db->table('inventory_logs')
+            ->where('inventory_id', $id)
+            ->where('created_at', $today)
+            ->get()
+            ->getRowArray();
 
-            'created_at'   => date('Y-m-d'),
-        ]);
+        if ($existingToday) {
+            // Catat history perubahan sebelum update
+            // Tabel 'inventory_log_histories' dibuat via migration baru
+            $db->table('inventory_log_histories')->insert([
+                'inventory_id'            => $id,
+                'previous_cutting_qty'    => (int)$existingToday['cutting_qty'],
+                'previous_produksi_qty'   => (int)$existingToday['produksi_qty'],
+                'previous_finishing_qty'  => (int)$existingToday['finishing_qty'],
+                'new_cutting_qty'         => (int)$newCutting,
+                'new_produksi_qty'        => (int)$newProduksi,
+                'new_finishing_qty'       => (int)$newFinishing,
+                'changed_at'              => date('Y-m-d H:i:s'),
+            ]);
+
+            // Update baris log hari ini (edit koreksi)
+            $db->table('inventory_logs')
+                ->where('id', $existingToday['id'])
+                ->update([
+                    'cutting_qty'   => $newCutting,
+                    'produksi_qty'  => $newProduksi,
+                    'finishing_qty' => $newFinishing,
+                ]);
+        } else {
+            // Insert pertama kali untuk hari ini
+            $db->table('inventory_logs')->insert([
+                'inventory_id' => $id,
+                'cutting_qty'  => $newCutting,
+                'produksi_qty' => $newProduksi,
+                'finishing_qty'=> $newFinishing,
+                'created_at'   => $today,
+            ]);
+        }
+
+        // Gabungkan pesan sukses dengan peringatan
+        $successMessage = 'Progress berhasil diperbarui. Total progress: ' . $progressPercent . '%';
+        
+        if (!empty($warningMessages)) {
+            $warningText = implode(', ', $warningMessages);
+            $successMessage .= ' | ⚠️ PERINGATAN: ' . $warningText;
+        }
 
         return redirect()->to('/admin/inventory/detail/' . $id)
-                         ->with('success', 'Progress berhasil diperbarui. Total progress: ' . $progressPercent . '%');
+                         ->with('success', $successMessage);
     }
 
     // ===========================
