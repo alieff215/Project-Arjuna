@@ -461,10 +461,19 @@
 
          <div class="u-body">
             <div class="row">
+               <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                  <button id="departemen-all"
+                     class="chip-btn"
+                     type="button"
+                     onclick="selectDepartemen('all', 'Semua Departemen')">
+                     <i class="material-icons" aria-hidden="true">apartment</i>
+                     <span>Semua Departemen</span>
+                  </button>
+               </div>
                <?php foreach ($departemen as $value): ?>
                   <?php
-                  $idDepartemen   = $value['id_departemen'];
-                  $namaDepartemen = $value['departemen'] . ' ' . $value['jabatan'];
+                  $idDepartemen   = $value->id_departemen;
+                  $namaDepartemen = $value->departemen . ' ' . $value->jabatan;
                   ?>
                   <div class="col-12 col-sm-6 col-md-4 col-lg-3">
                      <button id="departemen-<?= $idDepartemen; ?>"
@@ -601,8 +610,8 @@
 
    function updateBtnActive(activeId) {
       <?php foreach ($departemen as $value): ?>
-         $('#departemen-<?= $value['id_departemen']; ?>')
-            .toggleClass('active', <?= $value['id_departemen']; ?> === activeId);
+         $('#departemen-<?= $value->id_departemen; ?>')
+            .toggleClass('active', <?= $value->id_departemen; ?> === activeId);
       <?php endforeach; ?>
    }
 

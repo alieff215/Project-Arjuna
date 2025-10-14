@@ -15,8 +15,6 @@
       --border: rgba(148, 163, 184, .16);
       --radius: 16px;
       --shadow: 0 12px 30px rgba(0, 0, 0, .22);
-
-      /* Responsive tokens */
       --pad-xs: 12px;
       --pad-sm: 14px;
       --pad-md: 16px;
@@ -76,12 +74,10 @@
       row-gap: var(--gap);
    }
 
-   /* Judul/subjudul adaptif */
    .title-fixed {
       margin: 0;
       font-weight: 800;
       font-size: clamp(18px, 2.2vw, 22px);
-      line-height: 1.25;
    }
 
    html[data-theme="light"] .title-fixed {
@@ -98,9 +94,6 @@
       color: #64748b;
    }
 
-   /* ==============================
-     THEME TOGGLE
-  ===============================*/
    .theme-toggle {
       display: inline-flex;
       align-items: center;
@@ -111,7 +104,6 @@
       background: var(--card);
       color: var(--text);
       cursor: pointer;
-      user-select: none;
       transition: transform .08s ease, box-shadow .2s ease;
       font-size: clamp(12px, 1.6vw, 14px);
    }
@@ -120,13 +112,6 @@
       transform: translateY(-1px);
    }
 
-   .theme-toggle .material-icons {
-      font-size: clamp(18px, 2vw, 20px);
-   }
-
-   /* ==============================
-     FORM & INPUTS
-  ===============================*/
    .form-row {
       display: flex;
       align-items: center;
@@ -137,10 +122,8 @@
 
    .label {
       min-width: clamp(78px, 12vw, 100px);
-      margin: 0;
       font-weight: 700;
       color: var(--text);
-      font-size: clamp(13px, 1.8vw, 14.5px);
    }
 
    .input,
@@ -148,75 +131,50 @@
       flex: 1 1 220px;
       border: 1px solid var(--border);
       border-radius: 12px;
-      padding: clamp(9px, 1.8vw, 12px) clamp(10px, 2vw, 12px);
+      padding: 10px 12px;
       background: var(--card);
       color: var(--text);
-      outline: none;
-      font-size: clamp(13px, 1.8vw, 14.5px);
    }
 
-   .input:focus,
-   .select:focus {
-      box-shadow: 0 0 0 3px rgba(96, 165, 250, .25);
-      border-color: rgba(96, 165, 250, .7);
-   }
-
-   /* ==============================
-     PANELS (Equal height on md+, auto on mobile)
-  ===============================*/
-   .col-eq {
-      display: flex;
-   }
-
-   .panel {
-      display: flex;
-      flex-direction: column;
-      width: 100%;
-      min-height: 420px;
-   }
-
-   .panel .panel-body {
-      display: flex;
-      flex-direction: column;
-      flex: 1;
-   }
-
-   @media (max-width: 767.98px) {
-      .panel {
-         min-height: unset;
-      }
-
-      /* auto height di mobile */
-   }
-
-   /* Buttons (bawaan bootstrap tetap dipakai) */
    .btn {
       border-radius: 12px;
       font-weight: 700;
    }
 
-   .btn i.material-icons {
-      vertical-align: middle;
+   .choose-card {
+      text-align: center;
+      padding: 50px 20px;
    }
 
-   .btn h4 {
-      font-size: clamp(16px, 2.2vw, 20px);
-      margin: 0;
+   .choose-btn {
+      display: inline-block;
+      padding: 14px 26px;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: 700;
+      border: none;
+      margin: 8px;
+      cursor: pointer;
+      transition: transform .1s ease, box-shadow .2s ease;
    }
 
-   .btn .material-icons {
-      font-size: clamp(24px, 3vw, 32px) !important;
+   .choose-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
    }
 
-   /* Grid dalam tombol agar tetap rapi di layar kecil */
-   .btn .row {
-      align-items: center;
+   .btn-karyawan {
+      background: #2563eb;
+      color: #fff;
    }
 
-   @media (max-width: 575.98px) {
-      .btn .col-auto {
-         padding-right: 10px;
-      }
+   .btn-admin {
+      background: #16a34a;
+      color: #fff;
+   }
+
+   .hidden {
+      display: none;
    }
 </style>
 
@@ -224,7 +182,6 @@
    <div class="container-fluid">
       <div class="row row-gap">
          <div class="col-lg-12 col-md-12">
-
             <?php if (session()->getFlashdata('msg')) : ?>
                <div class="pb-2 px-3">
                   <div class="alert alert-<?= session()->getFlashdata('error') == true ? 'danger' : 'success' ?>">
@@ -240,128 +197,106 @@
                <div class="card-header clean">
                   <div>
                      <h4 class="title-fixed">Generate Laporan</h4>
-                     <p class="subtitle">Laporan absen karyawan & admin</p>
+                     <p class="subtitle">Pilih jenis laporan terlebih dahulu</p>
                   </div>
 
-                  <!-- Toggle tema (opsional) -->
-                  <button id="themeToggle" type="button" class="theme-toggle" aria-label="Ganti tema">
-                     <i class="material-icons" aria-hidden="true">dark_mode</i>
+                  <button id="themeToggle" type="button" class="theme-toggle">
+                     <i class="material-icons">dark_mode</i>
                      <span id="themeLabel">Gelap</span>
                   </button>
                </div>
 
                <div class="card-body clean">
-                  <div class="row row-gap">
-                     <!-- ================= KARYAWAN ================= -->
-                     <div class="col-md-6 col-eq">
-                        <div class="card modern panel">
-                           <div class="card-body clean panel-body">
-                              <h5 class="text-primary" style="font-size:clamp(16px,2.2vw,20px)"><b>Laporan Absen Karyawan</b></h5>
-                              <p class="subtitle">Pilih bulan & (opsional) departemen.</p>
+                  <!-- Pilihan awal -->
+                  <div id="chooseSection" class="choose-card">
+                     <p class="subtitle mb-3">Silakan pilih laporan yang ingin Anda generate:</p>
+                     <button class="choose-btn btn-karyawan" onclick="showCard('karyawan')">
+                        <i class="material-icons align-middle">badge</i> Laporan Karyawan
+                     </button>
+                     <button class="choose-btn btn-admin" onclick="showCard('admin')">
+                        <i class="material-icons align-middle">supervisor_account</i> Laporan Admin
+                     </button>
+                  </div>
 
-                              <form action="<?= base_url('admin/laporan/karyawan'); ?>" method="post" class="mt-3 d-flex flex-column flex-grow-1">
-                                 <div class="form-row">
-                                    <p class="label">Bulan</p>
-                                    <input type="month" name="tanggalKaryawan" id="tanggalKaryawan"
-                                       value="<?= date('Y-m'); ?>" class="input" aria-label="Bulan laporan karyawan">
-                                 </div>
+                  <!-- Card Karyawan -->
+                  <div id="karyawanCard" class="hidden mt-3">
+                     <div class="card modern panel">
+                        <div class="card-body clean panel-body">
+                           <h5 class="text-primary"><b>Laporan Absen Karyawan</b></h5>
+                           <p class="subtitle">Pilih bulan & (opsional) departemen.</p>
 
-                                 <div class="form-row">
-                                    <p class="label">Departemen</p>
-                                    <select name="departemen" class="select" aria-label="Pilih departemen">
-                                       <option value="">Semua departemen</option>
-                                       <?php foreach ($departemen as $key => $value) : ?>
-                                          <?php
-                                          $idDepartemen = $value['id_departemen'];
-                                          $departemenText = "{$value['departemen']} {$value['jabatan']}";
-                                          $jumlahKaryawan = count($karyawanPerDepartemen[$key]);
-                                          ?>
-                                          <option value="<?= $idDepartemen; ?>"><?= "{$departemenText} — {$jumlahKaryawan} karyawan"; ?></option>
-                                       <?php endforeach; ?>
+                           <form action="<?= base_url('admin/laporan/karyawan'); ?>" method="post" class="mt-3">
+                              <div class="form-row">
+                                 <p class="label">Bulan</p>
+                                 <input type="month" name="tanggalKaryawan" id="tanggalKaryawan"
+                                    value="<?= date('Y-m'); ?>" class="input">
+                              </div>
+
+                              <div class="form-row">
+                                 <p class="label">Departemen</p>
+                                 <select name="departemen" class="select">
+                                    <option value="">Semua departemen</option>
+                                    <?php foreach ($departemen as $key => $value) : ?>
+                                       <?php
+                                       $idDepartemen = $value['id_departemen'];
+                                       $departemenText = "{$value['departemen']} {$value['jabatan']}";
+                                       $jumlahKaryawan = count($karyawanPerDepartemen[$key]);
+                                       ?>
+                                       <option value="<?= $idDepartemen; ?>"><?= "{$departemenText} — {$jumlahKaryawan} karyawan"; ?></option>
+                                    <?php endforeach; ?>
+                                 </select>
+                              </div>
+
+                              <!-- GANTI bagian bawah ini -->
+                              <div class="form-row justify-content-end">
+                                 <p class="label">Format</p>
+                                 <div class="d-flex align-items-center gap-2" style="flex:1;">
+                                    <select name="type" class="select w-auto" required>
+                                       <option value="pdf">PDF</option>
+                                       <option value="doc">DOC</option>
                                     </select>
-                                 </div>
-
-                                 <!-- Tombol full width, responsif -->
-                                 <div class="mt-auto">
-                                    <button type="submit" name="type" value="pdf" class="btn btn-danger pl-3 w-100 mb-2">
-                                       <div class="row no-gutters">
-                                          <div class="col-auto">
-                                             <i class="material-icons">print</i>
-                                          </div>
-                                          <div class="col">
-                                             <div class="text-start">
-                                                <h4 class="d-inline"><b>Generate PDF</b></h4>
-                                             </div>
-                                          </div>
-                                       </div>
-                                    </button>
-
-                                    <button type="submit" name="type" value="doc" class="btn btn-info pl-3 w-100">
-                                       <div class="row no-gutters">
-                                          <div class="col-auto">
-                                             <i class="material-icons">description</i>
-                                          </div>
-                                          <div class="col">
-                                             <div class="text-start">
-                                                <h4 class="d-inline"><b>Generate DOC</b></h4>
-                                             </div>
-                                          </div>
-                                       </div>
+                                    <button type="submit" class="btn btn-primary">
+                                       <i class="material-icons" style="font-size:16px;">description</i> Generate
                                     </button>
                                  </div>
-                              </form>
-                           </div>
+                              </div>
+                           </form>
+
                         </div>
                      </div>
+                  </div>
 
-                     <!-- ================= ADMIN ================= -->
-                     <div class="col-md-6 col-eq">
-                        <div class="card modern panel">
-                           <div class="card-body clean panel-body">
-                              <h5 class="text-success" style="font-size:clamp(16px,2.2vw,20px)"><b>Laporan Absen Admin</b></h5>
-                              <p class="subtitle">Total jumlah admin : <b><?= count($admin); ?></b></p>
+                  <!-- Card Admin -->
+                  <div id="adminCard" class="hidden mt-3">
+                     <div class="card modern panel">
+                        <div class="card-body clean panel-body">
+                           <h5 class="text-success"><b>Laporan Absen Admin</b></h5>
+                           <p class="subtitle">Total jumlah admin : <b><?= count($admin); ?></b></p>
 
-                              <form action="<?= base_url('admin/laporan/admin'); ?>" method="post" class="mt-3 d-flex flex-column flex-grow-1">
-                                 <div class="form-row">
-                                    <p class="label">Bulan</p>
-                                    <input type="month" name="tanggalAdmin" id="tanggalAdmin"
-                                       value="<?= date('Y-m'); ?>" class="input" aria-label="Bulan laporan admin">
-                                 </div>
+                           <form action="<?= base_url('admin/laporan/admin'); ?>" method="post" class="mt-3">
+                              <div class="form-row">
+                                 <p class="label">Bulan</p>
+                                 <input type="month" name="tanggalAdmin" id="tanggalAdmin"
+                                    value="<?= date('Y-m'); ?>" class="input">
+                              </div>
 
-                                 <!-- Tombol full width, responsif -->
-                                 <div class="mt-auto">
-                                    <button type="submit" name="type" value="pdf" class="btn btn-danger pl-3 w-100 mb-2">
-                                       <div class="row no-gutters">
-                                          <div class="col-auto">
-                                             <i class="material-icons">print</i>
-                                          </div>
-                                          <div class="col">
-                                             <div class="text-start">
-                                                <h4 class="d-inline"><b>Generate PDF</b></h4>
-                                             </div>
-                                          </div>
-                                       </div>
-                                    </button>
-
-                                    <button type="submit" name="type" value="doc" class="btn btn-info pl-3 w-100">
-                                       <div class="row no-gutters">
-                                          <div class="col-auto">
-                                             <i class="material-icons">description</i>
-                                          </div>
-                                          <div class="col">
-                                             <div class="text-start">
-                                                <h4 class="d-inline"><b>Generate DOC</b></h4>
-                                             </div>
-                                          </div>
-                                       </div>
+                              <!-- GANTI bagian bawah ini -->
+                              <div class="form-row justify-content-end">
+                                 <p class="label">Format</p>
+                                 <div class="d-flex align-items-center gap-2" style="flex:1;">
+                                    <select name="type" class="select w-auto" required>
+                                       <option value="pdf">PDF</option>
+                                       <option value="doc">DOC</option>
+                                    </select>
+                                    <button type="submit" class="btn btn-primary">
+                                       <i class="material-icons" style="font-size:16px;">description</i> Generate
                                     </button>
                                  </div>
-                              </form>
-                           </div>
+                              </div>
+                           </form>
+
                         </div>
                      </div>
-                     <!-- /ADMIN -->
-
                   </div>
                </div>
             </div>
@@ -372,11 +307,11 @@
 </div>
 
 <script>
-   /* ========== THEME INIT + TOGGLE ========== */
+   // ========== THEME INIT + TOGGLE ==========
    (function initTheme() {
       try {
-         const saved = localStorage.getItem('theme'); // 'dark' | 'light'
-         const prefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+         const saved = localStorage.getItem('theme');
+         const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
          const theme = saved || (prefersLight ? 'light' : 'dark');
          document.documentElement.setAttribute('data-theme', theme);
          updateThemeUI(theme);
@@ -400,11 +335,19 @@
       const current = document.documentElement.getAttribute('data-theme') || 'dark';
       const next = current === 'dark' ? 'light' : 'dark';
       document.documentElement.setAttribute('data-theme', next);
-      try {
-         localStorage.setItem('theme', next);
-      } catch (e) {}
+      localStorage.setItem('theme', next);
       updateThemeUI(next);
    });
+
+   // ========== SHOW/HIDE CARD ==========
+   function showCard(type) {
+      document.getElementById('chooseSection').classList.add('hidden');
+      if (type === 'karyawan') {
+         document.getElementById('karyawanCard').classList.remove('hidden');
+      } else if (type === 'admin') {
+         document.getElementById('adminCard').classList.remove('hidden');
+      }
+   }
 </script>
 
 <?= $this->endSection() ?>

@@ -38,27 +38,45 @@ class DataAbsenKaryawan extends BaseController
 
    public function index()
    {
-      $departemen = $this->departemenModel->getDataDepartemen();
+      $tanggal = $this->request->getGet('tanggal') ?? date('Y-m-d');
+      $departemen = $this->request->getGet('departemen');
 
-      $data = [
-         'title' => 'Data Absen Karyawan',
-         'ctx' => 'absen-karyawan',
-         'departemen' => $departemen,
-      ];
+      $presensiModel = new \App\Models\PresensiKaryawanModel();
+
+      if ($departemen == 'all') {
+         $data['listAbsen'] = $presensiModel->getAllAbsenByDate($tanggal);
+         $data['departemen'] = 'Semua Departemen';
+      } else {
+         $data['listAbsen'] = $presensiModel->getPresensiByDepartemenTanggal($departemen, $tanggal);
+         $data['departemen'] = ucfirst($departemen);
+      }
+
+      // ✅ Tambahkan ini:
+      $departemenModel = new \App\Models\DepartemenModel();
+      $data['departemen'] = $departemenModel->getAllDepartemen();
+      $data['title'] = 'Data Absen Karyawan';
+      $data['tanggal'] = $tanggal;
 
       return view('admin/absen/absen-karyawan', $data);
    }
 
    public function ambilDataKaryawan()
    {
-      // ambil variabel POST
+      // Ambil variabel POST
       $departemen = $this->request->getVar('departemen');
       $idDepartemen = $this->request->getVar('id_departemen');
       $tanggal = $this->request->getVar('tanggal');
 
       $lewat = Time::parse($tanggal)->isAfter(Time::today());
 
-      $result = $this->presensiKaryawan->getPresensiByDepartemenTanggal($idDepartemen, $tanggal);
+      // 🔹 Tambahkan logika ini
+      if ($idDepartemen === 'all') {
+         // Ambil semua data presensi dari semua departemen
+         $result = $this->presensiKaryawan->getPresensiAllDepartemenTanggal($tanggal);
+      } else {
+         // Ambil data presensi berdasarkan departemen tertentu
+         $result = $this->presensiKaryawan->getPresensiByDepartemenTanggal($idDepartemen, $tanggal);
+      }
 
       $data = [
          'departemen' => $departemen,

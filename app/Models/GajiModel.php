@@ -117,6 +117,7 @@ class GajiModel extends BaseModel
          SELECT 
             k.id_karyawan,
             k.nama_karyawan,
+            k.nis,
             d.departemen,
             j.jabatan,
             COUNT(pk.id_presensi) as jumlah_kehadiran,

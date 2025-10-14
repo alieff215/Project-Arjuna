@@ -3,7 +3,7 @@
       <table class="table table-hover">
          <thead class="text-success">
             <th><b>No</b></th>
-            <th><b>NUPTK</b></th>
+            <th><b>NIP</b></th>
             <th><b>Nama Admin</b></th>
             <th><b>Jenis Kelamin</b></th>
             <th><b>No HP</b></th>

@@ -60,58 +60,91 @@ class GenerateLaporan extends BaseController
    public function generateLaporanKaryawan()
    {
       $idDepartemen = $this->request->getVar('departemen');
-      $karyawan = $this->karyawanModel->getKaryawanByDepartemen($idDepartemen);
       $type = $this->request->getVar('type');
-
-      if (empty($karyawan)) {
-         session()->setFlashdata([
-            'msg' => 'Data karyawan kosong!',
-            'error' => true
-         ]);
-         return redirect()->to('/admin/laporan');
-      }
-
-      $departemen = $this->departemenModel->where(['id_departemen' => $idDepartemen])
-         ->join('tb_jabatan', 'tb_departemen.id_jabatan = tb_jabatan.id', 'left')
-         ->first();
-
       $bulan = $this->request->getVar('tanggalKaryawan');
 
-      // hari pertama dalam 1 bulan
+      // hari pertama bulan
       $begin = new Time($bulan, locale: 'id');
-      // tanggal terakhir dalam 1 bulan
+      // tanggal terakhir dalam bulan itu + 1 hari
       $end = (new DateTime($begin->format('Y-m-t')))->modify('+1 day');
-      // interval 1 hari
       $interval = DateInterval::createFromDateString('1 day');
-      // buat array dari semua hari di bulan
       $period = new DatePeriod($begin, $interval, $end);
 
       $arrayTanggal = [];
       $dataAbsen = [];
+      $karyawan = [];
 
-      foreach ($period as $value) {
-         // kecualikan hari sabtu dan minggu
-         if (!($value->format('D') == 'Sat' || $value->format('D') == 'Sun')) {
-            $lewat = Time::parse($value->format('Y-m-d'))->isAfter(Time::today());
+      // ==== 1. Jika departemen dipilih (spesifik) ====
+      if (!empty($idDepartemen) && $idDepartemen != 'all') {
+         $karyawan = $this->karyawanModel->getKaryawanByDepartemen($idDepartemen);
 
-            $absenByTanggal = $this->presensiKaryawanModel
-               ->getPresensiByDepartemenTanggal($idDepartemen, $value->format('Y-m-d'));
-
-            $absenByTanggal['lewat'] = $lewat;
-
-            array_push($dataAbsen, $absenByTanggal);
-            array_push($arrayTanggal, Time::createFromInstance($value, locale: 'id'));
+         if (empty($karyawan)) {
+            session()->setFlashdata([
+               'msg' => 'Data karyawan kosong!',
+               'error' => true
+            ]);
+            return redirect()->to('/admin/laporan');
          }
+
+         $departemen = $this->departemenModel->where(['id_departemen' => $idDepartemen])
+            ->join('tb_jabatan', 'tb_departemen.id_jabatan = tb_jabatan.id', 'left')
+            ->first();
+
+         foreach ($period as $value) {
+            if (!($value->format('D') == 'Sat' || $value->format('D') == 'Sun')) {
+               $lewat = Time::parse($value->format('Y-m-d'))->isAfter(Time::today());
+               $absenByTanggal = $this->presensiKaryawanModel
+                  ->getPresensiByDepartemenTanggal($idDepartemen, $value->format('Y-m-d'));
+               $absenByTanggal['lewat'] = $lewat;
+               array_push($dataAbsen, $absenByTanggal);
+               array_push($arrayTanggal, Time::createFromInstance($value, locale: 'id'));
+            }
+         }
+
+         $judulGrup = "Departemen " . $departemen['departemen'] . " " . $departemen['jabatan'];
       }
 
-      $laki = 0;
+      // ==== 2. Jika pilih semua departemen ====
+      else {
+         // ambil semua karyawan
+         $karyawan = $this->karyawanModel
+            ->join('tb_departemen', 'tb_karyawan.id_departemen = tb_departemen.id_departemen', 'left')
+            ->join('tb_jabatan', 'tb_departemen.id_jabatan = tb_jabatan.id', 'left')
+            ->orderBy("tb_departemen.departemen, tb_jabatan.jabatan, nama_karyawan")
+            ->findAll();
 
+         if (empty($karyawan)) {
+            session()->setFlashdata([
+               'msg' => 'Data semua karyawan kosong!',
+               'error' => true
+            ]);
+            return redirect()->to('/admin/laporan');
+         }
+
+         foreach ($period as $value) {
+            if (!($value->format('D') == 'Sat' || $value->format('D') == 'Sun')) {
+               $lewat = Time::parse($value->format('Y-m-d'))->isAfter(Time::today());
+               $absenByTanggal = $this->presensiKaryawanModel
+                  ->getPresensiAllDepartemenTanggal($value->format('Y-m-d'));
+               $absenByTanggal['lewat'] = $lewat;
+               array_push($dataAbsen, $absenByTanggal);
+               array_push($arrayTanggal, Time::createFromInstance($value, locale: 'id'));
+            }
+         }
+
+         $departemen = null;
+         $judulGrup = "Semua Departemen";
+      }
+
+      // ==== Hitung jumlah laki/perempuan ====
+      $laki = 0;
       foreach ($karyawan as $value) {
          if ($value['jenis_kelamin'] != 'Perempuan') {
             $laki++;
          }
       }
 
+      // ==== Siapkan data untuk tampilan ====
       $data = [
          'tanggal' => $arrayTanggal,
          'bulan' => $begin->toLocalizedString('MMMM'),
@@ -122,20 +155,23 @@ class GenerateLaporan extends BaseController
             'perempuan' => count($karyawan) - $laki
          ],
          'departemen' => $departemen,
-         'grup' => "departemen " . $departemen['departemen'] . " " . $departemen['jabatan'],
+         'grup' => $judulGrup,
+         'isAllDepartments' => (empty($idDepartemen) || $idDepartemen == 'all'),
       ];
 
+      // ==== Output sesuai tipe ====
       if ($type == 'doc') {
          $this->response->setHeader('Content-type', 'application/vnd.ms-word');
          $this->response->setHeader(
             'Content-Disposition',
-            'attachment;Filename=laporan_absen_' . $departemen['departemen'] . " " . $departemen['jabatan'] . '_' . $begin->toLocalizedString('MMMM-Y') . '.doc'
+            'attachment;Filename=laporan_absen_' . str_replace(' ', '_', strtolower($judulGrup)) . '_' . $begin->toLocalizedString('MMMM-Y') . '.doc'
          );
 
          return view('admin/generate-laporan/laporan-karyawan', $data);
       }
 
-      return view('admin/generate-laporan/laporan-karyawan', $data) . view('admin/generate-laporan/topdf');
+      return view('admin/generate-laporan/laporan-karyawan', $data)
+         . view('admin/generate-laporan/topdf');
    }
 
    public function generateLaporanAdmin()

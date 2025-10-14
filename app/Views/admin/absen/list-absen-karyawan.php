@@ -25,7 +25,7 @@
             <table class="table table-hover">
                 <thead class="text-primary">
                     <th><b>No.</b></th>
-                    <th><b>NIS</b></th>
+                    <th><b>NIP</b></th>
                     <th><b>Nama Karyawan</b></th>
                     <th><b>Kehadiran</b></th>
                     <th><b>Jam masuk</b></th>
