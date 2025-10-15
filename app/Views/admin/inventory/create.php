@@ -498,11 +498,11 @@
         <div class="btn-group">
           <button type="submit" class="btn btn-success">
             <span>💾</span>
-            Simpan
+            simpan
           </button>
           <a href="/admin/inventory" class="btn btn-secondary">
             <span>↩️</span>
-            Kembali
+            kembali
           </a>
         </div>
       </form>
