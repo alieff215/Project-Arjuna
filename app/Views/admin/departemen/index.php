@@ -199,34 +199,6 @@
     align-items: center
   }
 
-  /* ========== THEME TOGGLE ========== */
-  .theme-switch {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    padding: 6px 10px;
-    border-radius: 12px;
-    border: var(--border-w) solid var(--border);
-    background: color-mix(in srgb, var(--card) 92%, transparent);
-    user-select: none;
-    cursor: pointer;
-  }
-
-  .theme-switch input {
-    appearance: none;
-    width: 46px;
-    height: 24px;
-    border-radius: 999px;
-    border: var(--border-w) solid var(--border);
-    background: radial-gradient(8px 8px at 8px 50%, var(--text) 98%, transparent 99%), color-mix(in srgb, var(--card) 88%, var(--bg-2) 12%);
-    transition: background .15s ease, border-color .15s ease;
-    position: relative;
-  }
-
-  .theme-switch input:checked {
-    background: radial-gradient(8px 8px at 38px 50%, var(--text) 98%, transparent 99%), color-mix(in srgb, var(--card) 88%, var(--primary) 12%);
-    border-color: color-mix(in srgb, var(--primary) 30%, var(--border));
-  }
 
   /* ========== SKELETON ========== */
   .skeleton {
@@ -305,11 +277,6 @@
               <button class="btn" type="button" onclick="refreshSection('departemen','#dataDepartemen')" aria-label="Refresh daftar departemen">
                 <i class="material-icons">refresh</i><span class="label">Refresh</span>
               </button>
-              <!-- Toggle tema tunggal -->
-              <label class="theme-switch" for="themeSwitch" title="Ganti tema">
-                <i class="material-icons" aria-hidden="true">brightness_6</i>
-                <input id="themeSwitch" type="checkbox" role="switch" aria-label="Toggle tema">
-              </label>
             </div>
           </header>
           <div class="ui-card__body" id="dataDepartemen">
@@ -358,46 +325,6 @@
 </div>
 
 <script>
-  /* ========= THEME MANAGER (stabil & sinkron) ========= */
-  (function() {
-    const KEY = 'ui-theme';
-    const html = document.documentElement;
-    const switchEl = () => document.getElementById('themeSwitch');
-
-    function setTheme(mode) {
-      html.setAttribute('data-theme', mode);
-      const sw = switchEl();
-      if (sw) sw.checked = (mode === 'dark');
-    }
-
-    function getSystem() {
-      return (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
-    }
-
-    // init: prioritas localStorage -> system
-    const saved = localStorage.getItem(KEY);
-    setTheme(saved === 'light' || saved === 'dark' ? saved : getSystem());
-
-    // reaksi perubahan sistem (jika user tidak override)
-    const media = window.matchMedia('(prefers-color-scheme: dark)');
-    media.addEventListener?.('change', e => {
-      const current = localStorage.getItem(KEY);
-      if (!current) {
-        setTheme(e.matches ? 'dark' : 'light');
-      }
-    });
-
-    // toggle
-    document.addEventListener('change', e => {
-      if (e.target && e.target.id === 'themeSwitch') {
-        const mode = e.target.checked ? 'dark' : 'light';
-        localStorage.setItem(KEY, mode);
-        setTheme(mode);
-      }
-    });
-
-    // jika ingin reset ke system preference: localStorage.removeItem(KEY)
-  })();
 
   /* ========= LOADING UX + FETCH WRAPPER ========= */
   function setSkeleton(target) {
