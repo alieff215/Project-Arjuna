@@ -157,41 +157,34 @@
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
-    padding: 28px;
-    /* ↑ was 24px */
-    margin-bottom: 28px;
-    /* ↑ was 24px */
+    padding: 32px;
+    margin-bottom: 32px;
     transition: all 0.2s ease;
     height: 100%;
     display: flex;
     flex-direction: column;
+    box-shadow: var(--shadow);
   }
 
   .content .dept-group:hover {
     border-color: var(--primary);
-    box-shadow: var(--shadow);
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
   }
 
   .content .dept-title {
-    font-size: 1rem;
+    font-size: 1.1rem;
     font-weight: 700;
     color: var(--text);
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    margin-bottom: 24px;
     text-align: center;
-    justify-content: center;
-  }
-
-  /* Hapus emote/icon di judul card departemen */
-  .content .dept-title::before {
-    content: none !important;
-    /* ← was "⚙️" */
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--border);
+    letter-spacing: 0.5px;
   }
 
   .content .dept-group .form-group {
-    margin-bottom: 20px;
+    margin-bottom: 24px;
   }
 
   .content .dept-group .form-group:last-child {
@@ -332,17 +325,18 @@
     }
 
     .content .dept-group {
-      padding: 20px;
-      margin-bottom: 0;
+      padding: 24px;
+      margin-bottom: 20px;
     }
 
     .content .dept-title {
-      font-size: 0.95rem;
-      margin-bottom: 16px;
+      font-size: 1rem;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
     }
 
     .content .dept-group .form-group {
-      margin-bottom: 16px;
+      margin-bottom: 20px;
     }
 
     .content .btn-group {
@@ -401,17 +395,18 @@
     }
 
     .content .dept-group {
-      padding: 18px;
-      margin-bottom: 0;
+      padding: 20px;
+      margin-bottom: 16px;
     }
 
     .content .dept-title {
-      font-size: 0.9rem;
-      margin-bottom: 14px;
+      font-size: 0.95rem;
+      margin-bottom: 18px;
+      padding-bottom: 8px;
     }
 
     .content .dept-group .form-group {
-      margin-bottom: 14px;
+      margin-bottom: 18px;
     }
 
     .content .btn {
@@ -456,8 +451,8 @@
             <div class="dept-group">
               <h6 class="dept-title">Cutting</h6>
               <div class="form-group">
-                <label for="cutting_target">Target per Hari</label>
-                <input type="number" name="cutting_target" id="cutting_target" class="form-control" placeholder="Target per hari" required>
+                <label for="cutting_target">Target harian</label>
+                <input type="number" name="cutting_target" id="cutting_target" class="form-control" placeholder="Target harian" required>
               </div>
               <div class="form-group">
                 <label for="cutting_price_per_pcs">Harga per pcs</label>
@@ -470,8 +465,8 @@
             <div class="dept-group">
               <h6 class="dept-title">Produksi</h6>
               <div class="form-group">
-                <label for="produksi_target">Target per Hari</label>
-                <input type="number" name="produksi_target" id="produksi_target" class="form-control" placeholder="Target per hari" required>
+                <label for="produksi_target">Target harian</label>
+                <input type="number" name="produksi_target" id="produksi_target" class="form-control" placeholder="Target harian" required>
               </div>
               <div class="form-group">
                 <label for="produksi_price_per_pcs">Harga per pcs</label>
@@ -484,8 +479,8 @@
             <div class="dept-group">
               <h6 class="dept-title">Finishing</h6>
               <div class="form-group">
-                <label for="finishing_target">Target per Hari</label>
-                <input type="number" name="finishing_target" id="finishing_target" class="form-control" placeholder="Target per hari" required>
+                <label for="finishing_target">Target harian</label>
+                <input type="number" name="finishing_target" id="finishing_target" class="form-control" placeholder="Target harian" required>
               </div>
               <div class="form-group">
                 <label for="finishing_price_per_pcs">Harga per pcs</label>
