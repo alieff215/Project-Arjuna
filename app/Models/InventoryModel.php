@@ -16,6 +16,6 @@ class InventoryModel extends Model
         'produksi_price_per_pcs', 'produksi_target', 'produksi_income', 'produksi_qty',
         'finishing_price_per_pcs', 'finishing_target', 'finishing_income', 'finishing_qty',
         'target_per_day', 'total_income', 'status',
-        'created_at', 'updated_at'
+        'created_at', 'updated_at', 'deleted_at'
     ];
 }

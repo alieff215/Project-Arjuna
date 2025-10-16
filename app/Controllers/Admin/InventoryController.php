@@ -24,7 +24,8 @@ class InventoryController extends BaseController
         if ($status) {
             $data['inventories'] = $this->inventory->where('status', $status)->findAll();
         } else {
-            $data['inventories'] = $this->inventory->findAll();
+            // Hanya tampilkan data yang tidak dihapus (status != 'deleted')
+            $data['inventories'] = $this->inventory->where('status !=', 'deleted')->findAll();
         }
 
         // Hitung progress per inventory menggunakan total_target dan finishing_qty
@@ -102,7 +103,7 @@ class InventoryController extends BaseController
     // ===========================
     public function detail($id)
     {
-        $inventory = $this->inventory->find($id);
+        $inventory = $this->inventory->where('id', $id)->where('status !=', 'deleted')->first();
 
         $db = db_connect();
         $logs = $db->table('inventory_logs')
@@ -280,5 +281,195 @@ class InventoryController extends BaseController
         $data['title'] = 'History Inventory';
         $data['context'] = 'inventory';
         return view('admin/inventory/history', $data);
+    }
+
+    // ===========================
+    // RECALCULATE TOTAL INCOME
+    // ===========================
+    public function recalculateIncome($id)
+    {
+        $inventory = $this->inventory->find($id);
+        if (!$inventory) {
+            return redirect()->back()->with('error', 'Data inventory tidak ditemukan.');
+        }
+
+        // Hitung ulang income berdasarkan qty terbaru
+        $cuttingIncome = $inventory['cutting_qty'] * $inventory['cutting_price_per_pcs'];
+        $produksiIncome = $inventory['produksi_qty'] * $inventory['produksi_price_per_pcs'];
+        $finishingIncome = $inventory['finishing_qty'] * $inventory['finishing_price_per_pcs'];
+        $totalIncome = $cuttingIncome + $produksiIncome + $finishingIncome;
+
+        // Update income di database
+        $this->inventory->update($id, [
+            'cutting_income' => $cuttingIncome,
+            'produksi_income' => $produksiIncome,
+            'finishing_income' => $finishingIncome,
+            'total_income' => $totalIncome,
+            'updated_at' => date('Y-m-d H:i:s'),
+        ]);
+
+        return redirect()->to('/admin/inventory/detail/' . $id)
+                         ->with('success', 'Total pendapatan berhasil dihitung ulang.');
+    }
+
+    // ===========================
+    // FIX DAILY INCOME CALCULATION
+    // ===========================
+    public function fixDailyIncome($id)
+    {
+        $inventory = $this->inventory->find($id);
+        if (!$inventory) {
+            return redirect()->back()->with('error', 'Data inventory tidak ditemukan.');
+        }
+
+        $db = db_connect();
+        $logs = $db->table('inventory_logs')
+            ->where('inventory_id', $id)
+            ->orderBy('created_at', 'ASC')
+            ->get()
+            ->getResultArray();
+
+        if (empty($logs)) {
+            return redirect()->back()->with('error', 'Tidak ada data log untuk inventory ini.');
+        }
+
+        // Hitung total income berdasarkan logs
+        $totalCuttingIncome = 0;
+        $totalProduksiIncome = 0;
+        $totalFinishingIncome = 0;
+        $prevCut = $prevProd = $prevFin = 0;
+
+        foreach ($logs as $log) {
+            $selisihCut = max(0, $log['cutting_qty'] - $prevCut);
+            $selisihProd = max(0, $log['produksi_qty'] - $prevProd);
+            $selisihFin = max(0, $log['finishing_qty'] - $prevFin);
+
+            $totalCuttingIncome += $selisihCut * $inventory['cutting_price_per_pcs'];
+            $totalProduksiIncome += $selisihProd * $inventory['produksi_price_per_pcs'];
+            $totalFinishingIncome += $selisihFin * $inventory['finishing_price_per_pcs'];
+
+            $prevCut = $log['cutting_qty'];
+            $prevProd = $log['produksi_qty'];
+            $prevFin = $log['finishing_qty'];
+        }
+
+        $totalIncome = $totalCuttingIncome + $totalProduksiIncome + $totalFinishingIncome;
+
+        // Update income di database
+        $this->inventory->update($id, [
+            'cutting_income' => $totalCuttingIncome,
+            'produksi_income' => $totalProduksiIncome,
+            'finishing_income' => $totalFinishingIncome,
+            'total_income' => $totalIncome,
+            'updated_at' => date('Y-m-d H:i:s'),
+        ]);
+
+        return redirect()->to('/admin/inventory/detail/' . $id)
+                         ->with('success', 'Perhitungan pendapatan harian berhasil diperbaiki.');
+    }
+
+    // ===========================
+    // DELETE INVENTORY (SOFT DELETE)
+    // ===========================
+    public function delete($id)
+    {
+        // Gunakan query builder untuk memastikan data ditemukan
+        $db = db_connect();
+        $inventory = $db->table('inventories')->where('id', $id)->get()->getRowArray();
+        
+        if (!$inventory) {
+            return redirect()->back()->with('error', 'Data inventory tidak ditemukan.');
+        }
+
+        // Cek apakah data sudah dihapus sebelumnya
+        if ($inventory['status'] == 'deleted') {
+            return redirect()->back()->with('error', 'Data inventory sudah dihapus sebelumnya.');
+        }
+
+        // Soft delete - update status menjadi 'deleted' dan tambahkan deleted_at
+        $result = $db->table('inventories')->where('id', $id)->update([
+            'status' => 'deleted',
+            'deleted_at' => date('Y-m-d H:i:s'),
+            'updated_at' => date('Y-m-d H:i:s'),
+        ]);
+
+        if ($result) {
+            return redirect()->to('/admin/inventory')
+                             ->with('success', 'Data inventory berhasil dihapus.');
+        } else {
+            return redirect()->back()->with('error', 'Gagal menghapus data inventory.');
+        }
+    }
+
+    // ===========================
+    // RESTORE DELETED INVENTORY
+    // ===========================
+    public function restore($id)
+    {
+        $inventory = $this->inventory->find($id);
+        if (!$inventory) {
+            return redirect()->back()->with('error', 'Data inventory tidak ditemukan.');
+        }
+
+        // Restore - update status menjadi 'onprogress' dan hapus deleted_at
+        $this->inventory->update($id, [
+            'status' => 'onprogress',
+            'deleted_at' => null,
+            'updated_at' => date('Y-m-d H:i:s'),
+        ]);
+
+        return redirect()->to('/admin/inventory')
+                         ->with('success', 'Data inventory berhasil dipulihkan.');
+    }
+
+    // ===========================
+    // PERMANENT DELETE INVENTORY
+    // ===========================
+    public function permanentDelete($id)
+    {
+        $inventory = $this->inventory->find($id);
+        if (!$inventory) {
+            return redirect()->back()->with('error', 'Data inventory tidak ditemukan.');
+        }
+
+        // Hapus data logs terkait
+        $db = db_connect();
+        $db->table('inventory_logs')->where('inventory_id', $id)->delete();
+        $db->table('inventory_log_histories')->where('inventory_id', $id)->delete();
+
+        // Hapus data inventory secara permanen
+        $this->inventory->delete($id);
+
+        return redirect()->to('/admin/inventory/trash')
+                         ->with('success', 'Data inventory berhasil dihapus secara permanen.');
+    }
+
+    // ===========================
+    // TRASH/TRASHED INVENTORY
+    // ===========================
+    public function trash()
+    {
+        $data['inventories'] = $this->inventory->where('status', 'deleted')->findAll();
+        $data['title'] = 'Inventory Terhapus';
+        $data['context'] = 'inventory-trash';
+        return view('admin/inventory/trash', $data);
+    }
+
+    // ===========================
+    // FIX INVENTORY STATUS
+    // ===========================
+    public function fixStatus()
+    {
+        $db = db_connect();
+        
+        // Update status untuk data yang sudah dihapus
+        $result = $db->query("UPDATE inventories SET status = 'deleted' WHERE deleted_at IS NOT NULL AND (status IS NULL OR status = '')");
+        
+        if ($result) {
+            return redirect()->to('/admin/inventory')
+                             ->with('success', 'Status inventory berhasil diperbaiki.');
+        } else {
+            return redirect()->back()->with('error', 'Gagal memperbaiki status inventory.');
+        }
     }
 }

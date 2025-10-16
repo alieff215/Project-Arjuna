@@ -147,9 +147,19 @@
               <?php endif; ?>
             </div>
           </div>
-          <button class="btn btn-primary mt-4 btn-custom px-4">
-            <?= isset($hasTodayLog) && $hasTodayLog ? '✏️ Simpan Koreksi Hari Ini' : '💾 Simpan Perubahan' ?>
-          </button>
+          <div class="d-flex gap-2 mt-4">
+            <button class="btn btn-primary btn-custom px-4">
+              <?= isset($hasTodayLog) && $hasTodayLog ? '✏️ Simpan Koreksi Hari Ini' : '💾 Simpan Perubahan' ?>
+            </button>
+            <a href="/admin/inventory/recalculate/<?= $inventory['id'] ?>" class="btn btn-warning btn-custom px-4" 
+               onclick="return confirm('Apakah Anda yakin ingin menghitung ulang total pendapatan?')">
+              🔄 Hitung Ulang Pendapatan
+            </a>
+            <a href="/admin/inventory/fix-daily/<?= $inventory['id'] ?>" class="btn btn-info btn-custom px-4" 
+               onclick="return confirm('Apakah Anda yakin ingin memperbaiki perhitungan pendapatan harian?')">
+              🔧 Perbaiki Pendapatan Harian
+            </a>
+          </div>
         </form>
       </div>
     </div>
@@ -158,44 +168,52 @@
       // Hitung pendapatan HARI INI berdasarkan update progres terbaru pada hari ini
       $today = date('Y-m-d');
 
-      $latestTodayCut = null; $latestTodayProd = null; $latestTodayFin = null;
-      $prevBeforeCut = 0; $prevBeforeProd = 0; $prevBeforeFin = 0;
+      $deltaCut = 0; $deltaProd = 0; $deltaFin = 0;
+      $cuttingQtyToday = 0; $produksiQtyToday = 0; $finishingQtyToday = 0;
 
       if (isset($logs) && is_array($logs) && count($logs) > 0) {
-        foreach ($logs as $log) {
+        // Urutkan logs berdasarkan tanggal ASC untuk mendapatkan urutan yang benar
+        $sortedLogs = $logs;
+        usort($sortedLogs, function($a, $b) {
+          return strtotime($a['created_at']) - strtotime($b['created_at']);
+        });
+
+        // Cari data hari ini dan hari sebelumnya
+        $lastLogBeforeToday = null;
+        $todayLog = null;
+        
+        // Cari data hari terakhir sebelum hari ini dan data hari ini
+        foreach ($sortedLogs as $log) {
           if ($log['created_at'] === $today) {
-            // Ambil qty terbesar di hari ini (update terakhir umumnya qty terbesar)
-            $latestTodayCut = max((int)($latestTodayCut ?? 0), (int)$log['cutting_qty']);
-            $latestTodayProd = max((int)($latestTodayProd ?? 0), (int)$log['produksi_qty']);
-            $latestTodayFin = max((int)($latestTodayFin ?? 0), (int)$log['finishing_qty']);
+            $todayLog = $log;
           } else {
-            // Karena $logs diurutkan DESC, entri pertama yang bukan hari ini adalah qty terakhir sebelum hari ini
-            if ($prevBeforeCut === 0 && $prevBeforeProd === 0 && $prevBeforeFin === 0) {
-              $prevBeforeCut = (int)$log['cutting_qty'];
-              $prevBeforeProd = (int)$log['produksi_qty'];
-              $prevBeforeFin = (int)$log['finishing_qty'];
-            }
+            $lastLogBeforeToday = $log;
           }
         }
+        
+        // Hitung delta berdasarkan data hari ini vs hari sebelumnya
+        if ($todayLog) {
+          $cuttingQtyToday = (int)$todayLog['cutting_qty'];
+          $produksiQtyToday = (int)$todayLog['produksi_qty'];
+          $finishingQtyToday = (int)$todayLog['finishing_qty'];
+          
+          if ($lastLogBeforeToday) {
+            $deltaCut = $cuttingQtyToday - (int)$lastLogBeforeToday['cutting_qty'];
+            $deltaProd = $produksiQtyToday - (int)$lastLogBeforeToday['produksi_qty'];
+            $deltaFin = $finishingQtyToday - (int)$lastLogBeforeToday['finishing_qty'];
+          } else {
+            // Jika tidak ada data sebelumnya, maka delta = qty hari ini
+            $deltaCut = $cuttingQtyToday;
+            $deltaProd = $produksiQtyToday;
+            $deltaFin = $finishingQtyToday;
+          }
+        } else if ($lastLogBeforeToday) {
+          // Jika tidak ada data hari ini, gunakan data terakhir
+          $cuttingQtyToday = (int)$lastLogBeforeToday['cutting_qty'];
+          $produksiQtyToday = (int)$lastLogBeforeToday['produksi_qty'];
+          $finishingQtyToday = (int)$lastLogBeforeToday['finishing_qty'];
+        }
       }
-
-      // Hitung delta (selisih) harian - ini yang akan ditampilkan di kolom Qty
-      $deltaCut = 0; $deltaProd = 0; $deltaFin = 0;
-      
-      if ($latestTodayCut !== null) {
-        $deltaCut = max(0, $latestTodayCut - (int)$prevBeforeCut);
-      }
-      if ($latestTodayProd !== null) {
-        $deltaProd = max(0, $latestTodayProd - (int)$prevBeforeProd);
-      }
-      if ($latestTodayFin !== null) {
-        $deltaFin = max(0, $latestTodayFin - (int)$prevBeforeFin);
-      }
-
-      // Untuk capaian, gunakan qty kumulatif terakhir hari ini (bukan delta)
-      $cuttingQtyToday = ($latestTodayCut !== null) ? (int)$latestTodayCut : (int)$prevBeforeCut;
-      $produksiQtyToday = ($latestTodayProd !== null) ? (int)$latestTodayProd : (int)$prevBeforeProd;
-      $finishingQtyToday = ($latestTodayFin !== null) ? (int)$latestTodayFin : (int)$prevBeforeFin;
 
       $cutting_income_today = $deltaCut * (float)$inventory['cutting_price_per_pcs'];
       $produksi_income_today = $deltaProd * (float)$inventory['produksi_price_per_pcs'];
@@ -520,10 +538,22 @@
             <?php 
               $prevCut = $prevProd = $prevFin = 0;
               $sumCutIncome = $sumProdIncome = $sumFinIncome = 0;
-              foreach ($logs as $log): 
+              
+              // Urutkan logs berdasarkan tanggal ASC untuk perhitungan yang benar
+              $sortedLogsForTable = $logs;
+              usort($sortedLogsForTable, function($a, $b) {
+                return strtotime($a['created_at']) - strtotime($b['created_at']);
+              });
+              
+              foreach ($sortedLogsForTable as $log): 
                 $selisihCut = $log['cutting_qty'] - $prevCut;
                 $selisihProd = $log['produksi_qty'] - $prevProd;
                 $selisihFin = $log['finishing_qty'] - $prevFin;
+
+                // Pastikan selisih tidak negatif (jika ada koreksi ke bawah)
+                $selisihCut = max(0, $selisihCut);
+                $selisihProd = max(0, $selisihProd);
+                $selisihFin = max(0, $selisihFin);
 
                 $incomeCut = $selisihCut * $inventory['cutting_price_per_pcs'];
                 $incomeProd = $selisihProd * $inventory['produksi_price_per_pcs'];
