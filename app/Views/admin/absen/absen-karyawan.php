@@ -470,10 +470,10 @@
                      <span>Semua Departemen</span>
                   </button>
                </div>
-               <?php foreach ($departemen as $value): ?>
+               <?php foreach ($listDepartemen as $value): ?>
                   <?php
-                  $idDepartemen   = $value->id_departemen;
-                  $namaDepartemen = $value->departemen . ' ' . $value->jabatan;
+                  $idDepartemen   = $value['id_departemen'];
+                  $namaDepartemen = $value['departemen'] . ' ' . $value['jabatan'];
                   ?>
                   <div class="col-12 col-sm-6 col-md-4 col-lg-3">
                      <button id="departemen-<?= $idDepartemen; ?>"
@@ -517,6 +517,19 @@
                Data diperbarui berdasarkan tanggal &amp; departemen yang dipilih.
             </span>
             <span class="badge-soft">Realtime AJAX</span>
+         </div>
+      </div>
+
+      <!-- ====== HISTORY UPDATE ====== -->
+      <div class="u-card" style="margin-top:12px;">
+         <div class="u-head">
+            <div>
+               <h5 class="u-title"><i class="material-icons" style="color:var(--warning)">history</i> History Update</h5>
+               <p class="u-sub">Perubahan kehadiran karyawan pada tanggal yang dipilih</p>
+            </div>
+         </div>
+         <div class="u-body" id="historyKaryawan">
+            <div class="placeholder">Belum ada history ditampilkan. Pilih tanggal atau klik Refresh.</div>
          </div>
       </div>
    </div>
@@ -609,9 +622,9 @@
    }
 
    function updateBtnActive(activeId) {
-      <?php foreach ($departemen as $value): ?>
-         $('#departemen-<?= $value->id_departemen; ?>')
-            .toggleClass('active', <?= $value->id_departemen; ?> === activeId);
+      <?php foreach ($listDepartemen as $value): ?>
+         $('#departemen-<?= $value['id_departemen']; ?>')
+            .toggleClass('active', <?= $value['id_departemen']; ?> === activeId);
       <?php endforeach; ?>
    }
 
@@ -645,6 +658,19 @@
             showToast('Gagal memuat data', 'error');
          }
       });
+
+      // muat history untuk tanggal yang sama
+      $.ajax({
+         url: "<?= base_url('/admin/absen-karyawan/history'); ?>",
+         type: 'post',
+         data: { tanggal },
+         success: function(res) {
+            $('#historyKaryawan').html(res);
+         },
+         error: function() {
+            $('#historyKaryawan').html('<div class="placeholder">Gagal memuat history.</div>');
+         }
+      });
    }
 
    /* ================== EVENT BINDINGS ================== */
@@ -667,7 +693,8 @@
          type: 'post',
          data: {
             id_presensi: idPresensi,
-            id_karyawan: idKaryawan
+           id_karyawan: idKaryawan,
+           tanggal: $('#tanggal').val()
          },
          success: function(res) {
             $('#modalFormUbahKaryawan').html(res);

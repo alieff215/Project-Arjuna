@@ -7,6 +7,7 @@ use App\Models\AdminModel;
 use App\Controllers\BaseController;
 use App\Models\KehadiranModel;
 use App\Models\PresensiAdminModel;
+use App\Models\PresensiAdminHistoryModel;
 use CodeIgniter\I18n\Time;
 
 class DataAbsenAdmin extends BaseController
@@ -17,6 +18,8 @@ class DataAbsenAdmin extends BaseController
 
    protected KehadiranModel $kehadiranModel;
 
+   protected PresensiAdminHistoryModel $presensiHistory;
+
    public function __construct()
    {
       $this->adminModel = new AdminModel();
@@ -24,6 +27,8 @@ class DataAbsenAdmin extends BaseController
       $this->presensiAdmin = new PresensiAdminModel();
 
       $this->kehadiranModel = new KehadiranModel();
+
+      $this->presensiHistory = new PresensiAdminHistoryModel();
    }
 
    public function index()
@@ -54,15 +59,38 @@ class DataAbsenAdmin extends BaseController
       return view('admin/absen/list-absen-admin', $data);
    }
 
+   public function ambilHistoryTanggal()
+   {
+      $tanggal = $this->request->getVar('tanggal') ?? date('Y-m-d');
+      try {
+         $histories = $this->presensiHistory->getByTanggal((string)$tanggal);
+      } catch (\Throwable $th) {
+         $histories = [];
+      }
+
+      return view('admin/absen/history-absen-admin', ['histories' => $histories, 'tanggal' => $tanggal]);
+   }
+
    public function ambilKehadiran()
    {
       $idPresensi = $this->request->getVar('id_presensi');
       $idAdmin = $this->request->getVar('id_admin');
+      $reqTanggal = $this->request->getVar('tanggal');
+
+      $presensi = $this->presensiAdmin->getPresensiById($idPresensi);
+      $histories = [];
+      $tanggalForHistory = $reqTanggal ?: ($presensi['tanggal'] ?? date('Y-m-d'));
+      try {
+         $histories = $this->presensiHistory->getByAdminTanggal((int)$idAdmin, (string)$tanggalForHistory);
+      } catch (\Throwable $th) {
+         $histories = [];
+      }
 
       $data = [
-         'presensi' => $this->presensiAdmin->getPresensiById($idPresensi),
+         'presensi' => $presensi,
          'listKehadiran' => $this->kehadiranModel->getAllKehadiran(),
-         'data' => $this->adminModel->getAdminById($idAdmin)
+         'data' => $this->adminModel->getAdminById($idAdmin),
+         'histories' => $histories
       ];
 
       return view('admin/absen/ubah-kehadiran-modal', $data);
@@ -79,6 +107,7 @@ class DataAbsenAdmin extends BaseController
       $keterangan = $this->request->getVar('keterangan');
 
       $cek = $this->presensiAdmin->cekAbsen($idAdmin, $tanggal);
+      $beforeRow = $this->presensiAdmin->getPresensiByIdAdminTanggal($idAdmin, $tanggal);
 
       $result = $this->presensiAdmin->updatePresensi(
          $cek == false ? NULL : $cek,
@@ -93,6 +122,22 @@ class DataAbsenAdmin extends BaseController
       $response['nama_admin'] = $this->adminModel->getAdminById($idAdmin)['nama_admin'];
 
       if ($result) {
+         // catat history perubahan (best-effort)
+         try {
+            $afterRow = $this->presensiAdmin->getPresensiByIdAdminTanggal($idAdmin, $tanggal);
+            $this->presensiHistory->insert([
+               'id_presensi' => $afterRow['id_presensi'] ?? $cek,
+               'id_admin' => (int)$idAdmin,
+               'tanggal' => $tanggal,
+               'id_kehadiran_before' => $beforeRow['id_kehadiran'] ?? null,
+               'id_kehadiran_after' => $afterRow['id_kehadiran'] ?? $idKehadiran,
+               'keterangan_before' => $beforeRow['keterangan'] ?? null,
+               'keterangan_after' => $afterRow['keterangan'] ?? $keterangan,
+               'created_at' => date('Y-m-d H:i:s'),
+            ]);
+         } catch (\Throwable $th) {
+            // jangan blokir respon
+         }
          $response['status'] = TRUE;
       } else {
          $response['status'] = FALSE;

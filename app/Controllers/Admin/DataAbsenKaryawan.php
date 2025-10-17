@@ -9,6 +9,7 @@ use App\Models\KaryawanModel;
 use App\Controllers\BaseController;
 use App\Models\KehadiranModel;
 use App\Models\PresensiKaryawanModel;
+use App\Models\PresensiKaryawanHistoryModel;
 use CodeIgniter\I18n\Time;
 
 class DataAbsenKaryawan extends BaseController
@@ -20,6 +21,7 @@ class DataAbsenKaryawan extends BaseController
    protected KehadiranModel $kehadiranModel;
 
    protected PresensiKaryawanModel $presensiKaryawan;
+   protected PresensiKaryawanHistoryModel $presensiHistory;
 
    protected string $currentDate;
 
@@ -34,6 +36,7 @@ class DataAbsenKaryawan extends BaseController
       $this->departemenModel = new DepartemenModel();
 
       $this->presensiKaryawan = new PresensiKaryawanModel();
+      $this->presensiHistory = new PresensiKaryawanHistoryModel();
    }
 
    public function index()
@@ -53,7 +56,7 @@ class DataAbsenKaryawan extends BaseController
 
       // ✅ Tambahkan ini:
       $departemenModel = new \App\Models\DepartemenModel();
-      $data['departemen'] = $departemenModel->getAllDepartemen();
+      $data['listDepartemen'] = $departemenModel->getAllDepartemen();
       $data['title'] = 'Data Absen Karyawan';
       $data['tanggal'] = $tanggal;
 
@@ -88,15 +91,35 @@ class DataAbsenKaryawan extends BaseController
       return view('admin/absen/list-absen-karyawan', $data);
    }
 
+   public function ambilHistoryTanggal()
+   {
+      $tanggal = $this->request->getVar('tanggal') ?? date('Y-m-d');
+      try {
+         $histories = $this->presensiHistory->getByTanggal((string)$tanggal);
+      } catch (\Throwable $th) {
+         $histories = [];
+      }
+
+      return view('admin/absen/history-absen-karyawan', ['histories' => $histories, 'tanggal' => $tanggal]);
+   }
+
    public function ambilKehadiran()
    {
       $idPresensi = $this->request->getVar('id_presensi');
       $idKaryawan = $this->request->getVar('id_karyawan');
 
+      $histories = [];
+      try {
+         $histories = $this->presensiHistory->getByKaryawanTanggal((int)$idKaryawan, $this->request->getVar('tanggal') ?? $this->currentDate);
+      } catch (\Throwable $th) {
+         $histories = [];
+      }
+
       $data = [
          'presensi' => $this->presensiKaryawan->getPresensiById($idPresensi),
          'listKehadiran' => $this->kehadiranModel->getAllKehadiran(),
-         'data' => $this->karyawanModel->getKaryawanById($idKaryawan)
+         'data' => $this->karyawanModel->getKaryawanById($idKaryawan),
+         'histories' => $histories
       ];
 
       return view('admin/absen/ubah-kehadiran-modal', $data);
@@ -109,11 +132,15 @@ class DataAbsenKaryawan extends BaseController
       $idKaryawan = $this->request->getVar('id_karyawan');
       $idDepartemen = $this->request->getVar('id_departemen');
       $tanggal = $this->request->getVar('tanggal');
-      $jamMasuk = $this->request->getVar('jam_masuk');
-      $jamKeluar = $this->request->getVar('jam_keluar');
+      // abaikan perubahan jam masuk/keluar dari request UI
+      $jamMasuk = null;
+      $jamKeluar = null;
       $keterangan = $this->request->getVar('keterangan');
 
-      $cek = $this->presensiKaryawan->cekAbsen($idKaryawan, $tanggal);
+      // ambil data sebelum perubahan (row lengkap)
+      $beforeRow = $this->presensiKaryawan->getPresensiByIdKaryawanTanggal($idKaryawan, $tanggal);
+      // untuk kompatibilitas fungsi updatePresensi yang menerima idPresensi
+      $cek = $beforeRow ? ($beforeRow['id_presensi'] ?? null) : $this->presensiKaryawan->cekAbsen($idKaryawan, $tanggal);
 
       $result = $this->presensiKaryawan->updatePresensi(
          $cek == false ? NULL : $cek,
@@ -129,6 +156,20 @@ class DataAbsenKaryawan extends BaseController
       $response['nama_karyawan'] = $this->karyawanModel->getKaryawanById($idKaryawan)['nama_karyawan'];
 
       if ($result) {
+         try {
+            $afterRow = $this->presensiKaryawan->getPresensiByIdKaryawanTanggal($idKaryawan, $tanggal);
+            $this->presensiHistory->insert([
+               'id_presensi' => $afterRow['id_presensi'] ?? $cek,
+               'id_karyawan' => (int)$idKaryawan,
+               'tanggal' => $tanggal,
+               'id_kehadiran_before' => $beforeRow['id_kehadiran'] ?? null,
+               'id_kehadiran_after' => $afterRow['id_kehadiran'] ?? $idKehadiran,
+               'keterangan_before' => $beforeRow['keterangan'] ?? null,
+               'keterangan_after' => $afterRow['keterangan'] ?? $keterangan,
+            ]);
+         } catch (\Throwable $th) {
+            // jangan blokir respon
+         }
          $response['status'] = TRUE;
       } else {
          $response['status'] = FALSE;

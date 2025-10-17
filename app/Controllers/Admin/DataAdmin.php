@@ -5,11 +5,13 @@ namespace App\Controllers\Admin;
 use App\Models\AdminModel;
 
 use App\Controllers\BaseController;
+use App\Models\AdminUpdateHistoryModel;
 use CodeIgniter\Exceptions\PageNotFoundException;
 
 class DataAdmin extends BaseController
 {
    protected AdminModel $adminModel;
+   protected AdminUpdateHistoryModel $adminUpdateHistoryModel;
 
    protected $adminValidationRules = [
       'nuptk' => [
@@ -33,6 +35,7 @@ class DataAdmin extends BaseController
    public function __construct()
    {
       $this->adminModel = new AdminModel();
+      $this->adminUpdateHistoryModel = new AdminUpdateHistoryModel();
    }
 
    public function index()
@@ -116,6 +119,7 @@ class DataAdmin extends BaseController
          'data' => $admin,
          'ctx' => 'admin',
          'title' => 'Edit Data admin',
+         'histories' => $this->adminUpdateHistoryModel->getByAdminId((int)$id)
       ];
 
       return view('admin/data/edit/edit-data-admin', $data);
@@ -137,6 +141,9 @@ class DataAdmin extends BaseController
          return view('/admin/data/edit/edit-data-admin', $data);
       }
 
+      // ambil data lama untuk history
+      $adminLama = $this->adminModel->getAdminById($idAdmin);
+
       // update
       $result = $this->adminModel->updateAdmin(
          id: $idAdmin,
@@ -148,11 +155,51 @@ class DataAdmin extends BaseController
       );
 
       if ($result) {
+         // tulis history perubahan
+         try {
+            $adminBaru = $this->adminModel->getAdminById($idAdmin);
+            $before = [
+               'nuptk' => $adminLama['nuptk'] ?? null,
+               'nama_admin' => $adminLama['nama_admin'] ?? null,
+               'jenis_kelamin' => $adminLama['jenis_kelamin'] ?? null,
+               'alamat' => $adminLama['alamat'] ?? null,
+               'no_hp' => $adminLama['no_hp'] ?? null,
+            ];
+            $after = [
+               'nuptk' => $adminBaru['nuptk'] ?? null,
+               'nama_admin' => $adminBaru['nama_admin'] ?? null,
+               'jenis_kelamin' => $adminBaru['jenis_kelamin'] ?? null,
+               'alamat' => $adminBaru['alamat'] ?? null,
+               'no_hp' => $adminBaru['no_hp'] ?? null,
+            ];
+            $changed = [];
+            foreach ($after as $key => $val) {
+               if (($before[$key] ?? null) != $val) {
+                  $changed[] = $key;
+               }
+            }
+            $insertData = [
+               'id_admin' => (int)$idAdmin,
+               'changed_fields' => implode(',', $changed),
+               'before_data' => json_encode($before, JSON_UNESCAPED_UNICODE),
+               'after_data' => json_encode($after, JSON_UNESCAPED_UNICODE),
+               'created_at' => date('Y-m-d H:i:s'),
+            ];
+            $ok = $this->adminUpdateHistoryModel->insert($insertData);
+            if ($ok === false) {
+               log_message('error', 'Failed to insert admin history: ' . json_encode($insertData));
+            } else {
+               log_message('debug', 'Inserted admin history for ID ' . $idAdmin);
+            }
+         } catch (\Throwable $th) {
+            log_message('error', 'Exception inserting admin history: ' . $th->getMessage());
+         }
          session()->setFlashdata([
             'msg' => 'Edit data berhasil',
-            'error' => false
+            'error' => false,
+            'show_history' => true
          ]);
-         return redirect()->to('/admin/admin');
+         return redirect()->to('/admin/admin/edit/' . $idAdmin);
       }
 
       session()->setFlashdata([
