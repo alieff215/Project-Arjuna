@@ -52,15 +52,32 @@ function fetchDepartemenJabatanData(type, target) {
     type: 'post',
     data: setAjaxData({}),
     success: function (response) {
-      const obj = JSON.parse(response);
-      if (obj.result === 1) {
-        $(target).html(obj.htmlContent);
-      } else {
-        $(target).html('<p class="text-center mt-3">Data tidak ditemukan</p>');
+      try {
+        const obj = JSON.parse(response);
+        if (obj.result === 1) {
+          $(target).html(obj.htmlContent);
+        } else {
+          const errorMsg = obj.error || 'Data tidak ditemukan';
+          $(target).html('<div class="alert alert-danger text-center mt-3">' + errorMsg + '</div>');
+        }
+      } catch (e) {
+        $(target).html('<div class="alert alert-danger text-center mt-3">Error parsing response: ' + e.message + '</div>');
       }
     },
     error: function (xhr, status, thrown) {
-      $(target).html('<p class="text-center mt-3">' + thrown + '</p>');
+      let errorMsg = 'Terjadi kesalahan: ' + thrown;
+      if (xhr.responseText) {
+        try {
+          const response = JSON.parse(xhr.responseText);
+          if (response.error) {
+            errorMsg = response.error;
+          }
+        } catch (e) {
+          // If response is not JSON, use the response text
+          errorMsg = xhr.responseText || errorMsg;
+        }
+      }
+      $(target).html('<div class="alert alert-danger text-center mt-3">' + errorMsg + '</div>');
     },
     complete: function () {
       $('#loadingSpinner').hide();

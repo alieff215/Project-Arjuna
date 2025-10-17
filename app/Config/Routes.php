@@ -167,6 +167,13 @@ $routes->group('admin', function (RouteCollection $routes) {
       $routes->post('store', 'InventoryController::store');
       $routes->get('detail/(:num)', 'InventoryController::detail/$1');
       $routes->post('updateProcess/(:num)', 'InventoryController::updateProcess/$1');
+      $routes->get('recalculate/(:num)', 'InventoryController::recalculateIncome/$1');
+      $routes->get('fix-daily/(:num)', 'InventoryController::fixDailyIncome/$1');
+      $routes->get('delete/(:num)', 'InventoryController::delete/$1');
+      $routes->get('restore/(:num)', 'InventoryController::restore/$1');
+      $routes->get('permanent-delete/(:num)', 'InventoryController::permanentDelete/$1');
+      $routes->get('trash', 'InventoryController::trash');
+      $routes->get('fix-status', 'InventoryController::fixStatus');
       $routes->get('history', 'InventoryController::history');
    });
 });

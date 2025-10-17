@@ -191,9 +191,19 @@
               </small>
             </div>
           </div>
-          <button class="btn btn-primary mt-4 btn-custom px-4">
-            <?= isset($hasTodayLog) && $hasTodayLog ? '✏️ Simpan Koreksi Hari Ini' : '💾 Simpan Perubahan' ?>
-          </button>
+          <div class="d-flex gap-2 mt-4">
+            <button class="btn btn-primary btn-custom px-4">
+              <?= isset($hasTodayLog) && $hasTodayLog ? '✏️ Simpan Koreksi Hari Ini' : '💾 Simpan Perubahan' ?>
+            </button>
+            <a href="/admin/inventory/recalculate/<?= $inventory['id'] ?>" class="btn btn-warning btn-custom px-4" 
+               onclick="return confirm('Apakah Anda yakin ingin menghitung ulang total pendapatan?')">
+              🔄 Hitung Ulang Pendapatan
+            </a>
+            <a href="/admin/inventory/fix-daily/<?= $inventory['id'] ?>" class="btn btn-info btn-custom px-4" 
+               onclick="return confirm('Apakah Anda yakin ingin memperbaiki perhitungan pendapatan harian?')">
+              🔧 Perbaiki Pendapatan Harian
+            </a>
+          </div>
         </form>
       </div>
     </div>
@@ -203,6 +213,56 @@
       $cuttingQtyToday = (int)$inventory['cutting_qty'];
       $produksiQtyToday = (int)$inventory['produksi_qty'];
       $finishingQtyToday = (int)$inventory['finishing_qty'];
+
+      // Hitung pendapatan HARI INI berdasarkan update progres terbaru pada hari ini
+      $today = date('Y-m-d');
+
+      $deltaCut = 0; $deltaProd = 0; $deltaFin = 0;
+      $cuttingQtyToday = 0; $produksiQtyToday = 0; $finishingQtyToday = 0;
+
+      if (isset($logs) && is_array($logs) && count($logs) > 0) {
+        // Urutkan logs berdasarkan tanggal ASC untuk mendapatkan urutan yang benar
+        $sortedLogs = $logs;
+        usort($sortedLogs, function($a, $b) {
+          return strtotime($a['created_at']) - strtotime($b['created_at']);
+        });
+
+        // Cari data hari ini dan hari sebelumnya
+        $lastLogBeforeToday = null;
+        $todayLog = null;
+        
+        // Cari data hari terakhir sebelum hari ini dan data hari ini
+        foreach ($sortedLogs as $log) {
+          if ($log['created_at'] === $today) {
+            $todayLog = $log;
+          } else {
+            $lastLogBeforeToday = $log;
+          }
+        }
+        
+        // Hitung delta berdasarkan data hari ini vs hari sebelumnya
+        if ($todayLog) {
+          $cuttingQtyToday = (int)$todayLog['cutting_qty'];
+          $produksiQtyToday = (int)$todayLog['produksi_qty'];
+          $finishingQtyToday = (int)$todayLog['finishing_qty'];
+          
+          if ($lastLogBeforeToday) {
+            $deltaCut = $cuttingQtyToday - (int)$lastLogBeforeToday['cutting_qty'];
+            $deltaProd = $produksiQtyToday - (int)$lastLogBeforeToday['produksi_qty'];
+            $deltaFin = $finishingQtyToday - (int)$lastLogBeforeToday['finishing_qty'];
+          } else {
+            // Jika tidak ada data sebelumnya, maka delta = qty hari ini
+            $deltaCut = $cuttingQtyToday;
+            $deltaProd = $produksiQtyToday;
+            $deltaFin = $finishingQtyToday;
+          }
+        } else if ($lastLogBeforeToday) {
+          // Jika tidak ada data hari ini, gunakan data terakhir
+          $cuttingQtyToday = (int)$lastLogBeforeToday['cutting_qty'];
+          $produksiQtyToday = (int)$lastLogBeforeToday['produksi_qty'];
+          $finishingQtyToday = (int)$lastLogBeforeToday['finishing_qty'];
+        }
+      }
 
       $cutting_income_today = $deltaCut * (float)$inventory['cutting_price_per_pcs'];
       $produksi_income_today = $deltaProd * (float)$inventory['produksi_price_per_pcs'];
@@ -527,6 +587,7 @@
             <?php 
               $cumulativeCut = $cumulativeProd = $cumulativeFin = 0;
               $sumCutIncome = $sumProdIncome = $sumFinIncome = 0;
+
               foreach ($logs as $log): 
                 // Data di logs sekarang adalah incremental (tambah hari ini)
                 $tambahHariIniCut = $log['cutting_qty'];
@@ -541,6 +602,28 @@
                 $incomeCut = $tambahHariIniCut * $inventory['cutting_price_per_pcs'];
                 $incomeProd = $tambahHariIniProd * $inventory['produksi_price_per_pcs'];
                 $incomeFin = $tambahHariIniFin * $inventory['finishing_price_per_pcs'];
+
+              
+              // Urutkan logs berdasarkan tanggal ASC untuk perhitungan yang benar
+              $sortedLogsForTable = $logs;
+              usort($sortedLogsForTable, function($a, $b) {
+                return strtotime($a['created_at']) - strtotime($b['created_at']);
+              });
+              
+              foreach ($sortedLogsForTable as $log): 
+                $selisihCut = $log['cutting_qty'] - $prevCut;
+                $selisihProd = $log['produksi_qty'] - $prevProd;
+                $selisihFin = $log['finishing_qty'] - $prevFin;
+
+                // Pastikan selisih tidak negatif (jika ada koreksi ke bawah)
+                $selisihCut = max(0, $selisihCut);
+                $selisihProd = max(0, $selisihProd);
+                $selisihFin = max(0, $selisihFin);
+
+                $incomeCut = $selisihCut * $inventory['cutting_price_per_pcs'];
+                $incomeProd = $selisihProd * $inventory['produksi_price_per_pcs'];
+                $incomeFin = $selisihFin * $inventory['finishing_price_per_pcs'];
+
                 $totalIncomeToday = $incomeCut + $incomeProd + $incomeFin;
 
                 $sumCutIncome += $incomeCut;

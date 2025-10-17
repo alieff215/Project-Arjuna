@@ -27,6 +27,7 @@ class DepartemenController extends BaseController
         $data = [
             'title' => 'Departemen & Jabatan',
             'ctx' => 'departemen',
+            'generalSettings' => $this->generalSettings,
         ];
 
         return view('admin/departemen/index', $data);
@@ -39,17 +40,25 @@ class DepartemenController extends BaseController
      */
     public function listData()
     {
-        $vars['data'] = $this->departemenModel->getDataDepartemen();
-        $htmlContent = '';
-        if (!empty($vars['data'])) {
-            $htmlContent = view('admin/departemen/list-departemen', $vars);
-            $data = [
-                'result' => 1,
-                'htmlContent' => $htmlContent,
-            ];
-            echo json_encode($data);
-        } else {
-            echo json_encode(['result' => 0]);
+        try {
+            $vars['data'] = $this->departemenModel->getDataDepartemen();
+            $htmlContent = '';
+            if (!empty($vars['data'])) {
+                $htmlContent = view('admin/departemen/list-departemen', $vars);
+                $data = [
+                    'result' => 1,
+                    'htmlContent' => $htmlContent,
+                ];
+                echo json_encode($data);
+            } else {
+                echo json_encode(['result' => 0]);
+            }
+        } catch (\Exception $e) {
+            log_message('error', 'Error in DepartemenController::listData: ' . $e->getMessage());
+            echo json_encode([
+                'result' => 0,
+                'error' => 'Internal Server Error: ' . $e->getMessage()
+            ]);
         }
     }
 

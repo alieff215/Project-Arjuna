@@ -2,65 +2,9 @@
 <?= $this->section('content') ?>
 
 <style>
-   /* ================= TOKENS & THEMES ================= */
-   :root {
-      /* Base Light */
-      --bg: #eef3fb;
-      --bg-accent-1: #e5efff;
-      --bg-accent-2: #f0f7ff;
+   /* ================= PAGE-ONLY STYLES (Tanpa tokens/theme & tanpa navbar/footer) ================= */
 
-      --card: #ffffffcc;
-      /* translucent for glass effect */
-      --card-solid: #ffffff;
-      --text: #0b132b;
-      --muted: #6b7b93;
-      --border: rgba(16, 24, 40, .12);
-      --ring: #2563eb;
-
-      /* Futuristic accents */
-      --primary: #3b82f6;
-      /* blue */
-      --success: #10b981;
-      /* green */
-      --warning: #f59e0b;
-      --danger: #ef4444;
-
-      /* Glow + radius */
-      --radius: 18px;
-      --shadow-1: 0 10px 30px rgba(12, 20, 40, .08);
-      --shadow-2: 0 18px 60px rgba(12, 20, 40, .12);
-      --glass-blur: 8px;
-
-      /* Neon style for borders */
-      --neon: 0 0 0 1px color-mix(in oklab, var(--ring) 20%, transparent), 0 10px 30px rgba(37, 99, 235, .08);
-   }
-
-   /* Dark */
-   [data-theme="dark"] {
-      --bg: #070d1a;
-      --bg-accent-1: #0a1731;
-      --bg-accent-2: #0f213f;
-
-      --card: rgba(12, 18, 36, .55);
-      --card-solid: #0f182d;
-      --text: #e6ecff;
-      --muted: #9fb1cc;
-      --border: rgba(200, 210, 230, .14);
-      --ring: #7dd3fc;
-      /* cyan */
-      --primary: #7aa8ff;
-      --success: #34d399;
-      --warning: #fbbf24;
-      --danger: #fb7185;
-
-      --shadow-1: 0 16px 36px rgba(0, 0, 0, .45);
-      --shadow-2: 0 25px 70px rgba(0, 0, 0, .55);
-      --glass-blur: 12px;
-
-      --neon: 0 0 0 1px color-mix(in oklab, var(--ring) 35%, transparent), 0 10px 40px rgba(0, 186, 255, .12);
-   }
-
-   /* =============== BACKGROUND (mesh + subtle grid) =============== */
+   /* Background halaman (boleh dipertahankan jika memang mau mesh di halaman ini) */
    .content {
       position: relative;
       min-height: calc(100vh - 64px);
@@ -72,7 +16,6 @@
    }
 
    .content::before {
-      /* micro grid dots to feel futuristic */
       content: "";
       position: absolute;
       inset: 0;
@@ -86,7 +29,7 @@
       padding: 0 16px !important;
    }
 
-   /* =============== GLASS CARDS =============== */
+   /* =============== GLASS CARDS (komponen halaman) =============== */
    .u-card {
       position: relative;
       background: var(--card);
@@ -219,8 +162,7 @@
       border-radius: 12px;
       padding: 18px;
       color: var(--muted);
-      background:
-         linear-gradient(180deg, color-mix(in oklab, var(--card-solid) 90%, transparent), transparent);
+      background: linear-gradient(180deg, color-mix(in oklab, var(--card-solid) 90%, transparent), transparent);
    }
 
    /* Skeleton shimmer */
@@ -249,33 +191,6 @@
       }
    }
 
-   /* =============== THEME TOGGLE =============== */
-   .theme-toggle {
-      position: sticky;
-      top: 12px;
-      z-index: 40;
-      display: flex;
-      justify-content: flex-end;
-      padding: 0 16px 10px;
-   }
-
-   .theme-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      background: color-mix(in oklab, var(--card-solid) 80%, transparent);
-      color: var(--text);
-      padding: 10px 14px;
-      cursor: pointer;
-      box-shadow: var(--neon);
-   }
-
-   .theme-btn .material-icons {
-      font-size: 20px;
-   }
-
    /* Toast */
    .toast-lite {
       position: fixed;
@@ -296,7 +211,7 @@
       margin-right: 6px;
    }
 
-   /* Responsive */
+   /* Responsive dasar yang sudah ada */
    @media (max-width: 767.98px) {
       .u-head {
          flex-direction: column;
@@ -308,16 +223,271 @@
          width: 100%;
       }
    }
+
+   /* ====== Layout seragam untuk list kartu stats (jika dipakai di halaman ini) ====== */
+   .equal-cards-row>[class^="col-"],
+   .equal-cards-row>[class*=" col-"] {
+      display: flex;
+   }
+
+   .equal-cards-row>[class^="col-"]>.card,
+   .equal-cards-row>[class*=" col-"]>.card {
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 auto;
+      width: 100%;
+   }
+
+   .card.card-stats .card-header.card-header-icon {
+      display: grid;
+      grid-template-columns: 92px 1fr auto;
+      grid-auto-rows: auto;
+      align-items: center;
+      column-gap: 16px;
+      min-height: 128px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(180deg, var(--card-solid, #fff), transparent);
+   }
+
+   .card.card-stats .card-header .card-icon {
+      grid-column: 1;
+      grid-row: 1 / span 2;
+      width: 92px;
+      height: 92px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      margin: 0;
+      box-shadow: 0 10px 20px rgba(12, 20, 40, .12);
+   }
+
+   .card.card-stats .card-header .card-category {
+      grid-column: 2;
+      grid-row: 1;
+      margin: 0;
+      line-height: 1.15;
+      font-weight: 800;
+      font-size: var(--fz-micro, 13px);
+      color: var(--muted);
+      text-transform: none;
+   }
+
+   .card.card-stats .card-header .card-title {
+      grid-column: 3;
+      grid-row: 1;
+      margin: 0;
+      text-align: right;
+      line-height: 1;
+      font-size: clamp(24px, 2.2vw + 12px, 32px);
+      font-weight: 900;
+      color: var(--text);
+   }
+
+   .card.card-stats .card-header::after {
+      content: none !important;
+   }
+
+   .card.card-stats .card-footer {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 56px;
+      border-top: 1px solid var(--border);
+   }
+
+   .card.card-stats .card-footer .stats {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+      color: var(--muted);
+   }
+
+   @media (max-width:575.98px) {
+      .card.card-stats .card-header.card-header-icon {
+         grid-template-columns: 80px 1fr auto;
+         min-height: 112px;
+      }
+
+      .card.card-stats .card-header .card-icon {
+         width: 80px;
+         height: 80px;
+      }
+   }
+
+   /* ==================== MOBILE TUNING (lebih padat & rapi di HP) ==================== */
+   @media (max-width: 991.98px) {
+      .u-card {
+         border-radius: 16px;
+      }
+
+      .u-head {
+         gap: 10px;
+      }
+   }
+
+   @media (max-width: 767.98px) {
+      .container-fluid {
+         padding: 0 12px !important;
+      }
+
+      .u-card {
+         border-radius: 14px;
+      }
+
+      .u-head {
+         padding: 10px 12px;
+         gap: 8px;
+      }
+
+      .u-body {
+         padding: 12px;
+      }
+
+      .u-foot {
+         padding: 10px 12px;
+         font-size: 12px;
+      }
+
+      .u-title {
+         font-size: 16px;
+         line-height: 1.2;
+      }
+
+      .u-sub {
+         font-size: 12px;
+      }
+
+      .input-chip {
+         padding: 8px 10px;
+         border-radius: 10px;
+      }
+
+      .input-chip .form-control {
+         min-width: 150px;
+         font-size: 14px;
+      }
+
+      .btn-soft {
+         padding: 8px 12px;
+         border-radius: 10px;
+         font-size: 13px;
+      }
+
+      .btn-soft .material-icons {
+         font-size: 18px;
+      }
+
+      .placeholder {
+         padding: 14px;
+         border-radius: 10px;
+      }
+
+      .skeleton {
+         height: 64px;
+      }
+
+      /* ikon dalam komponen halaman sedikit diperkecil */
+      .u-card .material-icons,
+      .input-chip .material-icons {
+         font-size: 20px;
+      }
+   }
+
+   @media (max-width: 420px) {
+      .u-card {
+         border-radius: 12px;
+      }
+
+      .u-head {
+         padding: 8px 10px;
+      }
+
+      .u-body {
+         padding: 10px;
+      }
+
+      .u-foot {
+         padding: 8px 10px;
+      }
+
+      .u-title {
+         font-size: 15px;
+      }
+
+      .u-sub {
+         font-size: 11.5px;
+      }
+
+      .input-chip .form-control {
+         min-width: 130px;
+         font-size: 13px;
+      }
+
+      .btn-soft {
+         padding: 7px 10px;
+         font-size: 12.5px;
+      }
+
+      .input-chip .material-icons,
+      #dataAdmin .material-icons {
+         font-size: 18px;
+      }
+   }
+
+   @media (max-width: 360px) {
+      .input-chip .form-control {
+         min-width: 120px;
+      }
+   }
+
+   /* === Perapihan pill "Realtime AJAX" + footer responsif === */
+
+   /* Pill di dalam footer: selalu 1 baris, center, bentuk oval */
+   .u-foot .badge-soft {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      white-space: nowrap;
+      /* cegah pecah baris "Realtime AJAX" */
+      line-height: 1;
+      padding: 8px 12px;
+      /* sedikit lebih lega */
+      border-radius: 9999px;
+      /* benar-benar oval */
+      box-shadow: var(--neon);
+      /* glow tipis */
+   }
+
+   /* Penempatan footer di mobile: teks di atas, pill di bawah */
+   @media (max-width: 640px) {
+      .u-foot {
+         flex-direction: column;
+         /* stack */
+         align-items: flex-start;
+         /* rata kiri supaya rapi */
+         gap: 8px;
+      }
+
+      .u-foot .badge-soft {
+         font-size: 11.5px;
+         padding: 7px 10px;
+         /* pill sedikit lebih kecil di HP */
+      }
+   }
+
+   /* Layar sangat kecil */
+   @media (max-width: 380px) {
+      .u-foot .badge-soft {
+         font-size: 11px;
+         padding: 6px 9px;
+      }
+   }
 </style>
 
 <div class="content" id="pageAbsensiAdmin">
-   <!-- THEME TOGGLE -->
-   <div class="theme-toggle">
-      <button class="theme-btn" type="button" id="themeBtn" aria-label="Toggle theme">
-         <i class="material-icons" id="themeIcon">dark_mode</i>
-         <span id="themeText">Dark Mode</span>
-      </button>
-   </div>
+   <!-- TIDAK ADA THEME TOGGLE DI HALAMAN INI. Toggle sudah ada di navbar/header global -->
 
    <div class="container-fluid">
       <!-- ====== FILTER TANGGAL ====== -->
@@ -350,7 +520,9 @@
          </div>
 
          <div class="u-body">
-            <div id="dataAdmin" class="placeholder">Belum ada data ditampilkan. Silakan pilih tanggal atau tekan <b>Refresh</b>.</div>
+            <div id="dataAdmin" class="placeholder">
+               Belum ada data ditampilkan. Silakan pilih tanggal atau tekan <b>Refresh</b>.
+            </div>
          </div>
 
          <div class="u-foot">
@@ -382,7 +554,9 @@
          <div class="modal-content u-card" style="border-radius:16px;">
             <div class="modal-header" style="border-bottom:1px solid var(--border);">
                <h5 class="modal-title" id="modalUbahKehadiran">Ubah Kehadiran</h5>
-               <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true" style="color:var(--text)">&times;</span></button>
+               <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true" style="color:var(--text)">&times;</span>
+               </button>
             </div>
             <div id="modalFormUbahAdmin" class="u-body" style="padding-top:12px;"></div>
          </div>
@@ -396,38 +570,6 @@
 </div>
 
 <script>
-   /* ================= THEME TOGGLE (persist) ================= */
-   (function() {
-      const root = document.documentElement;
-      const saved = localStorage.getItem('absen-theme');
-      if (saved) {
-         root.setAttribute('data-theme', saved);
-      }
-      const btn = document.getElementById('themeBtn');
-      const icon = document.getElementById('themeIcon');
-      const text = document.getElementById('themeText');
-
-      function sync() {
-         const mode = root.getAttribute('data-theme') || 'light';
-         if (mode === 'dark') {
-            icon.textContent = 'light_mode';
-            text.textContent = 'Light Mode';
-         } else {
-            icon.textContent = 'dark_mode';
-            text.textContent = 'Dark Mode';
-         }
-      }
-      sync();
-
-      btn.addEventListener('click', () => {
-         const current = root.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
-         const next = current === 'dark' ? 'light' : 'dark';
-         root.setAttribute('data-theme', next);
-         localStorage.setItem('absen-theme', next);
-         sync();
-      });
-   })();
-
    /* ================== TOAST MINI ================== */
    function showToast(text, icon = 'info') {
       const t = $('#toastLite');
@@ -442,10 +584,10 @@
       if (isLoading) {
          $btn.prop('disabled', true);
          $('#dataAdmin').html(`
-        <div class="skeleton"></div>
-        <div class="skeleton" style="height:64px"></div>
-        <div class="skeleton" style="height:64px"></div>
-      `);
+           <div class="skeleton"></div>
+           <div class="skeleton" style="height:64px"></div>
+           <div class="skeleton" style="height:64px"></div>
+         `);
       } else {
          $btn.prop('disabled', false);
       }
@@ -546,14 +688,11 @@
    }
 
    /* ================== INIT ================== */
-   // Load awal
-   getAdmin();
-   // Refresh button
+   getAdmin(); // Load awal
    $('#btnRefresh').on('click', getAdmin);
-   // Date change (debounced)
    $('#tanggal').on('change input', debounce(getAdmin, 250));
 
-   // Expose ke global (dipakai di partial yang kamu render)
+   // Expose ke global (dipakai di partial yang dirender AJAX)
    window.ubahKehadiran = ubahKehadiran;
    window.getDataKehadiran = getDataKehadiran;
 </script>
