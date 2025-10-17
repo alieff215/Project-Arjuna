@@ -58,6 +58,6 @@ class JabatanModel extends BaseModel
 
    public function getAllJabatan()
    {
-       return $this->builder->get()->getResult();
+       return $this->builder->get()->getResultArray();
    }
 }

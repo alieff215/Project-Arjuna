@@ -8,6 +8,7 @@ use App\Models\DepartemenModel;
 use App\Controllers\BaseController;
 use App\Models\JabatanModel;
 use App\Models\UploadModel;
+use App\Models\KaryawanUpdateHistoryModel;
 use CodeIgniter\Exceptions\PageNotFoundException;
 
 class DataKaryawan extends BaseController
@@ -15,6 +16,7 @@ class DataKaryawan extends BaseController
    protected KaryawanModel $karyawanModel;
    protected DepartemenModel $departemenModel;
    protected JabatanModel $jabatanModel;
+   protected KaryawanUpdateHistoryModel $karyawanUpdateHistoryModel;
 
    protected $karyawanValidationRules = [
       'nis' => [
@@ -46,6 +48,7 @@ class DataKaryawan extends BaseController
       $this->karyawanModel = new KaryawanModel();
       $this->departemenModel = new DepartemenModel();
       $this->jabatanModel = new JabatanModel();
+      $this->karyawanUpdateHistoryModel = new KaryawanUpdateHistoryModel();
    }
 
    public function index()
@@ -132,6 +135,11 @@ class DataKaryawan extends BaseController
    {
       $karyawan = $this->karyawanModel->getKaryawanById($id);
       $departemen = $this->departemenModel->getDataDepartemen();
+      try {
+         $histories = $this->karyawanUpdateHistoryModel->getByKaryawanId((int) $id);
+      } catch (\Throwable $th) {
+         $histories = [];
+      }
 
       if (empty($karyawan) || empty($departemen)) {
          throw new PageNotFoundException('Data karyawan dengan id ' . $id . ' tidak ditemukan');
@@ -142,6 +150,7 @@ class DataKaryawan extends BaseController
          'departemen' => $departemen,
          'ctx' => 'karyawan',
          'title' => 'Edit Karyawan',
+         'histories' => $histories
       ];
 
       return view('admin/data/edit/edit-data-karyawan', $data);
@@ -184,11 +193,49 @@ class DataKaryawan extends BaseController
       );
 
       if ($result) {
+         try {
+            $karyawanBaru = $this->karyawanModel->getKaryawanById($idKaryawan);
+            $before = [
+               'nis' => $karyawanLama['nis'] ?? null,
+               'nama_karyawan' => $karyawanLama['nama_karyawan'] ?? null,
+               'id_departemen' => $karyawanLama['id_departemen'] ?? null,
+               'jenis_kelamin' => $karyawanLama['jenis_kelamin'] ?? null,
+               'no_hp' => $karyawanLama['no_hp'] ?? null,
+            ];
+            $after = [
+               'nis' => $karyawanBaru['nis'] ?? null,
+               'nama_karyawan' => $karyawanBaru['nama_karyawan'] ?? null,
+               'id_departemen' => $karyawanBaru['id_departemen'] ?? null,
+               'jenis_kelamin' => $karyawanBaru['jenis_kelamin'] ?? null,
+               'no_hp' => $karyawanBaru['no_hp'] ?? null,
+            ];
+            $changed = [];
+            foreach ($after as $key => $val) {
+               if (($before[$key] ?? null) != $val) {
+                  $changed[] = $key;
+               }
+            }
+            $insertData = [
+               'id_karyawan' => (int) $idKaryawan,
+               'changed_fields' => implode(',', $changed),
+               'before_data' => json_encode($before, JSON_UNESCAPED_UNICODE),
+               'after_data' => json_encode($after, JSON_UNESCAPED_UNICODE),
+            ];
+            $ok = $this->karyawanUpdateHistoryModel->insert($insertData);
+            if ($ok === false) {
+               log_message('error', 'Failed to insert karyawan history: ' . json_encode($insertData));
+            } else {
+               log_message('debug', 'Inserted karyawan history for ID ' . $idKaryawan);
+            }
+         } catch (\Throwable $th) {
+            log_message('error', 'Exception inserting karyawan history: ' . $th->getMessage());
+         }
          session()->setFlashdata([
             'msg' => 'Edit data berhasil',
-            'error' => false
+            'error' => false,
+            'show_history' => true
          ]);
-         return redirect()->to('/admin/karyawan');
+         return redirect()->to('/admin/karyawan/edit/' . $idKaryawan);
       }
 
       session()->setFlashdata([

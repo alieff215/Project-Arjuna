@@ -533,6 +533,19 @@
             <span class="badge-soft">Realtime AJAX</span>
          </div>
       </div>
+
+      <!-- ====== HISTORY UPDATE ====== -->
+      <div class="u-card" style="margin-top:12px;">
+         <div class="u-head">
+            <div>
+               <h5 class="u-title"><i class="material-icons" style="color:var(--warning)">history</i> History Update</h5>
+               <p class="u-sub">Perubahan kehadiran admin pada tanggal yang dipilih</p>
+            </div>
+         </div>
+         <div class="u-body" id="historyAdmin">
+            <div class="placeholder">Belum ada history ditampilkan. Pilih tanggal atau klik Refresh.</div>
+         </div>
+      </div>
    </div>
 
    <!-- ====== MODAL ====== -->
@@ -613,6 +626,19 @@
             showToast('Gagal memuat data', 'error');
          }
       });
+
+      // muat history untuk tanggal yang sama
+      $.ajax({
+         url: "<?= base_url('/admin/absen-admin/history'); ?>",
+         type: 'post',
+         data: { tanggal },
+         success: function(res) {
+            $('#historyAdmin').html(res);
+         },
+         error: function() {
+            $('#historyAdmin').html('<div class="placeholder">Gagal memuat history.</div>');
+         }
+      });
    }
 
    /* ================== AJAX: UBAH KEHADIRAN ================== */
@@ -648,7 +674,8 @@
          type: 'post',
          data: {
             id_presensi: idPresensi,
-            id_admin: idAdmin
+            id_admin: idAdmin,
+            tanggal: $('#tanggal').val()
          },
          success: function(res) {
             $('#modalFormUbahAdmin').html(res);
