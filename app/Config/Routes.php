@@ -60,19 +60,20 @@ $routes->group('admin', function (RouteCollection $routes) {
       $routes->post('list-data', 'JabatanController::listData');
    });
 
-   // Gaji
+   // Gaji Management
    $routes->group('gaji', ['namespace' => 'App\Controllers\Admin'], function ($routes) {
       $routes->get('/', 'Gaji::index');
       $routes->get('add', 'Gaji::add');
-      $routes->post('add', 'Gaji::add');
+      $routes->post('store', 'Gaji::store');
       $routes->get('edit/(:num)', 'Gaji::edit/$1');
-      $routes->post('edit/(:num)', 'Gaji::edit/$1');
+      $routes->post('update/(:num)', 'Gaji::update/$1');
       $routes->get('delete/(:num)', 'Gaji::delete/$1');
-      $routes->get('rekap', 'Gaji::rekap');
-      $routes->post('rekap', 'Gaji::rekap');
+      $routes->get('restore/(:num)', 'Gaji::restore/$1');
+      $routes->get('report', 'Gaji::report');
       $routes->get('export', 'Gaji::export');
-      $routes->post('save', 'Gaji::save');
-
+      $routes->get('history/(:num)', 'Gaji::history/$1');
+      $routes->post('get-data', 'Gaji::getData');
+      $routes->post('get-by-dept-jabatan', 'Gaji::getByDeptJabatan');
    });
 
    // admin lihat data karyawan
@@ -116,12 +117,14 @@ $routes->group('admin', function (RouteCollection $routes) {
    $routes->post('absen-karyawan', 'Admin\DataAbsenKaryawan::ambilDataKaryawan'); // ambil Karyawan berdasarkan departemen dan tanggal
    $routes->post('absen-karyawan/kehadiran', 'Admin\DataAbsenKaryawan::ambilKehadiran'); // ambil kehadiran Karyawan
    $routes->post('absen-karyawan/edit', 'Admin\DataAbsenKaryawan::ubahKehadiran'); // ubah kehadiran Karyawan
+   $routes->post('absen-karyawan/history', 'Admin\DataAbsenKaryawan::ambilHistoryTanggal'); // ambil history presensi karyawan per tanggal
 
    // admin lihat data absen admin
    $routes->get('absen-admin', 'Admin\DataAbsenAdmin::index');
    $routes->post('absen-admin', 'Admin\DataAbsenAdmin::ambilDataAdmin'); // ambil admin berdasarkan tanggal
    $routes->post('absen-admin/kehadiran', 'Admin\DataAbsenAdmin::ambilKehadiran'); // ambil kehadiran admin
    $routes->post('absen-admin/edit', 'Admin\DataAbsenAdmin::ubahKehadiran'); // ubah kehadiran admin
+   $routes->post('absen-admin/history', 'Admin\DataAbsenAdmin::ambilHistoryTanggal'); // ambil history presensi admin per tanggal
 
    // admin generate QR
    $routes->get('generate', 'Admin\GenerateQR::index');

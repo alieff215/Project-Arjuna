@@ -153,26 +153,41 @@ class InventoryController extends BaseController
             return redirect()->back()->with('error', 'Data inventory tidak ditemukan.');
         }
 
-        // Ambil input harian
+        // Ambil input harian (bisa berupa update dari data hari ini yang sudah ada)
         $cuttingInput   = (int)$this->request->getPost('cutting_qty');
         $produksiInput  = (int)$this->request->getPost('produksi_qty');
         $finishingInput = (int)$this->request->getPost('finishing_qty');
 
-        // Simpan input asli tanpa batasan
-        $newCutting   = $cuttingInput;
-        $newProduksi  = $produksiInput;
-        $newFinishing = $finishingInput;
+        // Cek apakah sudah ada data hari ini
+        $db = db_connect();
+        $today = date('Y-m-d');
+        $existingToday = $db->table('inventory_logs')
+            ->where('inventory_id', $id)
+            ->where('created_at', $today)
+            ->get()
+            ->getRowArray();
 
-        // Cek apakah ada yang melebihi target
-        $cuttingExceeded = $cuttingInput > $inventory['cutting_target'];
-        $produksiExceeded = $produksiInput > $inventory['produksi_target'];
-        $finishingExceeded = $finishingInput > $inventory['finishing_target'];
+        if ($existingToday) {
+            // Jika sudah ada data hari ini, hitung selisih dari data hari ini yang sudah ada
+            $cuttingDelta = $cuttingInput - (int)$existingToday['cutting_qty'];
+            $produksiDelta = $produksiInput - (int)$existingToday['produksi_qty'];
+            $finishingDelta = $finishingInput - (int)$existingToday['finishing_qty'];
+        } else {
+            // Jika belum ada data hari ini, input adalah incremental baru
+            $cuttingDelta = $cuttingInput;
+            $produksiDelta = $produksiInput;
+            $finishingDelta = $finishingInput;
+        }
 
+        // Update qty kumulatif dengan delta
+        $newCutting   = $inventory['cutting_qty'] + $cuttingDelta;
+        $newProduksi  = $inventory['produksi_qty'] + $produksiDelta;
+        $newFinishing = $inventory['finishing_qty'] + $finishingDelta;
 
-        // Hitung delta (selisih harian)
-        $cuttingDelta   = $newCutting - $inventory['cutting_qty'];
-        $produksiDelta  = $newProduksi - $inventory['produksi_qty'];
-        $finishingDelta = $newFinishing - $inventory['finishing_qty'];
+        // Cek apakah ada yang melebihi target (berdasarkan qty kumulatif)
+        $cuttingExceeded = $newCutting > $inventory['cutting_target'];
+        $produksiExceeded = $newProduksi > $inventory['produksi_target'];
+        $finishingExceeded = $newFinishing > $inventory['finishing_target'];
 
         // Hitung income kumulatif
         $cuttingIncome   = $newCutting * $inventory['cutting_price_per_pcs'];
@@ -180,10 +195,12 @@ class InventoryController extends BaseController
         $finishingIncome = $newFinishing * $inventory['finishing_price_per_pcs'];
         $totalIncome     = $cuttingIncome + $produksiIncome + $finishingIncome;
 
-        // Hitung progress %
-        $totalTarget = max(1, $inventory['cutting_target'] + $inventory['produksi_target'] + $inventory['finishing_target']);
-        $totalQty = $newCutting + $newProduksi + $newFinishing;
-        $progressPercent = round(($totalQty / $totalTarget) * 100, 1);
+        // Hitung progress % berdasarkan rata-rata progress ketiga divisi
+        $cuttingProgress = $inventory['cutting_target'] > 0 ? round(($newCutting / $inventory['cutting_target']) * 100, 1) : 0;
+        $produksiProgress = $inventory['produksi_target'] > 0 ? round(($newProduksi / $inventory['produksi_target']) * 100, 1) : 0;
+        $finishingProgress = $inventory['finishing_target'] > 0 ? round(($newFinishing / $inventory['finishing_target']) * 100, 1) : 0;
+        
+        $progressPercent = round(($cuttingProgress + $produksiProgress + $finishingProgress) / 3, 1);
         if ($progressPercent > 100) $progressPercent = 100;
 
         // Tentukan status
@@ -195,13 +212,13 @@ class InventoryController extends BaseController
         // Buat pesan peringatan jika ada yang melebihi target
         $warningMessages = [];
         if ($cuttingExceeded) {
-            $warningMessages[] = "Cutting melebihi target ({$inventory['cutting_target']}) dengan nilai {$cuttingInput}";
+            $warningMessages[] = "Cutting melebihi target ({$inventory['cutting_target']}) dengan total kumulatif {$newCutting} (tambah hari ini: {$cuttingInput})";
         }
         if ($produksiExceeded) {
-            $warningMessages[] = "Produksi melebihi target ({$inventory['produksi_target']}) dengan nilai {$produksiInput}";
+            $warningMessages[] = "Produksi melebihi target ({$inventory['produksi_target']}) dengan total kumulatif {$newProduksi} (tambah hari ini: {$produksiInput})";
         }
         if ($finishingExceeded) {
-            $warningMessages[] = "Finishing melebihi target ({$inventory['finishing_target']}) dengan nilai {$finishingInput}";
+            $warningMessages[] = "Finishing melebihi target ({$inventory['finishing_target']}) dengan total kumulatif {$newFinishing} (tambah hari ini: {$finishingInput})";
         }
 
         // Update data kumulatif ke tabel inventories
@@ -217,44 +234,37 @@ class InventoryController extends BaseController
             'updated_at'       => date('Y-m-d H:i:s'),
         ]);
 
-        // Simpan/update log harian: hanya satu baris per hari per inventory
-        $db = db_connect();
-        $today = date('Y-m-d');
-        $existingToday = $db->table('inventory_logs')
-            ->where('inventory_id', $id)
-            ->where('created_at', $today)
-            ->get()
-            ->getRowArray();
+        // Simpan/update log harian: simpan data incremental (tambah hari ini), bukan kumulatif
+        // Data incremental sudah dihitung di atas
 
         if ($existingToday) {
             // Catat history perubahan sebelum update
-            // Tabel 'inventory_log_histories' dibuat via migration baru
             $db->table('inventory_log_histories')->insert([
                 'inventory_id'            => $id,
                 'previous_cutting_qty'    => (int)$existingToday['cutting_qty'],
                 'previous_produksi_qty'   => (int)$existingToday['produksi_qty'],
                 'previous_finishing_qty'  => (int)$existingToday['finishing_qty'],
-                'new_cutting_qty'         => (int)$newCutting,
-                'new_produksi_qty'        => (int)$newProduksi,
-                'new_finishing_qty'       => (int)$newFinishing,
+                'new_cutting_qty'         => (int)$cuttingInput,
+                'new_produksi_qty'        => (int)$produksiInput,
+                'new_finishing_qty'       => (int)$finishingInput,
                 'changed_at'              => date('Y-m-d H:i:s'),
             ]);
 
-            // Update baris log hari ini (edit koreksi)
+            // Update baris log hari ini dengan data input hari ini
             $db->table('inventory_logs')
                 ->where('id', $existingToday['id'])
                 ->update([
-                    'cutting_qty'   => $newCutting,
-                    'produksi_qty'  => $newProduksi,
-                    'finishing_qty' => $newFinishing,
+                    'cutting_qty'   => $cuttingInput,
+                    'produksi_qty'  => $produksiInput,
+                    'finishing_qty' => $finishingInput,
                 ]);
         } else {
-            // Insert pertama kali untuk hari ini
+            // Insert pertama kali untuk hari ini dengan data input hari ini
             $db->table('inventory_logs')->insert([
                 'inventory_id' => $id,
-                'cutting_qty'  => $newCutting,
-                'produksi_qty' => $newProduksi,
-                'finishing_qty'=> $newFinishing,
+                'cutting_qty'  => $cuttingInput,
+                'produksi_qty' => $produksiInput,
+                'finishing_qty'=> $finishingInput,
                 'created_at'   => $today,
             ]);
         }

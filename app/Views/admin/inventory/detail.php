@@ -117,34 +117,78 @@
           <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
         <?php endif; ?>
+        
+        <?php
+          // Hitung data hari ini untuk form input
+          $today = date('Y-m-d');
+          $deltaCut = 0; $deltaProd = 0; $deltaFin = 0;
+          
+          if (isset($logs) && is_array($logs) && count($logs) > 0) {
+            foreach ($logs as $log) {
+              if ($log['created_at'] === $today) {
+                // Data di logs sudah incremental, langsung ambil
+                $deltaCut = (int)$log['cutting_qty'];
+                $deltaProd = (int)$log['produksi_qty'];
+                $deltaFin = (int)$log['finishing_qty'];
+                break; // Hanya ambil data hari ini yang pertama
+              }
+            }
+          }
+        ?>
+        
         <form method="post" action="/admin/inventory/updateProcess/<?= $inventory['id'] ?>">
+          <!-- Informasi Qty Kumulatif Saat Ini -->
+          <div class="alert alert-info mb-3">
+            <h6 class="alert-heading">📊 Qty Kumulatif Saat Ini:</h6>
+            <div class="row">
+              <div class="col-md-4">
+                <strong>Cutting:</strong> <?= $inventory['cutting_qty'] ?> / <?= $inventory['cutting_target'] ?>
+              </div>
+              <div class="col-md-4">
+                <strong>Produksi:</strong> <?= $inventory['produksi_qty'] ?> / <?= $inventory['produksi_target'] ?>
+              </div>
+              <div class="col-md-4">
+                <strong>Finishing:</strong> <?= $inventory['finishing_qty'] ?> / <?= $inventory['finishing_target'] ?>
+              </div>
+            </div>
+          </div>
+          
           <div class="row g-3">
             <div class="col-md-4">
-              <label class="form-label fw-semibold">Cutting (Qty)</label>
-              <input type="number" name="cutting_qty" value="<?= $inventory['cutting_qty'] ?>" 
-                     class="form-control <?= $cuttingExceeded ? 'border-warning' : '' ?>"
-                     <?= $cuttingExceeded ? 'title="⚠️ Melebihi target: ' . $inventory['cutting_target'] . '"' : '' ?>>
-              <?php if ($cuttingExceeded): ?>
-                <small class="text-warning">⚠️ Melebihi target (<?= $inventory['cutting_target'] ?>)</small>
-              <?php endif; ?>
+              <label class="form-label fw-semibold">Cutting (Qty Hari Ini)</label>
+              <input type="number" name="cutting_qty" value="<?= $deltaCut ?>" min="0" 
+                     class="form-control" placeholder="Masukkan qty cutting hari ini">
+              <small class="text-muted">
+                <?php if ($deltaCut > 0): ?>
+                  Sudah diinput hari ini: <?= $deltaCut ?> | Akan ditambahkan ke: <?= $inventory['cutting_qty'] - $deltaCut ?>
+                <?php else: ?>
+                  Input: 0 (reset setiap hari) | Akan ditambahkan ke: <?= $inventory['cutting_qty'] ?>
+                <?php endif; ?>
+              </small>
             </div>
             <div class="col-md-4">
-              <label class="form-label fw-semibold">Produksi (Qty)</label>
-              <input type="number" name="produksi_qty" value="<?= $inventory['produksi_qty'] ?>" 
-                     class="form-control <?= $produksiExceeded ? 'border-warning' : '' ?>"
-                     <?= $produksiExceeded ? 'title="⚠️ Melebihi target: ' . $inventory['produksi_target'] . '"' : '' ?>>
-              <?php if ($produksiExceeded): ?>
-                <small class="text-warning">⚠️ Melebihi target (<?= $inventory['produksi_target'] ?>)</small>
-              <?php endif; ?>
+              <label class="form-label fw-semibold">Produksi (Qty Hari Ini)</label>
+              <input type="number" name="produksi_qty" value="<?= $deltaProd ?>" min="0" 
+                     class="form-control" placeholder="Masukkan qty produksi hari ini">
+              <small class="text-muted">
+                <?php if ($deltaProd > 0): ?>
+                  Sudah diinput hari ini: <?= $deltaProd ?> | Akan ditambahkan ke: <?= $inventory['produksi_qty'] - $deltaProd ?>
+                <?php else: ?>
+                  Input: 0 (reset setiap hari) | Akan ditambahkan ke: <?= $inventory['produksi_qty'] ?>
+                <?php endif; ?>
+              </small>
             </div>
             <div class="col-md-4">
-              <label class="form-label fw-semibold">Finishing (Qty)</label>
-              <input type="number" name="finishing_qty" value="<?= $inventory['finishing_qty'] ?>" 
-                     class="form-control <?= $finishingExceeded ? 'border-warning' : '' ?>"
-                     <?= $finishingExceeded ? 'title="⚠️ Melebihi target: ' . $inventory['finishing_target'] . '"' : '' ?>>
-              <?php if ($finishingExceeded): ?>
-                <small class="text-warning">⚠️ Melebihi target (<?= $inventory['finishing_target'] ?>)</small>
-              <?php endif; ?>
+              <label class="form-label fw-semibold">Finishing (Qty Hari Ini)</label>
+              <input type="number" name="finishing_qty" value="<?= $deltaFin ?>" min="0" 
+                     class="form-control" placeholder="Masukkan qty finishing hari ini">
+              <small class="text-muted">
+                <?php if ($deltaFin > 0): ?>
+                  Sudah diinput hari ini: <?= $deltaFin ?> | Akan ditambahkan ke: <?= $inventory['finishing_qty'] - $deltaFin ?>
+                <?php else: ?>
+                  Input: 0 (reset setiap hari) | Akan ditambahkan ke: <?= $inventory['finishing_qty'] ?>
+                <?php endif; ?>
+              </small>
             </div>
           </div>
           <button class="btn btn-primary mt-4 btn-custom px-4">
@@ -155,47 +199,10 @@
     </div>
 
     <?php
-      // Hitung pendapatan HARI INI berdasarkan update progres terbaru pada hari ini
-      $today = date('Y-m-d');
-
-      $latestTodayCut = null; $latestTodayProd = null; $latestTodayFin = null;
-      $prevBeforeCut = 0; $prevBeforeProd = 0; $prevBeforeFin = 0;
-
-      if (isset($logs) && is_array($logs) && count($logs) > 0) {
-        foreach ($logs as $log) {
-          if ($log['created_at'] === $today) {
-            // Ambil qty terbesar di hari ini (update terakhir umumnya qty terbesar)
-            $latestTodayCut = max((int)($latestTodayCut ?? 0), (int)$log['cutting_qty']);
-            $latestTodayProd = max((int)($latestTodayProd ?? 0), (int)$log['produksi_qty']);
-            $latestTodayFin = max((int)($latestTodayFin ?? 0), (int)$log['finishing_qty']);
-          } else {
-            // Karena $logs diurutkan DESC, entri pertama yang bukan hari ini adalah qty terakhir sebelum hari ini
-            if ($prevBeforeCut === 0 && $prevBeforeProd === 0 && $prevBeforeFin === 0) {
-              $prevBeforeCut = (int)$log['cutting_qty'];
-              $prevBeforeProd = (int)$log['produksi_qty'];
-              $prevBeforeFin = (int)$log['finishing_qty'];
-            }
-          }
-        }
-      }
-
-      // Hitung delta (selisih) harian - ini yang akan ditampilkan di kolom Qty
-      $deltaCut = 0; $deltaProd = 0; $deltaFin = 0;
-      
-      if ($latestTodayCut !== null) {
-        $deltaCut = max(0, $latestTodayCut - (int)$prevBeforeCut);
-      }
-      if ($latestTodayProd !== null) {
-        $deltaProd = max(0, $latestTodayProd - (int)$prevBeforeProd);
-      }
-      if ($latestTodayFin !== null) {
-        $deltaFin = max(0, $latestTodayFin - (int)$prevBeforeFin);
-      }
-
-      // Untuk capaian, gunakan qty kumulatif terakhir hari ini (bukan delta)
-      $cuttingQtyToday = ($latestTodayCut !== null) ? (int)$latestTodayCut : (int)$prevBeforeCut;
-      $produksiQtyToday = ($latestTodayProd !== null) ? (int)$latestTodayProd : (int)$prevBeforeProd;
-      $finishingQtyToday = ($latestTodayFin !== null) ? (int)$latestTodayFin : (int)$prevBeforeFin;
+      // Untuk capaian keseluruhan, gunakan qty kumulatif dari tabel inventories
+      $cuttingQtyToday = (int)$inventory['cutting_qty'];
+      $produksiQtyToday = (int)$inventory['produksi_qty'];
+      $finishingQtyToday = (int)$inventory['finishing_qty'];
 
       $cutting_income_today = $deltaCut * (float)$inventory['cutting_price_per_pcs'];
       $produksi_income_today = $deltaProd * (float)$inventory['produksi_price_per_pcs'];
@@ -320,20 +327,20 @@
   </div>
   <div class="card-body p-0">
     <?php
-      // Hitung progress keseluruhan berdasarkan qty kumulatif terakhir vs total_target
-      $total_cutting_progress = $inventory['total_target'] > 0 ? round(($cuttingQtyToday / $inventory['total_target']) * 100, 2) : 0;
-      $total_produksi_progress = $inventory['total_target'] > 0 ? round(($produksiQtyToday / $inventory['total_target']) * 100, 2) : 0;
-      $total_finishing_progress = $inventory['total_target'] > 0 ? round(($finishingQtyToday / $inventory['total_target']) * 100, 2) : 0;
+      // Hitung progress keseluruhan berdasarkan qty kumulatif vs target per divisi
+      $total_cutting_progress = $inventory['cutting_target'] > 0 ? round(($cuttingQtyToday / $inventory['cutting_target']) * 100, 2) : 0;
+      $total_produksi_progress = $inventory['produksi_target'] > 0 ? round(($produksiQtyToday / $inventory['produksi_target']) * 100, 2) : 0;
+      $total_finishing_progress = $inventory['finishing_target'] > 0 ? round(($finishingQtyToday / $inventory['finishing_target']) * 100, 2) : 0;
       
       // Batasi progress maksimal 100%
       if ($total_cutting_progress > 100) $total_cutting_progress = 100;
       if ($total_produksi_progress > 100) $total_produksi_progress = 100;
       if ($total_finishing_progress > 100) $total_finishing_progress = 100;
       
-      // Status selesai per divisi berdasarkan total_target
-      $cutting_done = $cuttingQtyToday >= $inventory['total_target'];
-      $produksi_done = $produksiQtyToday >= $inventory['total_target'];
-      $finishing_done = $finishingQtyToday >= $inventory['total_target'];
+      // Status selesai per divisi berdasarkan target masing-masing divisi
+      $cutting_done = $inventory['cutting_target'] > 0 && $cuttingQtyToday >= $inventory['cutting_target'];
+      $produksi_done = $inventory['produksi_target'] > 0 && $produksiQtyToday >= $inventory['produksi_target'];
+      $finishing_done = $inventory['finishing_target'] > 0 && $finishingQtyToday >= $inventory['finishing_target'];
     ?>
     <table class="table table-bordered text-center mb-0">
       <thead>
@@ -352,7 +359,7 @@
           <td class="<?= $cutting_done ? 'table-success' : 'table-warning' ?>">
             <strong><?= $cuttingQtyToday ?></strong>
           </td>
-          <td><?= $inventory['total_target'] ?></td>
+          <td><?= $inventory['cutting_target'] ?></td>
           <td>
             <div class="progress" style="height: 25px;">
               <div class="progress-bar <?= $cutting_done ? 'bg-success' : 'bg-primary' ?>" 
@@ -376,7 +383,7 @@
             <?php if ($cutting_done): ?>
               <span class="text-success">Target tercapai!</span>
             <?php else: ?>
-              <span class="text-warning">Kurang <?= $inventory['total_target'] - $cuttingQtyToday ?> pcs</span>
+              <span class="text-warning">Kurang <?= $inventory['cutting_target'] - $cuttingQtyToday ?> pcs</span>
             <?php endif; ?>
           </td>
         </tr>
@@ -385,7 +392,7 @@
           <td class="<?= $produksi_done ? 'table-success' : 'table-warning' ?>">
             <strong><?= $produksiQtyToday ?></strong>
           </td>
-          <td><?= $inventory['total_target'] ?></td>
+          <td><?= $inventory['produksi_target'] ?></td>
           <td>
             <div class="progress" style="height: 25px;">
               <div class="progress-bar <?= $produksi_done ? 'bg-success' : 'bg-success' ?>" 
@@ -409,7 +416,7 @@
             <?php if ($produksi_done): ?>
               <span class="text-success">Target tercapai!</span>
             <?php else: ?>
-              <span class="text-warning">Kurang <?= $inventory['total_target'] - $produksiQtyToday ?> pcs</span>
+              <span class="text-warning">Kurang <?= $inventory['produksi_target'] - $produksiQtyToday ?> pcs</span>
             <?php endif; ?>
           </td>
         </tr>
@@ -442,19 +449,19 @@
             <?php if ($finishing_done): ?>
               <span class="text-success">Target tercapai!</span>
             <?php else: ?>
-              <span class="text-warning">Kurang <?= $inventory['total_target'] - $finishingQtyToday ?> pcs</span>
+              <span class="text-warning">Kurang <?= $inventory['finishing_target'] - $finishingQtyToday ?> pcs</span>
             <?php endif; ?>
           </td>
         </tr>
         <tr class="table-dark text-white">
           <td><strong>Total Keseluruhan</strong></td>
           <td><strong><?= $finishingQtyToday ?></strong></td>
-          <td><strong><?= $inventory['total_target'] ?></strong></td>
+          <td><strong><?= $inventory['finishing_target'] ?></strong></td>
           <td>
             <?php
-              $total_qty = $finishingQtyToday; // Menggunakan data finishing sebagai perbandingan
-              $total_target = $inventory['total_target']; // Menggunakan total_target dari database
-              $overall_progress = $total_target > 0 ? round(($total_qty / $total_target) * 100, 2) : 0;
+              // Hitung progress keseluruhan berdasarkan rata-rata progress ketiga divisi
+              $total_progress = ($total_cutting_progress + $total_produksi_progress + $total_finishing_progress) / 3;
+              $overall_progress = round($total_progress, 2);
               if ($overall_progress > 100) $overall_progress = 100;
             ?>
             <div class="progress" style="height: 25px;">
@@ -479,7 +486,7 @@
             <?php if ($overall_progress >= 100): ?>
               <span class="text-success">Semua target tercapai!</span>
             <?php else: ?>
-              <span class="text-info">Total kurang <?= $total_target - $total_qty ?> pcs</span>
+              <span class="text-info">Progress rata-rata: <?= $overall_progress ?>%</span>
             <?php endif; ?>
           </td>
         </tr>
@@ -518,40 +525,42 @@
           </thead>
           <tbody>
             <?php 
-              $prevCut = $prevProd = $prevFin = 0;
+              $cumulativeCut = $cumulativeProd = $cumulativeFin = 0;
               $sumCutIncome = $sumProdIncome = $sumFinIncome = 0;
               foreach ($logs as $log): 
-                $selisihCut = $log['cutting_qty'] - $prevCut;
-                $selisihProd = $log['produksi_qty'] - $prevProd;
-                $selisihFin = $log['finishing_qty'] - $prevFin;
+                // Data di logs sekarang adalah incremental (tambah hari ini)
+                $tambahHariIniCut = $log['cutting_qty'];
+                $tambahHariIniProd = $log['produksi_qty'];
+                $tambahHariIniFin = $log['finishing_qty'];
 
-                $incomeCut = $selisihCut * $inventory['cutting_price_per_pcs'];
-                $incomeProd = $selisihProd * $inventory['produksi_price_per_pcs'];
-                $incomeFin = $selisihFin * $inventory['finishing_price_per_pcs'];
+                // Hitung kumulatif
+                $cumulativeCut += $tambahHariIniCut;
+                $cumulativeProd += $tambahHariIniProd;
+                $cumulativeFin += $tambahHariIniFin;
+
+                $incomeCut = $tambahHariIniCut * $inventory['cutting_price_per_pcs'];
+                $incomeProd = $tambahHariIniProd * $inventory['produksi_price_per_pcs'];
+                $incomeFin = $tambahHariIniFin * $inventory['finishing_price_per_pcs'];
                 $totalIncomeToday = $incomeCut + $incomeProd + $incomeFin;
 
                 $sumCutIncome += $incomeCut;
                 $sumProdIncome += $incomeProd;
                 $sumFinIncome += $incomeFin;
-
-                $prevCut = $log['cutting_qty'];
-                $prevProd = $log['produksi_qty'];
-                $prevFin = $log['finishing_qty'];
             ?>
             <tr>
               <td><?= $log['created_at'] ?></td>
-              <td><?= $log['cutting_qty'] ?></td>
-              <td><?= $log['produksi_qty'] ?></td>
-              <td><?= $log['finishing_qty'] ?></td>
+              <td><?= $cumulativeCut ?></td>
+              <td><?= $cumulativeProd ?></td>
+              <td><?= $cumulativeFin ?></td>
               <?php 
-                // Not meet status berdasarkan qty saat itu vs target
-                $cutRowNotMeetTarget  = ($log['cutting_qty'] < (int)$inventory['cutting_target']);
-                $prodRowNotMeetTarget = ($log['produksi_qty'] < (int)$inventory['produksi_target']);
-                $finRowNotMeetTarget  = ($log['finishing_qty'] < (int)$inventory['finishing_target']);
+                // Not meet status berdasarkan qty kumulatif vs target
+                $cutRowNotMeetTarget  = ($cumulativeCut < (int)$inventory['cutting_target']);
+                $prodRowNotMeetTarget = ($cumulativeProd < (int)$inventory['produksi_target']);
+                $finRowNotMeetTarget  = ($cumulativeFin < (int)$inventory['finishing_target']);
               ?>
-              <td class="<?= $cutRowNotMeetTarget ? 'table-danger' : 'text-primary' ?>"><?= $selisihCut ?></td>
-              <td class="<?= $prodRowNotMeetTarget ? 'table-danger' : 'text-primary' ?>"><?= $selisihProd ?></td>
-              <td class="<?= $finRowNotMeetTarget ? 'table-danger' : 'text-primary' ?>"><?= $selisihFin ?></td>
+              <td class="<?= $cutRowNotMeetTarget ? 'table-danger' : 'text-primary' ?>"><?= $tambahHariIniCut ?></td>
+              <td class="<?= $prodRowNotMeetTarget ? 'table-danger' : 'text-primary' ?>"><?= $tambahHariIniProd ?></td>
+              <td class="<?= $finRowNotMeetTarget ? 'table-danger' : 'text-primary' ?>"><?= $tambahHariIniFin ?></td>
               <td class="<?= $cutRowNotMeetTarget ? 'table-danger' : '' ?>"><?= number_format($incomeCut, 0, ',', '.') ?></td>
               <td class="<?= $prodRowNotMeetTarget ? 'table-danger' : '' ?>"><?= number_format($incomeProd, 0, ',', '.') ?></td>
               <td class="<?= $finRowNotMeetTarget ? 'table-danger' : '' ?>"><?= number_format($incomeFin, 0, ',', '.') ?></td>
@@ -618,13 +627,12 @@
         </table>
       </div>
     </div>
-    <!-- Tombol Kembali -->
-    <div class="text-center mt-4">
-      <a href="/admin/inventory" class="btn btn-outline-secondary btn-custom px-4">⬅️ Kembali</a>
-    </div>
   </div>
   <?php endif; ?>
-
+    <!-- Tombol Kembali -->
+    <div class="text-center mt-4">
+          <a href="/admin/inventory" class="btn btn-outline-secondary btn-custom px-4">⬅️ Kembali</a>
+    </div>
   </div>
 </div>
 
