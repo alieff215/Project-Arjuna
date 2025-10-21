@@ -429,54 +429,47 @@
          </button>
       </div>
 
-      <!-- ========== FILTERS ========== -->
+      <!-- ====== FILTER & DEPARTEMEN ====== -->
       <div class="u-card mb-3">
          <div class="u-head">
             <div>
                <h5 class="u-title"><i class="material-icons" style="color:var(--primary)">tune</i> Filter Karyawan</h5>
-               <p class="u-sub">Saring berdasarkan <b>Departemen</b> dan <b>Jabatan</b>.</p>
-            </div>
-            <div class="input-chip">
-               <i class="material-icons" style="color:var(--primary)">info</i>
-               <span class="u-sub">Klik salah satu pilihan untuk memfilter.</span>
+               <p class="u-sub">Pilih departemen &amp; jabatan untuk menampilkan daftar karyawan</p>
             </div>
          </div>
 
          <div class="u-body">
-            <div class="mb-2" style="font-weight:800; color:var(--text);">Departemen</div>
-            <div class="mb-3">
-               <button class="pill active" type="button" id="pill-dept-all" onclick="setDepartemen(null)">
-                  <i class="material-icons">check_circle</i> Semua
-               </button>
-               <?php $seen = [];
-               foreach ($departemen as $value): ?>
-                  <?php if (!in_array($value['departemen'], $seen)): $seen[] = $value['departemen']; ?>
-                     <button class="pill" type="button" id="pill-dept-<?= md5($value['departemen']); ?>" onclick="setDepartemen('<?= $value['departemen']; ?>')">
-                        <i class="material-icons">apartment</i> <?= $value['departemen']; ?>
-                     </button>
-                  <?php endif; ?>
-               <?php endforeach; ?>
+            <div class="form-group">
+               <label for="filterDepartemenJabatan" class="form-label" style="color: var(--text); font-weight: 600; margin-bottom: 8px;">
+                  <i class="material-icons" style="vertical-align: middle; margin-right: 6px; color: var(--primary);">apartment</i>
+                  Filter Departemen & Jabatan
+               </label>
+               <select id="filterDepartemenJabatan" class="form-control custom-select" style="border: 2px solid #e3f2fd; border-radius: 8px; padding: 12px 16px; font-size: 14px; background: white; color: #333; min-height: 48px;">
+                  <option value="all">Semua Departemen & Jabatan</option>
+                  <?php foreach ($listDepartemen as $value): ?>
+                     <?php
+                     $idDepartemen   = $value['id_departemen'];
+                     $namaDepartemen = $value['departemen'] . ' - ' . $value['jabatan'];
+                     ?>
+                     <option value="<?= $idDepartemen; ?>" data-nama="<?= $namaDepartemen; ?>"><?= $namaDepartemen; ?></option>
+                  <?php endforeach; ?>
+               </select>
             </div>
+         </div>
 
-            <div class="mb-2" style="font-weight:800; color:var(--text);">Jabatan</div>
-            <div>
-               <button class="pill active" type="button" id="pill-job-all" onclick="setJabatan(null)">
-                  <i class="material-icons">check_circle</i> Semua
-               </button>
-               <?php foreach ($jabatan as $value): ?>
-                  <button class="pill" type="button" id="pill-job-<?= md5($value['jabatan']); ?>" onclick="setJabatan('<?= $value['jabatan']; ?>')">
-                     <i class="material-icons">work</i> <?= $value['jabatan']; ?>
-                  </button>
-               <?php endforeach; ?>
-            </div>
+         <div class="u-foot">
+            <small>Tips: pilih filter atau klik <b>Refresh</b> untuk memuat ulang data.</small>
+            <button id="btnRefresh" class="btn-soft btn-refresh" type="button" style="background: #e8f5e8; border: 1px solid #4caf50; color: #2e7d32; padding: 8px 16px; border-radius: 6px; font-weight: 500;">
+               <i class="material-icons" style="margin-right: 4px;">refresh</i> Refresh
+            </button>
          </div>
       </div>
 
-      <!-- ========== DATA LIST ========== -->
+      <!-- ====== DATA KARYAWAN ====== -->
       <div class="u-card">
          <div class="u-head">
             <div>
-               <h4 class="u-title"><i class="material-icons" style="color:var(--success)">groups</i> Daftar Karyawan</h4>
+               <h4 class="u-title"><i class="material-icons" style="color:var(--success)">people</i> Data Karyawan</h4>
                <p class="u-sub">Total Karyawan: <span style="background: var(--success); color: white; padding: 2px 8px; border-radius: 8px; font-weight: 700;"><?= $total_karyawan; ?></span> | <?= date('d M Y H:i'); ?></p>
             </div>
             <button class="btn-hero" type="button" onclick="loadKaryawan()">
@@ -485,7 +478,7 @@
          </div>
 
          <div class="u-body" id="dataKaryawan">
-            <div class="placeholder">Daftar karyawan muncul di sini…</div>
+            <div class="placeholder">Memuat data karyawan...</div>
          </div>
 
          <div class="u-foot">
@@ -532,31 +525,13 @@
    })();
 
    /* ============ STATE & FILTER ============ */
-   var departemen = null;
-   var jabatan = null;
+   var lastIdDepartemen = 'all';
+   var lastDepartemen = 'Semua Departemen & Jabatan';
 
-   function setDepartemen(val) {
-      departemen = val;
-      document.querySelectorAll('[id^="pill-dept-"]').forEach(el => el.classList.remove('active'));
-      if (val === null) document.getElementById('pill-dept-all')?.classList.add('active');
-      const id = val ? 'pill-dept-' + md5(val) : 'pill-dept-all';
-      document.getElementById(id)?.classList.add('active');
+   function selectDepartemenJabatan(id, nama) {
+      lastIdDepartemen = id;
+      lastDepartemen = nama;
       loadKaryawan();
-   }
-
-   function setJabatan(val) {
-      jabatan = val;
-      document.querySelectorAll('[id^="pill-job-"]').forEach(el => el.classList.remove('active'));
-      const id = val ? 'pill-job-' + md5(val) : 'pill-job-all';
-      document.getElementById(id)?.classList.add('active');
-      loadKaryawan();
-   }
-   /* simple hash untuk id mapping */
-   function md5(s) {
-      return s.split('').reduce((a, b) => {
-         a = ((a << 5) - a) + b.charCodeAt(0);
-         return a & a;
-      }, 0).toString().replace('-', 'm');
    }
 
    /* ============ LOADING PLACEHOLDER ============ */
@@ -568,6 +543,7 @@
       `;
    }
 
+
    /* ============ AJAX LOAD ============ */
    function loadKaryawan() {
       setLoading();
@@ -575,8 +551,8 @@
          url: "<?= base_url('/admin/karyawan'); ?>",
          type: 'post',
          data: {
-            'departemen': departemen,
-            'karyawan': jabatan
+            'departemen': lastDepartemen,
+            'id_departemen': lastIdDepartemen
          },
          success: function(res) {
             $('#dataKaryawan').html(res);
@@ -591,8 +567,25 @@
       });
    }
 
-   // init load
-   loadKaryawan();
+   // Auto-load data saat halaman dibuka
+   $(document).ready(function() {
+      // Set dropdown ke "Semua Departemen & Jabatan"
+      $('#filterDepartemenJabatan').val('all');
+      // Load data secara otomatis
+      loadKaryawan();
+   });
+
+   /* ================== EVENT BINDINGS ================== */
+   $('#btnRefresh').on('click', loadKaryawan);
+   
+   // Event handler untuk dropdown gabungan
+   $('#filterDepartemenJabatan').on('change', function() {
+      const selectedOption = $(this).find('option:selected');
+      const id = $(this).val();
+      const nama = selectedOption.data('nama') || selectedOption.text();
+      selectDepartemenJabatan(id, nama);
+   });
+
 
    // checkbox "select all" bila ada di partial
    document.addEventListener('DOMContentLoaded', function() {
@@ -601,5 +594,31 @@
       });
    });
 </script>
+
+<style>
+   /* ============ CUSTOM STYLES ============ */
+   .custom-select {
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right 16px center;
+      background-size: 20px;
+      padding-right: 48px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+   }
+   
+   .custom-select:hover {
+      border-color: #90caf9;
+   }
+   
+   .custom-select:focus {
+      border-color: #2196f3;
+      box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2);
+      outline: none;
+   }
+</style>
 
 <?= $this->endSection() ?>

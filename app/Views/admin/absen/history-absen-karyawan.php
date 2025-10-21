@@ -37,6 +37,26 @@
                               <span class="text-success"><b><?= esc($ka['text'] ?? '-') ?></b></span>
                            </td>
                         </tr>
+                        <?php if (!empty($h['jam_masuk_before']) || !empty($h['jam_masuk_after'])) : ?>
+                        <tr>
+                           <td>Jam Masuk</td>
+                           <td>
+                              <span class="text-danger"><?= esc($h['jam_masuk_before'] ?? '-') ?></span>
+                              <span class="text-muted"> → </span>
+                              <span class="text-success"><?= esc($h['jam_masuk_after'] ?? '-') ?></span>
+                           </td>
+                        </tr>
+                        <?php endif; ?>
+                        <?php if (!empty($h['jam_keluar_before']) || !empty($h['jam_keluar_after'])) : ?>
+                        <tr>
+                           <td>Jam Keluar</td>
+                           <td>
+                              <span class="text-danger"><?= esc($h['jam_keluar_before'] ?? '-') ?></span>
+                              <span class="text-muted"> → </span>
+                              <span class="text-success"><?= esc($h['jam_keluar_after'] ?? '-') ?></span>
+                           </td>
+                        </tr>
+                        <?php endif; ?>
                         <tr>
                            <td>Keterangan</td>
                            <td>

@@ -136,9 +136,9 @@ class DataAbsenKaryawan extends BaseController
       $idKaryawan = $this->request->getVar('id_karyawan');
       $idDepartemen = $this->request->getVar('id_departemen');
       $tanggal = $this->request->getVar('tanggal');
-      // abaikan perubahan jam masuk/keluar dari request UI
-      $jamMasuk = null;
-      $jamKeluar = null;
+      // ambil jam masuk dan jam keluar dari request UI
+      $jamMasuk = $this->request->getVar('jam_masuk');
+      $jamKeluar = $this->request->getVar('jam_keluar');
       $keterangan = $this->request->getVar('keterangan');
 
       // ambil data sebelum perubahan (row lengkap)
@@ -162,7 +162,7 @@ class DataAbsenKaryawan extends BaseController
       if ($result) {
          try {
             $afterRow = $this->presensiKaryawan->getPresensiByIdKaryawanTanggal($idKaryawan, $tanggal);
-            $this->presensiHistory->insert([
+            $historyData = [
                'id_presensi' => $afterRow['id_presensi'] ?? $cek,
                'id_karyawan' => (int)$idKaryawan,
                'tanggal' => $tanggal,
@@ -170,9 +170,18 @@ class DataAbsenKaryawan extends BaseController
                'id_kehadiran_after' => $afterRow['id_kehadiran'] ?? $idKehadiran,
                'keterangan_before' => $beforeRow['keterangan'] ?? null,
                'keterangan_after' => $afterRow['keterangan'] ?? $keterangan,
-            ]);
+               'jam_masuk_before' => $beforeRow['jam_masuk'] ?? null,
+               'jam_masuk_after' => $afterRow['jam_masuk'] ?? $jamMasuk,
+               'jam_keluar_before' => $beforeRow['jam_keluar'] ?? null,
+               'jam_keluar_after' => $afterRow['jam_keluar'] ?? $jamKeluar,
+            ];
+            
+            $historyResult = $this->presensiHistory->insert($historyData);
+            if (!$historyResult) {
+               log_message('error', 'Failed to insert history: ' . json_encode($this->presensiHistory->errors()));
+            }
          } catch (\Throwable $th) {
-            // jangan blokir respon
+            log_message('error', 'History insert error: ' . $th->getMessage());
          }
          $response['status'] = TRUE;
       } else {
