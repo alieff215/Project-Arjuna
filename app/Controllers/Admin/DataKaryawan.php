@@ -56,11 +56,16 @@ class DataKaryawan extends BaseController
       // Ambil total karyawan untuk ditampilkan di header
       $totalKaryawan = $this->karyawanModel->countAllResults();
       
+      // Ambil data departemen gabungan untuk dropdown filter
+      $departemenModel = new \App\Models\DepartemenModel();
+      $listDepartemen = $departemenModel->getAllDepartemen();
+      
       $data = [
          'title' => 'Data Karyawan',
          'ctx' => 'karyawan',
          'departemen' => $this->departemenModel->getDataDepartemen(),
          'jabatan' => $this->jabatanModel->getDataJabatan(),
+         'listDepartemen' => $listDepartemen,
          'total_karyawan' => $totalKaryawan
       ];
 
@@ -70,9 +75,15 @@ class DataKaryawan extends BaseController
    public function ambilDataKaryawan()
    {
       $departemen = $this->request->getVar('departemen') ?? null;
-      $jabatan = $this->request->getVar('jabatan') ?? null;
+      $idDepartemen = $this->request->getVar('id_departemen') ?? null;
 
-      $result = $this->karyawanModel->getAllKaryawanWithDepartemen($departemen, $jabatan);
+      // Jika id_departemen adalah 'all' atau null, ambil semua karyawan
+      if ($idDepartemen === 'all' || $idDepartemen === null) {
+         $result = $this->karyawanModel->getAllKaryawanWithDepartemen();
+      } else {
+         // Ambil karyawan berdasarkan departemen tertentu
+         $result = $this->karyawanModel->getKaryawanByDepartemen($idDepartemen);
+      }
 
       $data = [
          'data' => $result,

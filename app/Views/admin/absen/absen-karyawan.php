@@ -512,7 +512,7 @@
 
          <div class="u-body">
             <div id="dataKaryawan" class="placeholder">
-               Silakan pilih departemen terlebih dahulu, lalu pilih tanggal atau tekan <b>Refresh</b>.
+               Memuat data absen karyawan...
             </div>
          </div>
 
@@ -616,8 +616,8 @@
    }
 
    /* ================== STATE ================== */
-   var lastIdDepartemen = null;
-   var lastDepartemen = null;
+   var lastIdDepartemen = 'all';
+   var lastDepartemen = 'Semua Departemen & Jabatan';
 
    function selectDepartemenJabatan(id, nama) {
       lastIdDepartemen = id;
@@ -682,6 +682,7 @@
       selectDepartemenJabatan(id, nama);
    });
 
+
    function debounce(fn, delay) {
       let t;
       return function() {
@@ -726,6 +727,19 @@
             if (response['status']) showToast('Berhasil ubah kehadiran: ' + response['nama_karyawan'], 'check_circle');
             else showToast('Gagal ubah kehadiran: ' + response['nama_karyawan'], 'error');
             fetchKaryawan();
+            // Muat ulang history setelah update
+            const tanggal = $('#tanggal').val();
+            $.ajax({
+               url: "<?= base_url('/admin/absen-karyawan/history'); ?>",
+               type: 'post',
+               data: { tanggal },
+               success: function(res) {
+                  $('#historyKaryawan').html(res);
+               },
+               error: function() {
+                  $('#historyKaryawan').html('<div class="placeholder">Gagal memuat history.</div>');
+               }
+            });
          },
          error: function(xhr, status, err) {
             console.log(err);
@@ -738,6 +752,14 @@
    window.getDataKehadiran = getDataKehadiran;
    window.ubahKehadiran = ubahKehadiran;
    window.selectDepartemenJabatan = selectDepartemenJabatan;
+
+   // Auto-load data saat halaman dibuka
+   $(document).ready(function() {
+      // Set dropdown ke "Semua Departemen & Jabatan"
+      $('#filterDepartemenJabatan').val('all');
+      // Load data secara otomatis
+      fetchKaryawan();
+   });
 </script>
 
 <?= $this->endSection() ?>
