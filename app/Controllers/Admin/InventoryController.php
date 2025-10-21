@@ -19,17 +19,11 @@ class InventoryController extends BaseController
     // ===========================
     public function index()
     {
-        $status = $this->request->getGet('status');
+        // Ambil semua data inventory (kecuali yang dihapus)
+        $allInventories = $this->inventory->where('status !=', 'deleted')->findAll();
 
-        if ($status) {
-            $data['inventories'] = $this->inventory->where('status', $status)->findAll();
-        } else {
-            // Hanya tampilkan data yang tidak dihapus (status != 'deleted')
-            $data['inventories'] = $this->inventory->where('status !=', 'deleted')->findAll();
-        }
-
-        // Hitung progress per inventory menggunakan total_target dan finishing_qty
-        foreach ($data['inventories'] as &$item) {
+        // Hitung progress dan status per inventory
+        foreach ($allInventories as &$item) {
             $totalTarget = $item['total_target'];
             $totalQty = $item['finishing_qty']; // Menggunakan finishing_qty sebagai perbandingan
 
@@ -38,6 +32,17 @@ class InventoryController extends BaseController
 
             $item['progress_percent'] = $progress;
             $item['is_completed'] = $totalQty >= $totalTarget;
+            $item['status'] = $item['is_completed'] ? 'done' : 'onprogress'; // Update status berdasarkan progress
+        }
+
+        // Filter berdasarkan status yang diminta
+        $status = $this->request->getGet('status');
+        if ($status) {
+            $data['inventories'] = array_filter($allInventories, function($item) use ($status) {
+                return $item['status'] === $status;
+            });
+        } else {
+            $data['inventories'] = $allInventories;
         }
 
         $data['title'] = 'Inventory Management';
