@@ -112,6 +112,18 @@
 
 <div class="card-body table-responsive table-wrap">
    <?php if (!$empty) : ?>
+      <!-- Total Karyawan Info -->
+      <div class="mb-3" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%); border-radius: 8px; border-left: 4px solid #2196f3;">
+         <div style="display: flex; align-items: center; gap: 8px;">
+            <i class="material-icons" style="color: #2196f3; font-size: 24px;">people</i>
+            <span style="font-weight: 700; color: #1976d2; font-size: 16px;">Total Karyawan: <span style="background: #1976d2; color: white; padding: 4px 8px; border-radius: 12px; font-size: 14px;"><?= $total_karyawan; ?></span></span>
+         </div>
+         <div style="color: #666; font-size: 14px;">
+            <i class="material-icons" style="font-size: 18px; vertical-align: middle;">schedule</i>
+            <?= date('d M Y H:i'); ?>
+         </div>
+      </div>
+      
       <table class="table table-hover">
          <thead class="text-primary">
             <tr>

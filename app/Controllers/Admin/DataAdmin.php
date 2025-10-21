@@ -40,9 +40,13 @@ class DataAdmin extends BaseController
 
    public function index()
    {
+      // Ambil total admin untuk ditampilkan di header
+      $totalAdmin = $this->adminModel->countAllResults();
+      
       $data = [
          'title' => 'Data admin',
          'ctx' => 'admin',
+         'total_admin' => $totalAdmin
       ];
 
       return view('admin/data/data-admin', $data);
@@ -54,7 +58,8 @@ class DataAdmin extends BaseController
 
       $data = [
          'data' => $result,
-         'empty' => empty($result)
+         'empty' => empty($result),
+         'total_admin' => count($result)
       ];
 
       return view('admin/data/list-data-admin', $data);

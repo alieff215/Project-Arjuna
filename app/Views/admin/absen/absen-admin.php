@@ -512,7 +512,7 @@
          <div class="u-head">
             <div>
                <h4 class="u-title"><i class="material-icons" style="color:var(--success)">assignment_turned_in</i> Absen Admin</h4>
-               <p class="u-sub">Daftar admin & status kehadiran</p>
+               <p class="u-sub">Total Admin: <span style="background: var(--success); color: white; padding: 2px 8px; border-radius: 8px; font-weight: 700;"><?= $total_admin; ?></span> | <?= date('d M Y H:i'); ?></p>
             </div>
             <button id="btnRefresh" class="btn-soft btn-refresh" type="button">
                <i class="material-icons">refresh</i> Refresh

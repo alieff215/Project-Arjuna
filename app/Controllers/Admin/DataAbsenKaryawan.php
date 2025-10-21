@@ -59,6 +59,9 @@ class DataAbsenKaryawan extends BaseController
       $data['listDepartemen'] = $departemenModel->getAllDepartemen();
       $data['title'] = 'Data Absen Karyawan';
       $data['tanggal'] = $tanggal;
+      
+      // Ambil total karyawan untuk ditampilkan di header
+      $data['total_karyawan'] = $this->karyawanModel->countAllResults();
 
       return view('admin/absen/absen-karyawan', $data);
    }
@@ -85,7 +88,8 @@ class DataAbsenKaryawan extends BaseController
          'departemen' => $departemen,
          'data' => $result,
          'listKehadiran' => $this->kehadiranModel->getAllKehadiran(),
-         'lewat' => $lewat
+         'lewat' => $lewat,
+         'total_karyawan' => count($result)
       ];
 
       return view('admin/absen/list-absen-karyawan', $data);

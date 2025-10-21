@@ -387,7 +387,7 @@
                   <div class="d-flex flex-wrap align-items-center justify-content-between">
                      <div>
                         <h4 class="title"><i class="material-icons">task_alt</i> Absen Admin</h4>
-                        <div class="subtitle">Daftar admin & status kehadiran</div>
+                        <div class="subtitle">Total Admin: <span style="background: var(--success); color: white; padding: 2px 8px; border-radius: 8px; font-weight: 700;"><?= $total_admin; ?></span> | <?= date('d M Y H:i'); ?></div>
                      </div>
                      <div class="toolbar">
                         <button type="button" class="btn-modern" id="filtersBtn">
