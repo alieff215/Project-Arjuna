@@ -78,6 +78,10 @@ class InventoryController extends BaseController
             'price_per_pcs'           => $total,
             'status'                  => 'onprogress',
 
+            // Tanggal mulai dan selesai
+            'tanggal_mulai'           => $this->request->getPost('tanggal_mulai'),
+            'tanggal_selesai'         => $this->request->getPost('tanggal_selesai'),
+
             // Target & harga per divisi
             'cutting_target'          => (int)$this->request->getPost('cutting_target'),
             'produksi_target'         => (int)$this->request->getPost('produksi_target'),
