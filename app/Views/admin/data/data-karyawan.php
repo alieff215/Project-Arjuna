@@ -477,7 +477,7 @@
          <div class="u-head">
             <div>
                <h4 class="u-title"><i class="material-icons" style="color:var(--success)">groups</i> Daftar Karyawan</h4>
-               <!--<p class="u-sub"> <?= $generalSettings->company_year; ?></p>-->
+               <p class="u-sub">Total Karyawan: <span style="background: var(--success); color: white; padding: 2px 8px; border-radius: 8px; font-weight: 700;"><?= $total_karyawan; ?></span> | <?= date('d M Y H:i'); ?></p>
             </div>
             <button class="btn-hero" type="button" onclick="loadKaryawan()">
                <i class="material-icons" style="color:var(--success)">refresh</i> Refresh

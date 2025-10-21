@@ -33,9 +33,13 @@ class DataAbsenAdmin extends BaseController
 
    public function index()
    {
+      // Ambil total admin untuk ditampilkan di header
+      $totalAdmin = $this->adminModel->countAllResults();
+      
       $data = [
          'title' => 'Data Absen Admin',
          'ctx' => 'absen-Admin',
+         'total_admin' => $totalAdmin
       ];
 
       return view('admin/absen/absen-Admin', $data);
@@ -53,7 +57,8 @@ class DataAbsenAdmin extends BaseController
       $data = [
          'data' => $result,
          'listKehadiran' => $this->kehadiranModel->getAllKehadiran(),
-         'lewat' => $lewat
+         'lewat' => $lewat,
+         'total_admin' => count($result)
       ];
 
       return view('admin/absen/list-absen-admin', $data);

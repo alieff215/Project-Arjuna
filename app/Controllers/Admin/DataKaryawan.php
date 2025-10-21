@@ -53,11 +53,15 @@ class DataKaryawan extends BaseController
 
    public function index()
    {
+      // Ambil total karyawan untuk ditampilkan di header
+      $totalKaryawan = $this->karyawanModel->countAllResults();
+      
       $data = [
          'title' => 'Data Karyawan',
          'ctx' => 'karyawan',
          'departemen' => $this->departemenModel->getDataDepartemen(),
-         'jabatan' => $this->jabatanModel->getDataJabatan()
+         'jabatan' => $this->jabatanModel->getDataJabatan(),
+         'total_karyawan' => $totalKaryawan
       ];
 
       return view('admin/data/data-karyawan', $data);
@@ -72,7 +76,8 @@ class DataKaryawan extends BaseController
 
       $data = [
          'data' => $result,
-         'empty' => empty($result)
+         'empty' => empty($result),
+         'total_karyawan' => count($result)
       ];
 
       return view('admin/data/list-data-karyawan', $data);
