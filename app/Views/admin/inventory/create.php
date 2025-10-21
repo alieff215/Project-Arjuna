@@ -444,6 +444,21 @@
           <input type="number" name="total_target" id="total_target" class="form-control" placeholder="Masukkan total target" required>
         </div>
 
+        <div class="row">
+          <div class="col-md-6">
+            <div class="form-group">
+              <label for="tanggal_mulai">📅 Tanggal Mulai</label>
+              <input type="date" name="tanggal_mulai" id="tanggal_mulai" class="form-control" required>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label for="tanggal_selesai">📅 Tanggal Selesai</label>
+              <input type="date" name="tanggal_selesai" id="tanggal_selesai" class="form-control" required>
+            </div>
+          </div>
+        </div>
+
         <h5 class="section-title">Target & Harga per Departemen</h5>
 
         <div class="row">
