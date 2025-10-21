@@ -327,20 +327,21 @@
   </div>
   <div class="card-body p-0">
     <?php
-      // Hitung progress keseluruhan berdasarkan qty kumulatif vs target per divisi
-      $total_cutting_progress = $inventory['cutting_target'] > 0 ? round(($cuttingQtyToday / $inventory['cutting_target']) * 100, 2) : 0;
-      $total_produksi_progress = $inventory['produksi_target'] > 0 ? round(($produksiQtyToday / $inventory['produksi_target']) * 100, 2) : 0;
-      $total_finishing_progress = $inventory['finishing_target'] > 0 ? round(($finishingQtyToday / $inventory['finishing_target']) * 100, 2) : 0;
+      // Hitung progress keseluruhan berdasarkan qty kumulatif vs total_target
+      $total_target = (int)$inventory['total_target'];
+      $total_cutting_progress = $total_target > 0 ? round(($cuttingQtyToday / $total_target) * 100, 2) : 0;
+      $total_produksi_progress = $total_target > 0 ? round(($produksiQtyToday / $total_target) * 100, 2) : 0;
+      $total_finishing_progress = $total_target > 0 ? round(($finishingQtyToday / $total_target) * 100, 2) : 0;
       
       // Batasi progress maksimal 100%
       if ($total_cutting_progress > 100) $total_cutting_progress = 100;
       if ($total_produksi_progress > 100) $total_produksi_progress = 100;
       if ($total_finishing_progress > 100) $total_finishing_progress = 100;
       
-      // Status selesai per divisi berdasarkan target masing-masing divisi
-      $cutting_done = $inventory['cutting_target'] > 0 && $cuttingQtyToday >= $inventory['cutting_target'];
-      $produksi_done = $inventory['produksi_target'] > 0 && $produksiQtyToday >= $inventory['produksi_target'];
-      $finishing_done = $inventory['finishing_target'] > 0 && $finishingQtyToday >= $inventory['finishing_target'];
+      // Status selesai per divisi berdasarkan total_target
+      $cutting_done = $total_target > 0 && $cuttingQtyToday >= $total_target;
+      $produksi_done = $total_target > 0 && $produksiQtyToday >= $total_target;
+      $finishing_done = $total_target > 0 && $finishingQtyToday >= $total_target;
     ?>
     <table class="table table-bordered text-center mb-0">
       <thead>
@@ -359,7 +360,7 @@
           <td class="<?= $cutting_done ? 'table-success' : 'table-warning' ?>">
             <strong><?= $cuttingQtyToday ?></strong>
           </td>
-          <td><?= $inventory['cutting_target'] ?></td>
+          <td><?= $total_target ?></td>
           <td>
             <div class="progress" style="height: 25px;">
               <div class="progress-bar <?= $cutting_done ? 'bg-success' : 'bg-primary' ?>" 
@@ -383,7 +384,7 @@
             <?php if ($cutting_done): ?>
               <span class="text-success">Target tercapai!</span>
             <?php else: ?>
-              <span class="text-warning">Kurang <?= $inventory['cutting_target'] - $cuttingQtyToday ?> pcs</span>
+              <span class="text-warning">Kurang <?= $total_target - $cuttingQtyToday ?> pcs</span>
             <?php endif; ?>
           </td>
         </tr>
@@ -392,7 +393,7 @@
           <td class="<?= $produksi_done ? 'table-success' : 'table-warning' ?>">
             <strong><?= $produksiQtyToday ?></strong>
           </td>
-          <td><?= $inventory['produksi_target'] ?></td>
+          <td><?= $total_target ?></td>
           <td>
             <div class="progress" style="height: 25px;">
               <div class="progress-bar <?= $produksi_done ? 'bg-success' : 'bg-success' ?>" 
@@ -416,7 +417,7 @@
             <?php if ($produksi_done): ?>
               <span class="text-success">Target tercapai!</span>
             <?php else: ?>
-              <span class="text-warning">Kurang <?= $inventory['produksi_target'] - $produksiQtyToday ?> pcs</span>
+              <span class="text-warning">Kurang <?= $total_target - $produksiQtyToday ?> pcs</span>
             <?php endif; ?>
           </td>
         </tr>
@@ -425,7 +426,7 @@
           <td class="<?= $finishing_done ? 'table-success' : 'table-warning' ?>">
             <strong><?= $finishingQtyToday ?></strong>
           </td>
-          <td><?= $inventory['total_target'] ?></td>
+          <td><?= $total_target ?></td>
           <td>
             <div class="progress" style="height: 25px;">
               <div class="progress-bar <?= $finishing_done ? 'bg-success' : 'bg-warning text-dark' ?>" 
@@ -449,14 +450,14 @@
             <?php if ($finishing_done): ?>
               <span class="text-success">Target tercapai!</span>
             <?php else: ?>
-              <span class="text-warning">Kurang <?= $inventory['finishing_target'] - $finishingQtyToday ?> pcs</span>
+              <span class="text-warning">Kurang <?= $total_target - $finishingQtyToday ?> pcs</span>
             <?php endif; ?>
           </td>
         </tr>
         <tr class="table-dark text-white">
           <td><strong>Total Keseluruhan</strong></td>
           <td><strong><?= $finishingQtyToday ?></strong></td>
-          <td><strong><?= $inventory['finishing_target'] ?></strong></td>
+          <td><strong><?= $total_target ?></strong></td>
           <td>
             <?php
               // Hitung progress keseluruhan berdasarkan rata-rata progress ketiga divisi
@@ -637,27 +638,190 @@
 </div>
 
 <?= $this->section('scripts'); ?>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<!-- Load libraries with fallback -->
 <script>
-  document.getElementById("exportPDF").addEventListener("click", async () => {
-    const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF("p", "pt", "a4");
-    const element = document.getElementById("export-area");
-
-    await html2canvas(element, { scale: 2, useCORS: true }).then((canvas) => {
-      const imgData = canvas.toDataURL("image/png");
-      const imgProps = pdf.getImageProperties(imgData);
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-
-      pdf.setFontSize(16);
-      pdf.text("Laporan Detail Inventory", pdfWidth / 2, 30, { align: "center" });
-      pdf.text("<?= esc($inventory['order_name']) ?>", pdfWidth / 2, 50, { align: "center" });
-      pdf.addImage(imgData, "PNG", 0, 60, pdfWidth, pdfHeight);
-      pdf.save("Detail_Inventory_<?= esc($inventory['order_name']) ?>.pdf");
-    });
+// Function to load script with fallback
+function loadScript(src, onError) {
+  return new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = src;
+    script.onload = resolve;
+    script.onerror = () => {
+      console.error('Failed to load:', src);
+      if (onError) onError();
+      reject(new Error('Failed to load: ' + src));
+    };
+    document.head.appendChild(script);
   });
+}
+
+// Load libraries with fallback
+async function loadLibraries() {
+  try {
+    // Try primary CDN
+    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
+    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+    console.log('Libraries loaded from primary CDN');
+  } catch (error) {
+    console.log('Primary CDN failed, trying alternative...');
+    try {
+      // Try alternative CDN
+      await loadScript('https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js');
+      await loadScript('https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js');
+      console.log('Libraries loaded from alternative CDN');
+    } catch (error2) {
+      console.error('All CDN sources failed:', error2);
+      alert('Error: Required libraries could not be loaded. Please check your internet connection and try again.');
+    }
+  }
+}
+
+// Load libraries when page loads
+loadLibraries();
+</script>
+
+<script>
+
+// PDF Export Function
+function createPDF() {
+  console.log('Creating PDF...');
+  
+  // Check if jsPDF is available
+  if (typeof window.jspdf === 'undefined') {
+    alert('Error: jsPDF library tidak tersedia. Silakan refresh halaman.');
+    return;
+  }
+  
+  try {
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF();
+    
+    // Set font
+    pdf.setFont("helvetica");
+    
+    // Header
+    pdf.setFontSize(20);
+    pdf.text("LAPORAN DETAIL INVENTORY", 20, 30);
+    
+    pdf.setFontSize(12);
+    pdf.text("Order: <?= esc($inventory['order_name']) ?>", 20, 50);
+    pdf.text("Brand: <?= esc($inventory['brand']) ?>", 20, 65);
+    pdf.text("Status: <?= ucfirst($inventory['status']) ?>", 20, 80);
+    pdf.text("Tanggal: " + new Date().toLocaleDateString('id-ID'), 20, 95);
+    
+    // Line separator
+    pdf.line(20, 105, 190, 105);
+    
+    // Informasi Harga
+    pdf.setFontSize(14);
+    pdf.text("INFORMASI HARGA", 20, 120);
+    
+    pdf.setFontSize(10);
+    let yPos = 135;
+    pdf.text("Total per PCS: Rp <?= number_format($inventory['price_per_pcs'], 0, ',', '.') ?>", 20, yPos);
+    yPos += 10;
+    pdf.text("Cutting: Rp <?= number_format($inventory['cutting_price_per_pcs'], 0, ',', '.') ?>", 20, yPos);
+    yPos += 10;
+    pdf.text("Produksi: Rp <?= number_format($inventory['produksi_price_per_pcs'], 0, ',', '.') ?>", 20, yPos);
+    yPos += 10;
+    pdf.text("Finishing: Rp <?= number_format($inventory['finishing_price_per_pcs'], 0, ',', '.') ?>", 20, yPos);
+    yPos += 10;
+    pdf.text("Total Income: Rp <?= number_format($inventory['total_income'], 0, ',', '.') ?>", 20, yPos);
+    
+    yPos += 20;
+    pdf.line(20, yPos, 190, yPos);
+    
+    // Progress
+    pdf.setFontSize(14);
+    pdf.text("PROGRESS KESELURUHAN", 20, yPos + 15);
+    
+    pdf.setFontSize(10);
+    yPos += 30;
+    
+    const cuttingProgress = <?= round(($inventory['cutting_qty'] / $inventory['total_target']) * 100, 1) ?>;
+    const produksiProgress = <?= round(($inventory['produksi_qty'] / $inventory['total_target']) * 100, 1) ?>;
+    const finishingProgress = <?= round(($inventory['finishing_qty'] / $inventory['total_target']) * 100, 1) ?>;
+    
+    pdf.text("Cutting: <?= $inventory['cutting_qty'] ?> / <?= $inventory['total_target'] ?> (" + cuttingProgress + "%)", 20, yPos);
+    yPos += 10;
+    pdf.text("Produksi: <?= $inventory['produksi_qty'] ?> / <?= $inventory['total_target'] ?> (" + produksiProgress + "%)", 20, yPos);
+    yPos += 10;
+    pdf.text("Finishing: <?= $inventory['finishing_qty'] ?> / <?= $inventory['total_target'] ?> (" + finishingProgress + "%)", 20, yPos);
+    
+    // Footer
+    yPos += 30;
+    pdf.line(20, yPos, 190, yPos);
+    pdf.setFontSize(8);
+    pdf.text("Dibuat pada: " + new Date().toLocaleString('id-ID'), 20, yPos + 10);
+    pdf.text("Halaman 1", 170, yPos + 10);
+    
+    // Save PDF
+    const filename = "Laporan_<?= esc($inventory['order_name']) ?>_" + new Date().toISOString().split('T')[0] + ".pdf";
+    pdf.save(filename);
+    
+    console.log('PDF saved successfully');
+    alert('PDF berhasil dibuat dan didownload!');
+    
+  } catch (error) {
+    console.error('PDF generation error:', error);
+    alert('Error membuat PDF: ' + error.message);
+  }
+}
+
+// Initialize PDF export with multiple attempts
+function initPDFExport() {
+  console.log('Initializing PDF export...');
+  
+  // Try multiple times to find the button
+  let attempts = 0;
+  const maxAttempts = 10;
+  
+  function tryInit() {
+    attempts++;
+    console.log('Attempt', attempts, 'to find export button...');
+    
+    const exportBtn = document.getElementById("exportPDF");
+    if (exportBtn) {
+      console.log('Export button found on attempt', attempts);
+      
+      // Remove any existing event listeners
+      const newBtn = exportBtn.cloneNode(true);
+      exportBtn.parentNode.replaceChild(newBtn, exportBtn);
+      
+      // Add click handler
+      newBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('PDF export button clicked!');
+        createPDF();
+      });
+      
+      console.log('PDF export initialized successfully');
+      return;
+    }
+    
+    if (attempts < maxAttempts) {
+      setTimeout(tryInit, 500); // Try again in 500ms
+    } else {
+      console.error('Export button not found after', maxAttempts, 'attempts');
+      alert('Error: Tombol export PDF tidak ditemukan. Silakan refresh halaman.');
+    }
+  }
+  
+  tryInit();
+}
+
+// Initialize when page loads
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('DOM loaded, starting PDF export init...');
+  setTimeout(initPDFExport, 1000); // Wait 1 second for all content to load
+});
+
+// Also try on window load as backup
+window.addEventListener('load', function() {
+  console.log('Window loaded, trying PDF export init...');
+  setTimeout(initPDFExport, 500);
+});
 </script>
 <?= $this->endSection(); ?>
 
