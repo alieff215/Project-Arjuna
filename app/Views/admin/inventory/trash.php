@@ -4,9 +4,6 @@
 <div class="content">
   <div class="container-fluid">
     <h3 class="mb-3">🗑️ Inventory Terhapus</h3>
-    <div class="d-flex gap-2 mb-3">
-      <a href="/admin/inventory" class="btn btn-primary">← Kembali ke Inventory</a>
-    </div>
 
     <?php if (empty($inventories)): ?>
       <div class="alert alert-info">

@@ -605,10 +605,6 @@
                         <span>💾</span>
                         Simpan
                     </button>
-                    <a href="<?= base_url('admin/petugas'); ?>" class="btn btn-secondary">
-                        <span>↩️</span>
-                        Kembali
-                    </a>
                 </div>
             </form>
         </div>
