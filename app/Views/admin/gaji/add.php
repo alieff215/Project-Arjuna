@@ -6,9 +6,6 @@
     <!-- Page Header -->
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <h1 class="h3 mb-0 text-gray-800">Tambah Konfigurasi Gaji</h1>
-        <a href="<?= base_url('admin/gaji') ?>" class="btn btn-secondary">
-            <i class="fas fa-arrow-left"></i> Kembali
-        </a>
     </div>
 
     <!-- Form Card -->

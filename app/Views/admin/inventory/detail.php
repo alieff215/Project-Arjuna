@@ -630,10 +630,6 @@
     </div>
   </div>
   <?php endif; ?>
-    <!-- Tombol Kembali -->
-    <div class="text-center mt-4">
-          <a href="/admin/inventory" class="btn btn-outline-secondary btn-custom px-4">⬅ Kembali</a>
-    </div>
   </div>
 </div>
 

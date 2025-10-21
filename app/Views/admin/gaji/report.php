@@ -10,9 +10,6 @@
             <button class="btn btn-success" onclick="exportToCSV()">
                 <i class="fas fa-file-csv"></i> Export CSV
             </button>
-            <a href="<?= base_url('admin/gaji') ?>" class="btn btn-secondary">
-                <i class="fas fa-arrow-left"></i> Kembali
-            </a>
         </div>
     </div>
 
