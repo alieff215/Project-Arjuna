@@ -26,6 +26,7 @@ $routes->set404Override();
 // We get a performance increase by specifying the default
 // route since we don't have to scan directories.
    $routes->get('/', 'webprofile::index');
+$routes->get('/debug/session', 'Debug::session');
 $routes->group('scan', function (RouteCollection $routes) {
    $routes->get('', 'Scan::index');
    $routes->get('masuk', 'Scan::index/Masuk');

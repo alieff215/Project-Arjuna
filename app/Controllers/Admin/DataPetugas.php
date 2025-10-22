@@ -46,8 +46,9 @@ class DataPetugas extends BaseController
 
    public function index()
    {
-      if (user()->toArray()['is_superadmin'] != '1') {
-         return redirect()->to('admin');
+      // Cek akses menggunakan RoleHelper
+      if (!$this->roleHelper->canAccessPetugas()) {
+         return redirect()->to('admin/dashboard');
       }
 
       $data = [
@@ -72,8 +73,9 @@ class DataPetugas extends BaseController
 
    public function registerPetugas()
    {
-      if (user()->toArray()['is_superadmin'] != '1') {
-         return redirect()->to('admin');
+      // Cek akses menggunakan RoleHelper
+      if (!$this->roleHelper->canAccessPetugas()) {
+         return redirect()->to('admin/dashboard');
       }
 
       $data = [

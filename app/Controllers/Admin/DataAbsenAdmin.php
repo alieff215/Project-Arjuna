@@ -33,6 +33,11 @@ class DataAbsenAdmin extends BaseController
 
    public function index()
    {
+      // Cek akses masterdata
+      if (!$this->roleHelper->canAccessMasterData()) {
+         return redirect()->to('/scan');
+      }
+
       // Ambil total admin untuk ditampilkan di header
       $totalAdmin = $this->adminModel->countAllResults();
       

@@ -53,20 +53,13 @@ class DataKaryawan extends BaseController
 
    public function index()
    {
-      // Ambil total karyawan untuk ditampilkan di header
-      $totalKaryawan = $this->karyawanModel->countAllResults();
-      
-      // Ambil data departemen gabungan untuk dropdown filter
-      $departemenModel = new \App\Models\DepartemenModel();
-      $listDepartemen = $departemenModel->getAllDepartemen();
-      
       $data = [
          'title' => 'Data Karyawan',
          'ctx' => 'karyawan',
          'departemen' => $this->departemenModel->getDataDepartemen(),
          'jabatan' => $this->jabatanModel->getDataJabatan(),
-         'listDepartemen' => $listDepartemen,
-         'total_karyawan' => $totalKaryawan
+         'listDepartemen' => $this->departemenModel->getDataDepartemen(),
+         'total_karyawan' => $this->karyawanModel->countAllResults()
       ];
 
       return view('admin/data/data-karyawan', $data);
@@ -75,15 +68,24 @@ class DataKaryawan extends BaseController
    public function ambilDataKaryawan()
    {
       $departemen = $this->request->getVar('departemen') ?? null;
-      $idDepartemen = $this->request->getVar('id_departemen') ?? null;
+      $jabatan = $this->request->getVar('jabatan') ?? null;
+      $id_departemen = $this->request->getVar('id_departemen') ?? null;
 
-      // Jika id_departemen adalah 'all' atau null, ambil semua karyawan
-      if ($idDepartemen === 'all' || $idDepartemen === null) {
-         $result = $this->karyawanModel->getAllKaryawanWithDepartemen();
+      // Debug: log parameter yang diterima
+      log_message('debug', 'ambilDataKaryawan - departemen: ' . ($departemen ?? 'null'));
+      log_message('debug', 'ambilDataKaryawan - jabatan: ' . ($jabatan ?? 'null'));
+      log_message('debug', 'ambilDataKaryawan - id_departemen: ' . ($id_departemen ?? 'null'));
+
+      // Jika id_departemen dikirim, gunakan untuk filter
+      if (!empty($id_departemen) && $id_departemen !== 'all') {
+         $result = $this->karyawanModel->getKaryawanByDepartemen($id_departemen);
+         log_message('debug', 'Menggunakan getKaryawanByDepartemen dengan id: ' . $id_departemen);
       } else {
-         // Ambil karyawan berdasarkan departemen tertentu
-         $result = $this->karyawanModel->getKaryawanByDepartemen($idDepartemen);
+         $result = $this->karyawanModel->getAllKaryawanWithDepartemen($departemen, $jabatan);
+         log_message('debug', 'Menggunakan getAllKaryawanWithDepartemen');
       }
+
+      log_message('debug', 'Jumlah hasil: ' . count($result));
 
       $data = [
          'data' => $result,

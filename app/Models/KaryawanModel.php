@@ -54,14 +54,13 @@ class KaryawanModel extends Model
       );
 
       if (!empty($departemen) && !empty($jabatan)) {
-         $query = $this->where(['departemen' => $departemen, 'jabatan' => $jabatan]);
+         $query = $query->where(['departemen' => $departemen, 'jabatan' => $jabatan]);
       } else if (empty($departemen) && !empty($jabatan)) {
-         $query = $this->where(['jabatan' => $jabatan]);
+         $query = $query->where(['jabatan' => $jabatan]);
       } else if (!empty($departemen) && empty($jabatan)) {
-         $query = $this->where(['departemen' => $departemen]);
-      } else {
-         $query = $this;
+         $query = $query->where(['departemen' => $departemen]);
       }
+      // Jika kedua parameter kosong, tidak perlu menambahkan where clause
 
       return $query->orderBy('nama_karyawan')->findAll();
    }

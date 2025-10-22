@@ -561,7 +561,8 @@
             }, 260);
          },
          error: function(xhr, status, err) {
-            console.log(err);
+            console.log('Error:', err);
+            console.log('Response:', xhr.responseText);
             $('#dataKaryawan').html(`<div class="placeholder">Gagal memuat data.<br><small class="text-danger">${err}</small></div>`);
          }
       });

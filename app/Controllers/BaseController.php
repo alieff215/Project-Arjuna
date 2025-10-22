@@ -46,6 +46,8 @@ abstract class BaseController extends Controller
 
    protected $generalSettings;
 
+   protected $roleHelper;
+
    /**
     * Constructor.
     */
@@ -59,10 +61,13 @@ abstract class BaseController extends Controller
       $this->session = \Config\Services::session();
       $companyConfigurations  = new \Config\Company();
       $this->generalSettings = $companyConfigurations::$generalSettings;
-
+      $this->roleHelper = new \App\Libraries\RoleHelper();
 
       // Passing global variable to views
       $view = \Config\Services::renderer();
-      $view->setData(['generalSettings' => $this->generalSettings]);
+      $view->setData([
+         'generalSettings' => $this->generalSettings,
+         'roleHelper' => $this->roleHelper
+      ]);
    }
 }

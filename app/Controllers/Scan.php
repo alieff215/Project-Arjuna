@@ -31,8 +31,20 @@ class Scan extends BaseController
 
    public function index($t = 'Masuk')
    {
+      // Cek apakah user sudah login
+      if (!session()->get('logged_in')) {
+         return redirect()->to('/login');
+      }
+
       $data = ['waktu' => $t, 'title' => 'Absensi Karyawan dan Admin Berbasis QR Code'];
-      return view('scan/scan', $data);
+      
+      // Tentukan view berdasarkan role
+      $userRole = $this->roleHelper->getUserRole();
+      if ($userRole->value === 'user') {
+         return view('scan/scan_user', $data);
+      } else {
+         return view('scan/scan', $data);
+      }
    }
 
    public function cekKode()
