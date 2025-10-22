@@ -40,6 +40,11 @@ class DataAdmin extends BaseController
 
    public function index()
    {
+      // Cek akses masterdata
+      if (!$this->roleHelper->canAccessMasterData()) {
+         return redirect()->to($this->roleHelper->redirectBasedOnRole());
+      }
+
       // Ambil total admin untuk ditampilkan di header
       $totalAdmin = $this->adminModel->countAllResults();
       

@@ -41,6 +41,11 @@ class DataAbsenKaryawan extends BaseController
 
    public function index()
    {
+      // Cek akses masterdata
+      if (!$this->roleHelper->canAccessMasterData()) {
+         return redirect()->to('/scan');
+      }
+
       $tanggal = $this->request->getGet('tanggal') ?? date('Y-m-d');
       $departemen = $this->request->getGet('departemen');
 

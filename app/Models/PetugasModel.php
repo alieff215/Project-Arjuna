@@ -12,7 +12,8 @@ class PetugasModel extends Model
          'email',
          'username',
          'password_hash',
-         'is_superadmin'
+         'is_superadmin',
+         'user_role'
       ];
    }
 
@@ -32,12 +33,19 @@ class PetugasModel extends Model
 
    public function savePetugas($idPetugas, $email, $username, $passwordHash, $role)
    {
+      // Tentukan is_superadmin berdasarkan role
+      $isSuperadmin = '0';
+      if ($role === 'super_admin') {
+         $isSuperadmin = '1';
+      }
+      
       return $this->save([
          $this->primaryKey => $idPetugas,
          'email' => $email,
          'username' => $username,
          'password_hash' => $passwordHash,
-         'is_superadmin' => $role ?? '0',
+         'is_superadmin' => $isSuperadmin,
+         'user_role' => $role ?? 'user',
       ]);
    }
 }

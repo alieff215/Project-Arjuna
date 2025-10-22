@@ -24,6 +24,11 @@ class DepartemenController extends BaseController
      */
     public function index()
     {
+        // Cek akses masterdata
+        if (!$this->roleHelper->canAccessMasterData()) {
+            return redirect()->to('/scan');
+        }
+
         $data = [
             'title' => 'Departemen & Jabatan',
             'ctx' => 'departemen',
