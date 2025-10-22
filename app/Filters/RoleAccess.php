@@ -19,47 +19,9 @@ class RoleAccess implements FilterInterface
             return redirect()->to('/login');
         }
 
-        // Jika tidak ada argument role yang diperlukan, skip filter
-        if (empty($arguments)) {
-            return;
-        }
-
-        $requiredRole = $arguments[0] ?? null;
-        if (!$requiredRole) {
-            return;
-        }
-
-        // Konversi string role ke enum
-        $roleEnum = null;
-        switch ($requiredRole) {
-            case 'super_admin':
-                $roleEnum = UserRole::SUPER_ADMIN;
-                break;
-            case 'admin':
-                $roleEnum = UserRole::ADMIN;
-                break;
-            case 'user':
-                $roleEnum = UserRole::USER;
-                break;
-            default:
-                return;
-        }
-
-        // Cek apakah user memiliki akses
-        if (!RoleHelper::hasAccess($roleEnum)) {
-            // Redirect ke halaman yang sesuai berdasarkan role user
-            $userRole = RoleHelper::getUserRole();
-            
-            switch ($userRole) {
-                case UserRole::SUPER_ADMIN:
-                case UserRole::ADMIN:
-                    return redirect()->to('/admin/dashboard');
-                case UserRole::USER:
-                    return redirect()->to('/scan');
-                default:
-                    return redirect()->to('/login');
-            }
-        }
+        // Untuk scan, semua user yang login bisa akses
+        // Tidak perlu cek role khusus karena scan bisa diakses oleh semua role
+        return;
     }
 
     public function after(RequestInterface $request, ResponseInterface $response, $arguments = null)
