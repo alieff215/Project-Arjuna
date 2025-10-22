@@ -89,7 +89,6 @@ class Filters extends BaseFilters
                     'webprofile/*', // web profile
                     'login',        // halaman login
                     'login/*',      // proses login
-                    'scan/*' 
                 ],
             ],
             // 'honeypot',
@@ -107,7 +106,6 @@ class Filters extends BaseFilters
                     '/',
                     'webprofile/*',
                     'login/*',
-                    'scan/*',
                 ],
             ],
             'secureheaders',
@@ -144,6 +142,12 @@ class Filters extends BaseFilters
                 'admin/',
                 'admin/*',
                 'register/',
+            ]
+        ],
+        'role_access' => [
+            'before' => [
+                'scan/',
+                'scan/*',
             ]
         ]
     ];

@@ -160,3 +160,4 @@ if ($userRole->value === 'user') {
 - ✅ Navbar dengan dropdown
 
 Button logout telah berhasil ditambahkan ke halaman scan user dengan 3 lokasi yang berbeda untuk kemudahan akses! 🎉
+

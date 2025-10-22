@@ -1,4 +1,17 @@
-<?= $this->extend('templates/user_page_layout'); ?>
+<?= $this->extend('templates/starting_page_layout'); ?>
+
+<?= $this->section('navaction') ?>
+<div class="d-flex gap-2">
+   <a href="<?= base_url('/admin'); ?>" class="btn btn-secondary">
+      <i class="material-icons mr-2">arrow_back</i>
+      Kembali
+   </a>
+   <a href="<?= base_url('/admin'); ?>" class="btn btn-primary">
+      <i class="material-icons mr-2">dashboard</i>
+      Dashboard
+   </a>
+</div>
+<?= $this->endSection() ?>
 
 <?= $this->section('content'); ?>
 <style>
@@ -150,20 +163,18 @@
    $waktu == 'Masuk' ? $oppBtn = 'pulang' : $oppBtn = 'masuk';
    ?>
 <div class="container-fluid">
-         <!-- Header dengan Button Kembali -->
+         <!-- Header dengan Informasi -->
          <div class="row mb-4">
             <div class="col-12">
                <div class="d-flex justify-content-between align-items-center scan-header">
                   <div>
                     <br>
                      <h2><b>Absensi Karyawan dan Admin Berbasis QR Code</b></h2>
-                     <p class="text-muted">Sistem absensi menggunakan QR Code</p>
+                     <p class="text-muted">Sistem absensi menggunakan QR Code - Mode Admin</p>
                   </div>
-                  <div>
-                     <a href="<?= base_url('scan'); ?>" class="btn btn-secondary">
-                        <i class="material-icons mr-2">arrow_back</i>
-                        Kembali
-                     </a>
+                  <div class="badge bg-info text-white px-3 py-2">
+                     <i class="material-icons mr-1" style="font-size: 18px;">admin_panel_settings</i>
+                     Mode Admin
                   </div>
                </div>
                <hr class="mt-3">
@@ -220,14 +231,11 @@
                               </div>
                               <p class="mt-2 mb-0"><b>Mencari kamera...</b></p>
                            </div>
-                           <video id="preview" class="w-100 rounded" style="height: 300px; object-fit: cover; display: none;"></video>
+                           <video id="previewKamera" class="w-100 rounded" style="height: 300px; object-fit: cover; display: none;"></video>
                         </div>
                      </div>
 
-                     <form id="formAbsen" action="<?= base_url('scan/cek'); ?>" method="post">
-                        <input type="hidden" name="unique_code" id="unique_code">
-                        <input type="hidden" name="waktu" value="<?= strtolower($waktu); ?>">
-                     </form>
+                     <div id="hasilScan" class="mt-3"></div>
 
                      <!-- Floating Notification -->
                      <div id="notification" class="notification-floating" style="display: none;">
@@ -246,28 +254,24 @@
             <div class="col-lg-3 col-xl-4">
                <div class="card shadow-sm">
                   <div class="card-body">
-                     <h4 class="mb-3"><b>Informasi</b></h4>
+                     <h4 class="mb-3"><b>Panduan Penggunaan</b></h4>
                      <div class="mb-4">
                         <div class="d-flex align-items-start mb-2">
-                           <i class="material-icons text-info mr-2" style="font-size: 20px;">check_circle</i>
-                           <small>Pastikan QR Code dalam kondisi baik</small>
+                           <i class="material-icons text-info mr-2" style="font-size: 20px;">qr_code_scanner</i>
+                           <small>Jika berhasil scan maka akan muncul data karyawan/admin dibawah preview kamera</small>
                         </div>
                         <div class="d-flex align-items-start mb-2">
-                           <i class="material-icons text-info mr-2" style="font-size: 20px;">wifi</i>
-                           <small>Pastikan koneksi internet stabil</small>
+                           <i class="material-icons text-info mr-2" style="font-size: 20px;">swap_horiz</i>
+                           <small>Klik tombol <b><span class="text-success">Absen masuk</span> / <span class="text-warning">Absen pulang</span></b> untuk mengubah waktu absensi</small>
                         </div>
                         <div class="d-flex align-items-start mb-2">
-                           <i class="material-icons text-info mr-2" style="font-size: 20px;">support_agent</i>
-                           <small>Jika ada masalah, hubungi admin</small>
+                           <i class="material-icons text-info mr-2" style="font-size: 20px;">dashboard</i>
+                           <small>Untuk melihat data absensi, klik tombol Dashboard</small>
                         </div>
-                     </div>
-                     
-                     <!-- Button Logout untuk User -->
-                     <div class="d-grid">
-                        <a href="<?= base_url('logout'); ?>" class="btn btn-danger">
-                           <i class="material-icons mr-2">logout</i>
-                           Logout
-                        </a>
+                        <div class="d-flex align-items-start mb-2">
+                           <i class="material-icons text-info mr-2" style="font-size: 20px;">admin_panel_settings</i>
+                           <small>Untuk mengakses halaman admin anda harus login terlebih dahulu</small>
+                        </div>
                      </div>
                   </div>
                </div>
@@ -291,7 +295,7 @@
    })
 
    const previewParent = document.getElementById('previewParent');
-   const preview = document.getElementById('preview');
+   const preview = document.getElementById('previewKamera');
 
    function initScanner() {
       codeReader.listVideoInputDevices()
@@ -327,14 +331,26 @@
             }
 
             $('#previewParent').removeClass('unpreview');
-            $('#preview').show();
+            $('#previewKamera').show();
             $('#searching').hide();
 
-            codeReader.decodeOnceFromVideoDevice(selectedDeviceId, 'preview')
+            codeReader.decodeOnceFromVideoDevice(selectedDeviceId, 'previewKamera')
                .then(result => {
                   console.log(result.text);
-                  audio.play();
                   cekData(result.text);
+
+                  $('#previewKamera').hide();
+                  $('#previewParent').addClass('unpreview');
+                  $('#searching').show();
+
+                  if (codeReader) {
+                     codeReader.reset();
+
+                     // delay 2,5 detik setelah berhasil meng-scan
+                     setTimeout(() => {
+                        initScanner();
+                     }, 2500);
+                  }
                })
                .catch(err => console.error(err));
 
@@ -468,5 +484,10 @@
       const notification = document.getElementById('notification');
       notification.style.display = 'none';
    }
+
+   function clearData() {
+      $('#hasilScan').html('');
+   }
 </script>
+
 <?= $this->endSection(); ?>

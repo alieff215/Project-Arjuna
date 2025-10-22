@@ -29,11 +29,17 @@ class Scan extends BaseController
       $this->presensiAdminModel = new PresensiAdminModel();
    }
 
-   public function index($t = 'Masuk')
+   public function index($t = null)
    {
       // Cek apakah user sudah login
       if (!session()->get('logged_in')) {
          return redirect()->to('/login');
+      }
+
+      // Jika tidak ada parameter waktu, tampilkan halaman utama
+      if ($t === null) {
+         $data = ['title' => 'Absensi Karyawan dan Admin Berbasis QR Code'];
+         return view('scan/scan_main', $data);
       }
 
       $data = ['waktu' => $t, 'title' => 'Absensi Karyawan dan Admin Berbasis QR Code'];
@@ -43,7 +49,8 @@ class Scan extends BaseController
       if ($userRole->value === 'user') {
          return view('scan/scan_user', $data);
       } else {
-         return view('scan/scan', $data);
+         // Admin dan Super Admin menggunakan halaman scan khusus
+         return view('scan/scan_admin', $data);
       }
    }
 
@@ -77,7 +84,7 @@ class Scan extends BaseController
       }
 
       if (!$status) { // data tidak ditemukan
-         return $this->showErrorView('Data tidak ditemukan');
+         return $this->showErrorResponse('Data tidak ditemukan');
       }
 
       // jika data ditemukan
@@ -91,7 +98,7 @@ class Scan extends BaseController
             break;
 
          default:
-            return $this->showErrorView('Data tidak valid');
+            return $this->showErrorResponse('Data tidak valid');
             break;
       }
    }
@@ -115,7 +122,7 @@ class Scan extends BaseController
 
             if ($sudahAbsen) {
                $data['presensi'] = $this->presensiAdminModel->getPresensiById($sudahAbsen);
-               return $this->showErrorView('Anda sudah absen hari ini', $data);
+               return $this->showErrorResponse('Anda sudah absen hari ini', $data);
             }
 
             $this->presensiAdminModel->absenMasuk($idAdmin, $date, $time);
@@ -133,7 +140,7 @@ class Scan extends BaseController
 
             if ($sudahAbsen) {
                $data['presensi'] = $this->presensiKaryawanModel->getPresensiById($sudahAbsen);
-               return $this->showErrorView('Anda sudah absen hari ini', $data);
+               return $this->showErrorResponse('Anda sudah absen hari ini', $data);
             }
 
             $this->presensiKaryawanModel->absenMasuk($idKaryawan, $date, $time, $idDepartemen);
@@ -143,7 +150,7 @@ class Scan extends BaseController
             break;
 
          default:
-            return $this->showErrorView('Tipe tidak valid');
+            return $this->showErrorResponse('Tipe tidak valid');
       }
 
       // kirim notifikasi ke whatsapp
@@ -159,7 +166,13 @@ class Scan extends BaseController
             log_message('error', 'Error sending notification: ' . $e->getMessage());
          }
       }
-      return view('scan/scan-result', $data);
+      return $this->response->setJSON([
+         'success' => true,
+         'message' => 'Absen ' . $data['waktu'] . ' berhasil',
+         'data' => $data['data'],
+         'type' => $data['type'],
+         'presensi' => $data['presensi']
+      ]);
    }
 
    public function absenPulang($type, $result)
@@ -181,7 +194,7 @@ class Scan extends BaseController
             $sudahAbsen = $this->presensiAdminModel->cekAbsen($idAdmin, $date);
 
             if (!$sudahAbsen) {
-               return $this->showErrorView('Anda belum absen hari ini', $data);
+               return $this->showErrorResponse('Anda belum absen hari ini', $data);
             }
 
             $this->presensiAdminModel->absenKeluar($sudahAbsen, $time);
@@ -197,7 +210,7 @@ class Scan extends BaseController
             $sudahAbsen = $this->presensiKaryawanModel->cekAbsen($idKaryawan, $date);
 
             if (!$sudahAbsen) {
-               return $this->showErrorView('Anda belum absen hari ini', $data);
+               return $this->showErrorResponse('Anda belum absen hari ini', $data);
             }
 
             $this->presensiKaryawanModel->absenKeluar($sudahAbsen, $time);
@@ -206,7 +219,7 @@ class Scan extends BaseController
 
             break;
          default:
-            return $this->showErrorView('Tipe tidak valid');
+            return $this->showErrorResponse('Tipe tidak valid');
       }
 
       // kirim notifikasi ke whatsapp
@@ -223,7 +236,13 @@ class Scan extends BaseController
          }
       }
 
-      return view('scan/scan-result', $data);
+      return $this->response->setJSON([
+         'success' => true,
+         'message' => 'Absen ' . $data['waktu'] . ' berhasil',
+         'data' => $data['data'],
+         'type' => $data['type'],
+         'presensi' => $data['presensi']
+      ]);
    }
 
    public function showErrorView(string $msg = 'no error message', $data = NULL)
@@ -232,6 +251,19 @@ class Scan extends BaseController
       $errdata['msg'] = $msg;
 
       return view('scan/error-scan-result', $errdata);
+   }
+
+   public function showErrorResponse(string $msg = 'no error message', $data = NULL)
+   {
+      $errdata = $data ?? [];
+      
+      return $this->response->setJSON([
+         'success' => false,
+         'message' => $msg,
+         'data' => $errdata['data'] ?? null,
+         'type' => $errdata['type'] ?? null,
+         'presensi' => $errdata['presensi'] ?? null
+      ]);
    }
 
    protected function sendNotification($message)
