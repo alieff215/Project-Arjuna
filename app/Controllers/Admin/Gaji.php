@@ -7,6 +7,8 @@ use App\Models\GajiModel;
 use App\Models\DepartemenModel;
 use App\Models\JabatanModel;
 use App\Models\GajiHistoryModel;
+use App\Models\ApprovalModel;
+use App\Libraries\ApprovalHelper;
 
 class Gaji extends BaseController
 {
@@ -14,6 +16,8 @@ class Gaji extends BaseController
     protected $departemenModel;
     protected $jabatanModel;
     protected $gajiHistoryModel;
+    protected ApprovalModel $approvalModel;
+    protected ApprovalHelper $approvalHelper;
 
     public function __construct()
     {
@@ -21,6 +25,8 @@ class Gaji extends BaseController
         $this->departemenModel = new DepartemenModel();
         $this->jabatanModel = new JabatanModel();
         $this->gajiHistoryModel = new GajiHistoryModel();
+        $this->approvalModel = new ApprovalModel();
+        $this->approvalHelper = new ApprovalHelper();
     }
 
     /**
@@ -82,16 +88,34 @@ class Gaji extends BaseController
                 ->with('error', 'Konfigurasi gaji untuk departemen dan jabatan ini sudah ada');
         }
 
-        if ($gaji_id = $this->gajiModel->insert($data)) {
-            // Log history for creation
-            $this->logGajiHistory($gaji_id, null, $data, 'created');
-            
-            return redirect()->to('admin/gaji')
-                ->with('success', 'Konfigurasi gaji berhasil ditambahkan');
+        // Cek apakah memerlukan approval
+        if ($this->approvalHelper->requiresApproval()) {
+            // Buat request approval
+            $approvalId = $this->approvalHelper->createApprovalRequest(
+                'create',
+                'tb_gaji',
+                null,
+                $data
+            );
+
+            if ($approvalId) {
+                return redirect()->to('admin/gaji')->with('success', 'Request penambahan konfigurasi gaji telah dikirim dan menunggu persetujuan superadmin');
             } else {
-            return redirect()->back()
-                ->withInput()
-                ->with('error', 'Gagal menambahkan konfigurasi gaji');
+                return redirect()->back()->with('error', 'Gagal mengirim request approval');
+            }
+        } else {
+            // Langsung simpan (untuk super admin)
+            if ($gaji_id = $this->gajiModel->insert($data)) {
+                // Log history for creation
+                $this->logGajiHistory($gaji_id, null, $data, 'created');
+                
+                return redirect()->to('admin/gaji')
+                    ->with('success', 'Konfigurasi gaji berhasil ditambahkan');
+            } else {
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', 'Gagal menambahkan konfigurasi gaji');
+            }
         }
     }
 
@@ -151,17 +175,36 @@ class Gaji extends BaseController
 
         // Get old data before update
         $old_data = $this->gajiModel->getGajiById($id);
-        
-        if ($this->gajiModel->update($id, $data)) {
-            // Log history for update
-            $this->logGajiHistory($id, $old_data, $data, 'updated');
-            
-            return redirect()->to('admin/gaji')
-                ->with('success', 'Konfigurasi gaji berhasil diperbarui');
+
+        // Cek apakah memerlukan approval
+        if ($this->approvalHelper->requiresApproval()) {
+            // Buat request approval
+            $approvalId = $this->approvalHelper->createApprovalRequest(
+                'update',
+                'tb_gaji',
+                $id,
+                $data,
+                $old_data
+            );
+
+            if ($approvalId) {
+                return redirect()->to('admin/gaji')->with('success', 'Request perubahan konfigurasi gaji telah dikirim dan menunggu persetujuan superadmin');
             } else {
-            return redirect()->back()
-                ->withInput()
-                ->with('error', 'Gagal memperbarui konfigurasi gaji');
+                return redirect()->back()->with('error', 'Gagal mengirim request approval');
+            }
+        } else {
+            // Langsung update (untuk super admin)
+            if ($this->gajiModel->update($id, $data)) {
+                // Log history for update
+                $this->logGajiHistory($id, $old_data, $data, 'updated');
+                
+                return redirect()->to('admin/gaji')
+                    ->with('success', 'Konfigurasi gaji berhasil diperbarui');
+            } else {
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', 'Gagal memperbarui konfigurasi gaji');
+            }
         }
     }
 
@@ -173,15 +216,34 @@ class Gaji extends BaseController
         // Get data before delete
         $old_data = $this->gajiModel->getGajiById($id);
         
-        if ($this->gajiModel->softDelete($id)) {
-            // Log history for deletion
-            $this->logGajiHistory($id, $old_data, null, 'deleted');
-            
-            return redirect()->to('admin/gaji')
-                ->with('success', 'Konfigurasi gaji berhasil dihapus');
+        // Cek apakah memerlukan approval
+        if ($this->approvalHelper->requiresApproval()) {
+            // Buat request approval untuk delete
+            $approvalId = $this->approvalHelper->createApprovalRequest(
+                'delete',
+                'tb_gaji',
+                $id,
+                null,
+                $old_data
+            );
+
+            if ($approvalId) {
+                return redirect()->to('admin/gaji')->with('success', 'Request penghapusan konfigurasi gaji telah dikirim dan menunggu persetujuan superadmin');
+            } else {
+                return redirect()->back()->with('error', 'Gagal mengirim request approval');
+            }
         } else {
-            return redirect()->to('admin/gaji')
-                ->with('error', 'Gagal menghapus konfigurasi gaji');
+            // Langsung hapus (untuk super admin)
+            if ($this->gajiModel->softDelete($id)) {
+                // Log history for deletion
+                $this->logGajiHistory($id, $old_data, null, 'deleted');
+                
+                return redirect()->to('admin/gaji')
+                    ->with('success', 'Konfigurasi gaji berhasil dihapus');
+            } else {
+                return redirect()->to('admin/gaji')
+                    ->with('error', 'Gagal menghapus konfigurasi gaji');
+            }
         }
     }
 

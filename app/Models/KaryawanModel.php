@@ -53,6 +53,7 @@ class KaryawanModel extends Model
          'LEFT'
       );
 
+      // Hanya tambahkan filter jika parameter tidak null dan tidak kosong
       if (!empty($departemen) && !empty($jabatan)) {
          $query = $query->where(['departemen' => $departemen, 'jabatan' => $jabatan]);
       } else if (empty($departemen) && !empty($jabatan)) {
@@ -60,7 +61,7 @@ class KaryawanModel extends Model
       } else if (!empty($departemen) && empty($jabatan)) {
          $query = $query->where(['departemen' => $departemen]);
       }
-      // Jika kedua parameter kosong, tidak perlu menambahkan where clause
+      // Jika kedua parameter null atau kosong, tampilkan semua data
 
       return $query->orderBy('nama_karyawan')->findAll();
    }

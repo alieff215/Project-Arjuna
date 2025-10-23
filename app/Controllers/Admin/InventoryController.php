@@ -4,14 +4,20 @@ namespace App\Controllers\Admin;
 
 use App\Controllers\BaseController;
 use App\Models\InventoryModel;
+use App\Models\ApprovalModel;
+use App\Libraries\ApprovalHelper;
 
 class InventoryController extends BaseController
 {
     protected $inventory;
+    protected ApprovalModel $approvalModel;
+    protected ApprovalHelper $approvalHelper;
 
     public function __construct()
     {
         $this->inventory = new InventoryModel();
+        $this->approvalModel = new ApprovalModel();
+        $this->approvalHelper = new ApprovalHelper();
     }
 
     // ===========================
@@ -72,25 +78,20 @@ class InventoryController extends BaseController
         // Hitung total harga per pcs
         $total = $cutting + $produksi + $finishing;
 
-        $this->inventory->save([
+        // Siapkan data untuk disimpan
+        $requestData = [
             'brand'                   => $this->request->getPost('brand'),
             'order_name'              => $this->request->getPost('order_name'),
             'price_per_pcs'           => $total,
             'status'                  => 'onprogress',
-
-            // Tanggal mulai dan selesai
             'tanggal_mulai'           => $this->request->getPost('tanggal_mulai'),
             'tanggal_selesai'         => $this->request->getPost('tanggal_selesai'),
-
-            // Target & harga per divisi
             'cutting_target'          => (int)$this->request->getPost('cutting_target'),
             'produksi_target'         => (int)$this->request->getPost('produksi_target'),
             'finishing_target'        => (int)$this->request->getPost('finishing_target'),
             'cutting_price_per_pcs'   => $cutting,
             'produksi_price_per_pcs'  => $produksi,
             'finishing_price_per_pcs' => $finishing,
-
-            // Data awal qty dan income
             'cutting_qty'             => 0,
             'produksi_qty'            => 0,
             'finishing_qty'           => 0,
@@ -98,13 +99,30 @@ class InventoryController extends BaseController
             'produksi_income'         => 0,
             'finishing_income'        => 0,
             'total_income'            => 0,
-
             'total_target'            => (int)$this->request->getPost('total_target'),
-
             'created_at'              => date('Y-m-d H:i:s'),
-        ]);
+        ];
 
-        return redirect()->to('/admin/inventory')->with('success', 'Data inventory berhasil ditambahkan.');
+        // Cek apakah memerlukan approval
+        if ($this->approvalHelper->requiresApproval()) {
+            // Buat request approval
+            $approvalId = $this->approvalHelper->createApprovalRequest(
+                'create',
+                'tb_inventory',
+                null,
+                $requestData
+            );
+
+            if ($approvalId) {
+                return redirect()->to('/admin/inventory')->with('success', 'Request penambahan data inventory telah dikirim dan menunggu persetujuan superadmin');
+            } else {
+                return redirect()->to('/admin/inventory')->with('error', 'Gagal mengirim request approval');
+            }
+        } else {
+            // Langsung simpan (untuk super admin)
+            $this->inventory->save($requestData);
+            return redirect()->to('/admin/inventory')->with('success', 'Data inventory berhasil ditambahkan.');
+        }
     }
 
     // ===========================
@@ -405,18 +423,36 @@ class InventoryController extends BaseController
             return redirect()->back()->with('error', 'Data inventory sudah dihapus sebelumnya.');
         }
 
-        // Soft delete - update status menjadi 'deleted' dan tambahkan deleted_at
-        $result = $db->table('inventories')->where('id', $id)->update([
-            'status' => 'deleted',
-            'deleted_at' => date('Y-m-d H:i:s'),
-            'updated_at' => date('Y-m-d H:i:s'),
-        ]);
+        // Cek apakah memerlukan approval
+        if ($this->approvalHelper->requiresApproval()) {
+            // Buat request approval untuk delete
+            $approvalId = $this->approvalHelper->createApprovalRequest(
+                'delete',
+                'tb_inventory',
+                $id,
+                null,
+                $inventory
+            );
 
-        if ($result) {
-            return redirect()->to('/admin/inventory')
-                             ->with('success', 'Data inventory berhasil dihapus.');
+            if ($approvalId) {
+                return redirect()->to('/admin/inventory')->with('success', 'Request penghapusan data inventory telah dikirim dan menunggu persetujuan superadmin');
+            } else {
+                return redirect()->back()->with('error', 'Gagal mengirim request approval');
+            }
         } else {
-            return redirect()->back()->with('error', 'Gagal menghapus data inventory.');
+            // Langsung hapus (untuk super admin)
+            $result = $db->table('inventories')->where('id', $id)->update([
+                'status' => 'deleted',
+                'deleted_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s'),
+            ]);
+
+            if ($result) {
+                return redirect()->to('/admin/inventory')
+                                 ->with('success', 'Data inventory berhasil dihapus.');
+            } else {
+                return redirect()->back()->with('error', 'Gagal menghapus data inventory.');
+            }
         }
     }
 
