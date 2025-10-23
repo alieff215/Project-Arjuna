@@ -146,6 +146,18 @@ $routes->group('admin', function (RouteCollection $routes) {
    $routes->post('laporan/karyawan', 'Admin\GenerateLaporan::generateLaporanKaryawan');
    $routes->post('laporan/admin', 'Admin\GenerateLaporan::generateLaporanAdmin');
 
+   // Approval Management (Super Admin only)
+   $routes->group('approval', ['namespace' => 'App\Controllers\Admin'], function ($routes) {
+      $routes->get('/', 'ApprovalManagement::index');
+      $routes->post('get-requests', 'ApprovalManagement::getApprovalRequests');
+      $routes->get('detail/(:num)', 'ApprovalManagement::detail/$1');
+      $routes->post('approve/(:num)', 'ApprovalManagement::approve/$1');
+      $routes->post('reject/(:num)', 'ApprovalManagement::reject/$1');
+      $routes->post('bulk-approve', 'ApprovalManagement::bulkApprove');
+      $routes->post('bulk-reject', 'ApprovalManagement::bulkReject');
+      $routes->get('stats', 'ApprovalManagement::getStats');
+   });
+
    // superadmin lihat data petugas
    $routes->get('petugas', 'Admin\DataPetugas::index');
    $routes->post('petugas', 'Admin\DataPetugas::ambilDataPetugas');
