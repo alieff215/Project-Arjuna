@@ -4,17 +4,23 @@ namespace App\Controllers\Admin;
 
 use App\Models\JabatanModel;
 use App\Models\DepartemenModel;
+use App\Models\ApprovalModel;
+use App\Libraries\ApprovalHelper;
 use App\Controllers\BaseController;
 class DepartemenController extends BaseController
 {
     protected DepartemenModel $departemenModel;
     protected JabatanModel $jabatanModel;
+    protected ApprovalModel $approvalModel;
+    protected ApprovalHelper $approvalHelper;
 
     public function initController(\CodeIgniter\HTTP\RequestInterface $request, \CodeIgniter\HTTP\ResponseInterface $response, \Psr\Log\LoggerInterface $logger)
     {
         parent::initController($request, $response, $logger);
         $this->departemenModel = new DepartemenModel();
         $this->jabatanModel = new JabatanModel();
+        $this->approvalModel = new ApprovalModel();
+        $this->approvalHelper = new ApprovalHelper();
     }
 
     /**
@@ -96,12 +102,37 @@ class DepartemenController extends BaseController
             $this->session->setFlashdata('errors', $val->getErrors());
             return redirect()->to('admin/departemen/tambah')->withInput();
         } else {
-            if ($this->departemenModel->addDepartemen()) {
-                $this->session->setFlashdata('success', 'Tambah data berhasil');
+            // Siapkan data untuk disimpan
+            $requestData = [
+                'departemen' => $this->request->getVar('departemen'),
+                'id_jabatan' => $this->request->getVar('id_jabatan'),
+            ];
+
+            // Cek apakah memerlukan approval
+            if ($this->approvalHelper->requiresApproval()) {
+                // Buat request approval
+                $approvalId = $this->approvalHelper->createApprovalRequest(
+                    'create',
+                    'tb_departemen',
+                    null,
+                    $requestData
+                );
+
+                if ($approvalId) {
+                    $this->session->setFlashdata('success', 'Request penambahan data departemen telah dikirim dan menunggu persetujuan superadmin');
+                } else {
+                    $this->session->setFlashdata('error', 'Gagal mengirim request approval');
+                }
                 return redirect()->to('admin/departemen');
             } else {
-                $this->session->setFlashdata('error', 'Gagal menambah data');
-                return redirect()->to('admin/departemen/tambah')->withInput();
+                // Langsung simpan (untuk super admin)
+                if ($this->departemenModel->addDepartemen()) {
+                    $this->session->setFlashdata('success', 'Tambah data berhasil');
+                    return redirect()->to('admin/departemen');
+                } else {
+                    $this->session->setFlashdata('error', 'Gagal menambah data');
+                    return redirect()->to('admin/departemen/tambah')->withInput();
+                }
             }
         }
 
@@ -141,11 +172,41 @@ class DepartemenController extends BaseController
             return redirect()->back();
         } else {
             $id = inputPost('id');
-            if ($this->departemenModel->editDepartemen($id)) {
-                $this->session->setFlashdata('success', 'Edit data berhasil');
+            
+            // Ambil data lama
+            $departemenLama = $this->departemenModel->getDepartemen($id);
+            
+            // Siapkan data untuk update
+            $requestData = [
+                'departemen' => $this->request->getVar('departemen'),
+                'id_jabatan' => $this->request->getVar('id_jabatan'),
+            ];
+
+            // Cek apakah memerlukan approval
+            if ($this->approvalHelper->requiresApproval()) {
+                // Buat request approval
+                $approvalId = $this->approvalHelper->createApprovalRequest(
+                    'update',
+                    'tb_departemen',
+                    $id,
+                    $requestData,
+                    $departemenLama
+                );
+
+                if ($approvalId) {
+                    $this->session->setFlashdata('success', 'Request perubahan data departemen telah dikirim dan menunggu persetujuan superadmin');
+                } else {
+                    $this->session->setFlashdata('error', 'Gagal mengirim request approval');
+                }
                 return redirect()->to('admin/departemen');
             } else {
-                $this->session->setFlashdata('error', 'Gagal Mengubah data');
+                // Langsung update (untuk super admin)
+                if ($this->departemenModel->editDepartemen($id)) {
+                    $this->session->setFlashdata('success', 'Edit data berhasil');
+                    return redirect()->to('admin/departemen');
+                } else {
+                    $this->session->setFlashdata('error', 'Gagal Mengubah data');
+                }
             }
         }
         return redirect()->to('admin/departemen/edit/' . cleanNumber($id));
@@ -166,10 +227,30 @@ class DepartemenController extends BaseController
                 $this->session->setFlashdata('error', 'Departemen Masih Memiliki Karyawan Aktif');
                 exit();
             }
-            if ($this->departemenModel->deleteDepartemen($id)) {
-                $this->session->setFlashdata('success', 'Data berhasil dihapus');
+
+            // Cek apakah memerlukan approval
+            if ($this->approvalHelper->requiresApproval()) {
+                // Buat request approval untuk delete
+                $approvalId = $this->approvalHelper->createApprovalRequest(
+                    'delete',
+                    'tb_departemen',
+                    $id,
+                    null,
+                    $departemen
+                );
+
+                if ($approvalId) {
+                    $this->session->setFlashdata('success', 'Request penghapusan data departemen telah dikirim dan menunggu persetujuan superadmin');
+                } else {
+                    $this->session->setFlashdata('error', 'Gagal mengirim request approval');
+                }
             } else {
-                $this->session->setFlashdata('error', 'Gagal menghapus data');
+                // Langsung hapus (untuk super admin)
+                if ($this->departemenModel->deleteDepartemen($id)) {
+                    $this->session->setFlashdata('success', 'Data berhasil dihapus');
+                } else {
+                    $this->session->setFlashdata('error', 'Gagal menghapus data');
+                }
             }
         }
     }
