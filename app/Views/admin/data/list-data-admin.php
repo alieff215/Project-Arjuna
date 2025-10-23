@@ -20,6 +20,7 @@
             <th><b>Jenis Kelamin</b></th>
             <th><b>No HP</b></th>
             <th><b>Alamat</b></th>
+            <th><b>Status Approval</b></th>
             <th width="1%"><b>Aksi</b></th>
          </thead>
          <tbody>
@@ -32,6 +33,27 @@
                   <td><?= $value['jenis_kelamin']; ?></td>
                   <td><?= $value['no_hp']; ?></td>
                   <td><?= $value['alamat']; ?></td>
+                  <td>
+                     <?php
+                     // Cek status approval untuk record ini
+                     $approvalModel = new \App\Models\ApprovalModel();
+                     $pendingRequests = $approvalModel->where('table_name', 'tb_admin')
+                                                   ->where('record_id', $value['id_admin'])
+                                                   ->where('status', 'pending')
+                                                   ->findAll();
+                     
+                     if (!empty($pendingRequests)): ?>
+                        <span class="badge badge-warning">
+                           <i class="material-icons" style="font-size: 14px; vertical-align: middle;">schedule</i>
+                           Pending Approval
+                        </span>
+                     <?php else: ?>
+                        <span class="badge badge-success">
+                           <i class="material-icons" style="font-size: 14px; vertical-align: middle;">check_circle</i>
+                           Approved
+                        </span>
+                     <?php endif; ?>
+                  </td>
                   <td>
                      <div class="d-flex justify-content-center">
                         <a title="Edit" href="<?= base_url('admin/admin/edit/' . $value['id_admin']); ?>" class="btn btn-success p-2" id="<?= $value['nuptk']; ?>">

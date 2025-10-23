@@ -52,6 +52,63 @@
       padding-right: 1rem;
    }
    
+   /* Mobile-first improvements */
+   .previewParent {
+      position: relative;
+      overflow: hidden;
+      border-radius: 8px;
+   }
+   
+   .previewParent::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 200px;
+      height: 200px;
+      border: 2px solid #007bff;
+      border-radius: 8px;
+      pointer-events: none;
+      z-index: 10;
+      opacity: 0.7;
+   }
+   
+   .previewParent::after {
+      content: 'Arahkan kamera ke QR Code';
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      pointer-events: none;
+      z-index: 10;
+   }
+   
+   /* Responsive Design */
+   @media (max-width: 1200px) {
+      .col-xl-4 {
+         flex: 0 0 50%;
+         max-width: 50%;
+      }
+   }
+   
+   @media (max-width: 992px) {
+      .col-lg-3, .col-lg-6 {
+         flex: 0 0 100%;
+         max-width: 100%;
+         margin-bottom: 1rem;
+      }
+      
+      .card-body {
+         padding: 1rem;
+      }
+   }
+   
    @media (max-width: 768px) {
       .scan-header h2 {
          font-size: 1.5rem;
@@ -62,6 +119,13 @@
          margin-bottom: 1.5rem;
          padding-top: 1rem;
          padding-bottom: 1rem;
+         flex-direction: column;
+         align-items: flex-start !important;
+      }
+      
+      .scan-header .badge {
+         margin-top: 0.5rem;
+         align-self: flex-start;
       }
       
       .container-fluid {
@@ -73,6 +137,90 @@
          margin-left: 1rem;
          margin-right: 1rem;
          margin-top: 1.5rem;
+      }
+      
+      .card-header .row {
+         flex-direction: column;
+         align-items: flex-start !important;
+      }
+      
+      .card-header .col-auto {
+         margin-top: 0.5rem;
+         width: 100%;
+      }
+      
+      .card-header .btn {
+         width: 100%;
+      }
+      
+      .previewParent {
+         height: 250px !important;
+      }
+      
+      .previewParent::before {
+         width: 150px;
+         height: 150px;
+      }
+      
+      #previewKamera {
+         height: 250px !important;
+      }
+      
+      .form-select {
+         font-size: 0.9rem;
+      }
+   }
+   
+   @media (max-width: 576px) {
+      .scan-header h2 {
+         font-size: 1.25rem;
+      }
+      
+      .scan-header p {
+         font-size: 0.9rem;
+      }
+      
+      .card-title {
+         font-size: 1.1rem;
+      }
+      
+      .card-category {
+         font-size: 0.85rem;
+      }
+      
+      .previewParent {
+         height: 200px !important;
+      }
+      
+      .previewParent::before {
+         width: 120px;
+         height: 120px;
+      }
+      
+      .previewParent::after {
+         font-size: 0.7rem;
+         padding: 3px 8px;
+      }
+      
+      #previewKamera {
+         height: 200px !important;
+      }
+      
+      .notification-floating {
+         top: 5px;
+         right: 5px;
+         left: 5px;
+         max-width: none;
+         min-width: auto;
+         font-size: 0.9rem;
+      }
+      
+      .notification-header {
+         padding: 10px 15px;
+      }
+      
+      .notification-body {
+         padding: 10px 15px;
       }
    }
 
@@ -422,16 +570,27 @@
       bodyContent += '</div>';
       bodyContent += '</div>';
       
+      // Tambahkan tombol untuk scan selanjutnya
+      bodyContent += '<div class="row mt-3">';
+      bodyContent += '<div class="col-12 text-center">';
+      bodyContent += '<button class="btn btn-success btn-sm" onclick="prepareNextScan()">';
+      bodyContent += '<i class="material-icons mr-1" style="font-size: 16px;">refresh</i>';
+      bodyContent += 'Scan Karyawan Selanjutnya';
+      bodyContent += '</button>';
+      bodyContent += '</div>';
+      bodyContent += '</div>';
+      
       body.innerHTML = bodyContent;
       
       // Set notification class
       notification.className = 'notification-floating notification-success';
       notification.style.display = 'block';
       
-      // Auto hide after 5 seconds
+      // Auto hide after 8 seconds dan auto refresh
       setTimeout(() => {
          hideNotification();
-      }, 5000);
+         prepareNextScan();
+      }, 8000);
    }
 
    function showErrorNotification(data) {
@@ -483,6 +642,27 @@
    function hideNotification() {
       const notification = document.getElementById('notification');
       notification.style.display = 'none';
+   }
+
+   function prepareNextScan() {
+      // Hide notification
+      hideNotification();
+      
+      // Reset scanner state
+      $('#previewParent').removeClass('unpreview');
+      $('#previewKamera').show();
+      $('#searching').hide();
+      
+      // Clear any previous results
+      clearData();
+      
+      // Restart scanner
+      if (codeReader) {
+         codeReader.reset();
+         setTimeout(() => {
+            initScanner();
+         }, 500);
+      }
    }
 
    function clearData() {

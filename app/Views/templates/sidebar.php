@@ -28,6 +28,7 @@ elseif (url_is('admin/laporan*'))                $routeContext = 'laporan';
 elseif (url_is('admin/gaji/rekap'))              $routeContext = 'rekap-gaji';
 elseif (url_is('admin/gaji*'))                   $routeContext = 'gaji';
 elseif (url_is('admin/petugas*'))                $routeContext = 'petugas';
+elseif (url_is('admin/approval*'))               $routeContext = 'approval';
 elseif (url_is('admin/general-settings*'))       $routeContext = 'general_settings';
 else                                             $routeContext = 'dashboard';
 
@@ -53,6 +54,10 @@ switch ($context) {
 
   case 'qr':
     $sidebarColor = 'danger';
+    break;
+
+  case 'approval':
+    $sidebarColor = 'warning';
     break;
 
   default:
@@ -193,6 +198,16 @@ function nav_active(string $current, string $key, array $patterns = []): string 
         <a class="nav-link" href="<?= base_url('admin/petugas'); ?>">
           <i class="material-icons">computer</i>
           <p>Data Petugas</p>
+        </a>
+      </li>
+      <?php endif; ?>
+
+      <!-- Manajemen Approval (hanya untuk super admin) -->
+      <?php if ($accessibleMenus['approval_management'] ?? false): ?>
+      <li class="nav-item <?= nav_active($context,'approval',['admin/approval*']) ?>">
+        <a class="nav-link" href="<?= base_url('admin/approval'); ?>">
+          <i class="material-icons">approval</i>
+          <p>Manajemen Approval</p>
         </a>
       </li>
       <?php endif; ?>

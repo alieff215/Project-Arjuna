@@ -255,6 +255,7 @@ class RoleHelper
                     'data_inventory' => true,
                     'generate_qr' => true,
                     'generate_laporan' => true,
+                    'approval_management' => true,
                     'general_settings' => true,
                     'scan' => true
                 ];
