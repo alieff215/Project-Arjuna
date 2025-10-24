@@ -15,8 +15,21 @@ class JabatanModel extends BaseModel
     //input values
    public function inputValues()
    {
+      $session = \Config\Services::session();
+      
+      // Cek apakah ada data dari approval system
+      $jabatan = $session->get('approval_input_jabatan');
+      
+      // Jika tidak ada data dari approval, gunakan inputPost biasa
+      if ($jabatan === null) {
+         $jabatan = inputPost('jabatan');
+      }
+      
+      // Bersihkan data approval dari session setelah digunakan
+      $session->remove('approval_input_jabatan');
+      
       return [
-         'jabatan' => inputPost('jabatan'),
+         'jabatan' => $jabatan,
       ];
    }
 
