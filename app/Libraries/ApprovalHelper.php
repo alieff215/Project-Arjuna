@@ -129,7 +129,29 @@ class ApprovalHelper
         }
 
         try {
-            $result = $model->insert($data);
+            // Gunakan method yang sesuai untuk setiap model
+            switch ($tableName) {
+                case 'tb_departemen':
+                    // Simpan data ke session untuk inputValues()
+                    $this->setInputData($data);
+                    $result = $model->addDepartemen();
+                    break;
+                case 'tb_jabatan':
+                    $this->setInputData($data);
+                    $result = $model->addJabatan();
+                    break;
+                case 'tb_gaji':
+                    $result = $model->insert($data);
+                    break;
+                case 'tb_presensi_karyawan':
+                case 'tb_presensi_admin':
+                    $result = $model->insert($data);
+                    break;
+                default:
+                    $result = $model->insert($data);
+                    break;
+            }
+            
             if ($result === false) {
                 log_message('error', "Failed to insert data into {$tableName}: " . json_encode($model->errors()));
                 return false;
@@ -151,7 +173,61 @@ class ApprovalHelper
             return false;
         }
 
-        return $model->update($recordId, $data);
+        try {
+            // Gunakan method yang sesuai untuk setiap model
+            switch ($tableName) {
+                case 'tb_departemen':
+                    $this->setInputData($data);
+                    $result = $model->editDepartemen($recordId);
+                    break;
+                case 'tb_jabatan':
+                    $this->setInputData($data);
+                    $result = $model->editJabatan($recordId);
+                    break;
+                case 'tb_gaji':
+                    $result = $model->update($recordId, $data);
+                    break;
+                case 'tb_presensi_karyawan':
+                    // Untuk presensi karyawan, gunakan method updatePresensi dengan parameter lengkap
+                    $result = $model->updatePresensi(
+                        $recordId,
+                        $data['id_karyawan'],
+                        $data['id_departemen'],
+                        $data['tanggal'],
+                        $data['id_kehadiran'],
+                        $data['jam_masuk'] ?? null,
+                        $data['jam_keluar'] ?? null,
+                        $data['keterangan'],
+                        'approved',
+                        null,
+                        $this->getCurrentUserId()
+                    );
+                    break;
+                case 'tb_presensi_admin':
+                    // Untuk presensi admin, gunakan method updatePresensi dengan parameter lengkap
+                    $result = $model->updatePresensi(
+                        $recordId,
+                        $data['id_admin'],
+                        $data['tanggal'],
+                        $data['id_kehadiran'],
+                        $data['jam_masuk'] ?? null,
+                        $data['jam_keluar'] ?? null,
+                        $data['keterangan'],
+                        'approved',
+                        null,
+                        $this->getCurrentUserId()
+                    );
+                    break;
+                default:
+                    $result = $model->update($recordId, $data);
+                    break;
+            }
+            
+            return $result;
+        } catch (\Exception $e) {
+            log_message('error', "Exception during update operation: " . $e->getMessage());
+            return false;
+        }
     }
 
     /**
@@ -164,7 +240,32 @@ class ApprovalHelper
             return false;
         }
 
-        return $model->delete($recordId);
+        try {
+            // Gunakan method yang sesuai untuk setiap model
+            switch ($tableName) {
+                case 'tb_departemen':
+                    $result = $model->deleteDepartemen($recordId);
+                    break;
+                case 'tb_jabatan':
+                    $result = $model->deleteJabatan($recordId);
+                    break;
+                case 'tb_gaji':
+                    $result = $model->delete($recordId);
+                    break;
+                case 'tb_presensi_karyawan':
+                case 'tb_presensi_admin':
+                    $result = $model->delete($recordId);
+                    break;
+                default:
+                    $result = $model->delete($recordId);
+                    break;
+            }
+            
+            return $result;
+        } catch (\Exception $e) {
+            log_message('error', "Exception during delete operation: " . $e->getMessage());
+            return false;
+        }
     }
 
     /**
@@ -182,6 +283,12 @@ class ApprovalHelper
                     return new \App\Models\DepartemenModel();
                 case 'tb_jabatan':
                     return new \App\Models\JabatanModel();
+                case 'tb_gaji':
+                    return new \App\Models\GajiModel();
+                case 'tb_presensi_karyawan':
+                    return new \App\Models\PresensiKaryawanModel();
+                case 'tb_presensi_admin':
+                    return new \App\Models\PresensiAdminModel();
                 default:
                     log_message('error', "Unknown table name: {$tableName}");
                     return null;
@@ -254,5 +361,19 @@ class ApprovalHelper
     public function hasPendingRequest($tableName, $recordId, $requestType = null)
     {
         return $this->approvalModel->hasPendingRequest($tableName, $recordId, $requestType);
+    }
+
+    /**
+     * Set input data untuk model yang menggunakan inputValues()
+     */
+    protected function setInputData($data)
+    {
+        // Simpan data ke session untuk diakses oleh inputValues()
+        $session = \Config\Services::session();
+        
+        // Set data ke session dengan prefix khusus
+        foreach ($data as $key => $value) {
+            $session->set("approval_input_{$key}", $value);
+        }
     }
 }

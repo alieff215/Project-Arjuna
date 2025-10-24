@@ -5,7 +5,7 @@
    }
 
    .table-wrap .table {
-      min-width: 820px;
+      min-width: 920px;
       /* aman untuk kolom banyak; tetap bisa di-scroll */
       font-size: clamp(13px, 1.8vw, 14px);
    }
@@ -108,6 +108,36 @@
          font-size: 18px;
       }
    }
+
+   /* ====== Status Approval Badge ====== */
+   .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+   }
+
+   .badge-warning {
+      background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+      color: white;
+      box-shadow: 0 2px 8px rgba(255, 152, 0, 0.3);
+   }
+
+   .badge-success {
+      background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%);
+      color: white;
+      box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+   }
+
+   .badge .material-icons {
+      font-size: 14px;
+      vertical-align: middle;
+   }
 </style>
 
 <div class="card-body table-responsive table-wrap">
@@ -137,6 +167,7 @@
                <th class="sticky-top"><b>Departemen</b></th>
                <th class="sticky-top"><b>Jabatan</b></th>
                <th class="sticky-top"><b>No HP</b></th>
+               <th class="sticky-top"><b>Status Approval</b></th>
                <th class="sticky-top" width="1%"><b>Aksi</b></th>
             </tr>
          </thead>
@@ -154,6 +185,27 @@
                   <td data-label="Departemen"><?= $value['departemen']; ?></td>
                   <td data-label="Jabatan"><?= $value['jabatan']; ?></td>
                   <td data-label="No HP"><?= $value['no_hp']; ?></td>
+                  <td data-label="Status Approval">
+                     <?php
+                     // Cek status approval untuk record ini
+                     $approvalModel = new \App\Models\ApprovalModel();
+                     $pendingRequests = $approvalModel->where('table_name', 'tb_karyawan')
+                                                   ->where('record_id', $value['id_karyawan'])
+                                                   ->where('status', 'pending')
+                                                   ->findAll();
+                     
+                     if (!empty($pendingRequests)): ?>
+                        <span class="badge badge-warning">
+                           <i class="material-icons" style="font-size: 14px; vertical-align: middle;">schedule</i>
+                           Pending Approval
+                        </span>
+                     <?php else: ?>
+                        <span class="badge badge-success">
+                           <i class="material-icons" style="font-size: 14px; vertical-align: middle;">check_circle</i>
+                           Approved
+                        </span>
+                     <?php endif; ?>
+                  </td>
                   <td data-label="Aksi" class="td-actions">
                      <a title="Edit" href="<?= base_url('admin/karyawan/edit/' . $value['id_karyawan']); ?>" class="btn btn-primary" id="<?= $value['nis']; ?>">
                         <i class="material-icons">edit</i>

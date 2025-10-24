@@ -17,9 +17,27 @@ class DepartemenModel extends BaseModel
    //input values
    public function inputValues()
    {
+      $session = \Config\Services::session();
+      
+      // Cek apakah ada data dari approval system
+      $departemen = $session->get('approval_input_departemen');
+      $id_jabatan = $session->get('approval_input_id_jabatan');
+      
+      // Jika tidak ada data dari approval, gunakan inputPost biasa
+      if ($departemen === null) {
+         $departemen = inputPost('departemen');
+      }
+      if ($id_jabatan === null) {
+         $id_jabatan = inputPost('id_jabatan');
+      }
+      
+      // Bersihkan data approval dari session setelah digunakan
+      $session->remove('approval_input_departemen');
+      $session->remove('approval_input_id_jabatan');
+      
       return [
-         'departemen' => inputPost('departemen'),
-         'id_jabatan' => inputPost('id_jabatan'),
+         'departemen' => $departemen,
+         'id_jabatan' => $id_jabatan,
       ];
    }
 
