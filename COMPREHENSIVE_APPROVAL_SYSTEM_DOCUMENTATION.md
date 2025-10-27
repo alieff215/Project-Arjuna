@@ -263,3 +263,4 @@ Sistem approval telah berhasil diimplementasikan untuk semua halaman CRUD yang d
 5. **Fleksibilitas** - Mudah untuk menambah tabel baru ke sistem approval
 
 Sistem ini memastikan bahwa tidak ada perubahan data yang terjadi tanpa persetujuan super admin, memberikan tingkat keamanan dan kontrol yang tinggi untuk organisasi.
+
