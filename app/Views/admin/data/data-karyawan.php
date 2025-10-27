@@ -270,32 +270,6 @@
       }
    }
 
-   /* =============== THEME BUTTON =============== */
-   .theme-toggle {
-      position: sticky;
-      top: 12px;
-      z-index: 40;
-      display: flex;
-      justify-content: flex-end;
-      padding: 0 16px 10px;
-   }
-
-   .theme-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      background: color-mix(in oklab, var(--card-solid) 80%, transparent);
-      color: var(--text);
-      padding: 10px 14px;
-      cursor: pointer;
-      box-shadow: var(--neon);
-   }
-
-   .theme-btn .material-icons {
-      font-size: 20px;
-   }
 
    /* ===== ACTION BUTTONS FIX (kolom "Aksi") ===== */
    #dataKaryawan table th:last-child {
@@ -407,13 +381,6 @@
 </style>
 
 <div class="content" id="pageKaryawan">
-   <!-- THEME TOGGLE -->
-   <div class="theme-toggle">
-      <button class="theme-btn" type="button" id="themeBtn" aria-label="Toggle theme">
-         <i class="material-icons" id="themeIcon">dark_mode</i>
-         <span id="themeText">Dark Mode</span>
-      </button>
-   </div>
 
    <div class="container-fluid">
       <!-- ========== HEAD ACTIONS ========== -->
@@ -493,36 +460,6 @@
 </div>
 
 <script>
-   /* ============ THEME TOGGLE (persist) ============ */
-   (function() {
-      const root = document.documentElement;
-      const saved = localStorage.getItem('people-theme');
-      if (saved) root.setAttribute('data-theme', saved);
-
-      const btn = document.getElementById('themeBtn');
-      const icon = document.getElementById('themeIcon');
-      const text = document.getElementById('themeText');
-
-      function sync() {
-         const mode = root.getAttribute('data-theme') || 'light';
-         if (mode === 'dark') {
-            icon.textContent = 'light_mode';
-            text.textContent = 'Terang';
-         } else {
-            icon.textContent = 'dark_mode';
-            text.textContent = 'Gelap';
-         }
-      }
-      sync();
-
-      btn.addEventListener('click', () => {
-         const cur = root.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
-         const next = cur === 'dark' ? 'light' : 'dark';
-         root.setAttribute('data-theme', next);
-         localStorage.setItem('people-theme', next);
-         sync();
-      });
-   })();
 
    /* ============ STATE & FILTER ============ */
    var lastIdDepartemen = 'all';

@@ -94,23 +94,6 @@
       color: #64748b;
    }
 
-   .theme-toggle {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 12px;
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      background: var(--card);
-      color: var(--text);
-      cursor: pointer;
-      transition: transform .08s ease, box-shadow .2s ease;
-      font-size: clamp(12px, 1.6vw, 14px);
-   }
-
-   .theme-toggle:hover {
-      transform: translateY(-1px);
-   }
 
    .form-row {
       display: flex;
@@ -200,10 +183,6 @@
                      <p class="subtitle">Pilih jenis laporan terlebih dahulu</p>
                   </div>
 
-                  <button id="themeToggle" type="button" class="theme-toggle">
-                     <i class="material-icons">dark_mode</i>
-                     <span id="themeLabel">Gelap</span>
-                  </button>
                </div>
 
                <div class="card-body clean">
@@ -310,34 +289,13 @@
    // ========== THEME INIT + TOGGLE ==========
    (function initTheme() {
       try {
-         const saved = localStorage.getItem('theme');
+         const saved = localStorage.getItem('ui-theme');
          const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
          const theme = saved || (prefersLight ? 'light' : 'dark');
          document.documentElement.setAttribute('data-theme', theme);
-         updateThemeUI(theme);
       } catch (e) {}
    })();
 
-   function updateThemeUI(theme) {
-      const label = document.getElementById('themeLabel');
-      const icon = document.querySelector('#themeToggle .material-icons');
-      if (!label || !icon) return;
-      if (theme === 'light') {
-         label.textContent = 'Terang';
-         icon.textContent = 'light_mode';
-      } else {
-         label.textContent = 'Gelap';
-         icon.textContent = 'dark_mode';
-      }
-   }
-
-   document.getElementById('themeToggle')?.addEventListener('click', function() {
-      const current = document.documentElement.getAttribute('data-theme') || 'dark';
-      const next = current === 'dark' ? 'light' : 'dark';
-      document.documentElement.setAttribute('data-theme', next);
-      localStorage.setItem('theme', next);
-      updateThemeUI(next);
-   });
 
    // ========== SHOW/HIDE CARD ==========
    function showCard(type) {

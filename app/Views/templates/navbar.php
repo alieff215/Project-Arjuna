@@ -127,7 +127,3 @@
 </nav>
 <!-- End Navbar -->
 
-<!-- FAB Theme (muncul hanya di HP, CSS ada di HEAD) -->
-<button class="theme-fab" type="button" onclick="toggleTheme()" aria-label="Toggle theme (mobile)">
-  <i class="material-icons" id="themeFabIcon">dark_mode</i>
-</button>
