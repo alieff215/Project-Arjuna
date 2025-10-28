@@ -29,7 +29,7 @@
                      <input type="hidden" name="id" value="<?= $data['id_karyawan']; ?>">
 
                      <div class="form-group mt-4">
-                        <label for="nis">NIS</label>
+                        <label for="nis">NIP</label>
                         <input type="text" id="nis" class="form-control <?= $validation->getError('nis') ? 'is-invalid' : ''; ?>" name="nis" placeholder="1234" value="<?= old('nis') ?? $oldInput['nis'] ?? $data['nis'] ?>">
                         <div class="invalid-feedback">
                            <?= $validation->getError('nis'); ?>
@@ -131,7 +131,7 @@
                            <?php 
                            // map label field
                            $labels = [
-                              'nis' => 'NIS',
+                              'nis' => 'NIP',
                               'nama_karyawan' => 'Nama',
                               'id_departemen' => 'Departemen',
                               'jenis_kelamin' => 'Jenis Kelamin',

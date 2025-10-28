@@ -16,18 +16,14 @@
             <td><?= esc($item['departemen']) ?></td>
             <td><?= esc($item['jabatan']) ?></td>
             <td>
-              <div class="btn-group" role="group">
-                <a href="<?= base_url('admin/departemen/edit/' . $item['id_departemen']) ?>" 
-                   class="btn btn-sm btn-warning" title="Edit">
-                  <i class="material-icons">edit</i>
-                </a>
-                <button type="button" 
-                        class="btn btn-sm btn-danger" 
-                        onclick="deleteDepartemen(<?= $item['id_departemen'] ?>)" 
-                        title="Hapus">
-                  <i class="material-icons">delete</i>
-                </button>
-              </div>
+              <a href="<?= base_url('admin/departemen/edit/' . $item['id_departemen']) ?>" type="button" class="btn btn-primary p-2" title="Edit">
+                <i class="material-icons">edit</i>
+                Edit
+              </a>
+              <button type="button" class="btn btn-danger p-2" onclick="deleteDepartemen(<?= $item['id_departemen'] ?>)" title="Hapus">
+                <i class="material-icons">delete_forever</i>
+                Delete
+              </button>
             </td>
           </tr>
         <?php endforeach; ?>

@@ -135,7 +135,7 @@ class InventoryController extends BaseController
         $db = db_connect();
         $logs = $db->table('inventory_logs')
             ->where('inventory_id', $id)
-            ->orderBy('created_at', 'DESC')
+            ->orderBy('created_at', 'ASC')
             ->get()
             ->getResultArray();
 

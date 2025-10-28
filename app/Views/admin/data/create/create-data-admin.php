@@ -27,7 +27,7 @@
                      <?php $validation = \Config\Services::validation(); ?>
 
                      <div class="form-group mt-4">
-                        <label for="nuptk">NUPTK</label>
+                        <label for="nuptk">NIP</label>
                         <input type="text" id="nuptk" class="form-control <?= $validation->getError('nuptk') ? 'is-invalid' : ''; ?>" name="nuptk" placeholder="1234" value="<?= old('nuptk') ?? $oldInput['nuptk'] ?? '' ?>">
                         <div class="invalid-feedback">
                            <?= $validation->getError('nuptk'); ?>
