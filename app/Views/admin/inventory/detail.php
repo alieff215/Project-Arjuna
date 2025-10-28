@@ -528,16 +528,39 @@
             <?php 
               $cumulativeCut = $cumulativeProd = $cumulativeFin = 0;
               $sumCutIncome = $sumProdIncome = $sumFinIncome = 0;
-              foreach ($logs as $log): 
+              
+              // Balik urutan untuk tampilan (terbaru di atas)
+              $reversedLogs = array_reverse($logs);
+              
+              // Hitung cumulative untuk setiap tanggal (masih dalam urutan ASC untuk perhitungan)
+              $cumulativeByDate = [];
+              foreach ($logs as $log):
+                $tambahHariIniCut = $log['cutting_qty'];
+                $tambahHariIniProd = $log['produksi_qty'];
+                $tambahHariIniFin = $log['finishing_qty'];
+                
+                // Simpan cumulative saat ini (SEBELUM ditambahkan tambah hari ini)
+                $cumulativeByDate[$log['created_at']] = [
+                  'cut' => $cumulativeCut,
+                  'prod' => $cumulativeProd,
+                  'fin' => $cumulativeFin
+                ];
+                
+                // Tambahkan ke cumulative setelah menyimpan
+                $cumulativeCut += $tambahHariIniCut;
+                $cumulativeProd += $tambahHariIniProd;
+                $cumulativeFin += $tambahHariIniFin;
+              endforeach;
+              
+              // Tampilkan data dalam urutan terbaru ke terlama
+              foreach ($reversedLogs as $log): 
                 // Data di logs sekarang adalah incremental (tambah hari ini)
                 $tambahHariIniCut = $log['cutting_qty'];
                 $tambahHariIniProd = $log['produksi_qty'];
                 $tambahHariIniFin = $log['finishing_qty'];
 
-                // Hitung kumulatif
-                $cumulativeCut += $tambahHariIniCut;
-                $cumulativeProd += $tambahHariIniProd;
-                $cumulativeFin += $tambahHariIniFin;
+                // Ambil cumulative dari tanggal tersebut (nilai sebelum ditambah hari ini)
+                $qtySaatIni = $cumulativeByDate[$log['created_at']];
 
                 $incomeCut = $tambahHariIniCut * $inventory['cutting_price_per_pcs'];
                 $incomeProd = $tambahHariIniProd * $inventory['produksi_price_per_pcs'];
@@ -548,23 +571,24 @@
                 $sumProdIncome += $incomeProd;
                 $sumFinIncome += $incomeFin;
             ?>
-            <tr>
+            <?php 
+              // Check apakah baris tidak mencapai target (paling tidak satu divisi tidak mencapai target)
+              $cutRowNotMeetTarget  = ($qtySaatIni['cut'] < (int)$inventory['cutting_target']);
+              $prodRowNotMeetTarget = ($qtySaatIni['prod'] < (int)$inventory['produksi_target']);
+              $finRowNotMeetTarget  = ($qtySaatIni['fin'] < (int)$inventory['finishing_target']);
+              $rowNotMeetTarget = $cutRowNotMeetTarget || $prodRowNotMeetTarget || $finRowNotMeetTarget;
+            ?>
+            <tr class="<?= $rowNotMeetTarget ? 'table-danger' : '' ?>">
               <td><?= $log['created_at'] ?></td>
-              <td><?= $cumulativeCut ?></td>
-              <td><?= $cumulativeProd ?></td>
-              <td><?= $cumulativeFin ?></td>
-              <?php 
-                // Not meet status berdasarkan qty kumulatif vs target
-                $cutRowNotMeetTarget  = ($cumulativeCut < (int)$inventory['cutting_target']);
-                $prodRowNotMeetTarget = ($cumulativeProd < (int)$inventory['produksi_target']);
-                $finRowNotMeetTarget  = ($cumulativeFin < (int)$inventory['finishing_target']);
-              ?>
-              <td class="<?= $cutRowNotMeetTarget ? 'table-danger' : 'text-primary' ?>"><?= $tambahHariIniCut ?></td>
-              <td class="<?= $prodRowNotMeetTarget ? 'table-danger' : 'text-primary' ?>"><?= $tambahHariIniProd ?></td>
-              <td class="<?= $finRowNotMeetTarget ? 'table-danger' : 'text-primary' ?>"><?= $tambahHariIniFin ?></td>
-              <td class="<?= $cutRowNotMeetTarget ? 'table-danger' : '' ?>"><?= number_format($incomeCut, 0, ',', '.') ?></td>
-              <td class="<?= $prodRowNotMeetTarget ? 'table-danger' : '' ?>"><?= number_format($incomeProd, 0, ',', '.') ?></td>
-              <td class="<?= $finRowNotMeetTarget ? 'table-danger' : '' ?>"><?= number_format($incomeFin, 0, ',', '.') ?></td>
+              <td><?= $qtySaatIni['cut'] ?></td>
+              <td><?= $qtySaatIni['prod'] ?></td>
+              <td><?= $qtySaatIni['fin'] ?></td>
+              <td><?= $tambahHariIniCut ?></td>
+              <td><?= $tambahHariIniProd ?></td>
+              <td><?= $tambahHariIniFin ?></td>
+              <td><?= number_format($incomeCut, 0, ',', '.') ?></td>
+              <td><?= number_format($incomeProd, 0, ',', '.') ?></td>
+              <td><?= number_format($incomeFin, 0, ',', '.') ?></td>
               <td><b><?= number_format($totalIncomeToday, 0, ',', '.') ?></b></td>
             </tr>
             <?php endforeach; ?>

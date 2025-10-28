@@ -408,7 +408,7 @@
                   <div class="toolbar mb-2">
                      <div class="input-pill">
                         <i class="material-icons" aria-hidden="true">search</i>
-                        <input id="searchAdmin" type="text" placeholder="Cari nama, email, NUPTK… (tekan / untuk fokus)" aria-label="Input pencarian" autocomplete="off">
+                        <input id="searchAdmin" type="text" placeholder="Cari nama, email, NIP… (tekan / untuk fokus)" aria-label="Input pencarian" autocomplete="off">
                         <button class="clear" id="clearSearch" aria-label="Bersihkan pencarian"><i class="material-icons">close</i></button>
                      </div>
                   </div>
@@ -465,7 +465,7 @@
                            <thead>
                               <tr>
                                  <th>NO</th>
-                                 <th>NUPTK</th>
+                                 <th>NIP</th>
                                  <th>Nama Admin</th>
                                  <th class="hide-sm">Jenis Kelamin</th>
                                  <th>No HP</th>
