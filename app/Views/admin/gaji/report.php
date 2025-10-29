@@ -32,6 +32,23 @@
     border-radius: var(--radius, 18px) !important;
     box-shadow: var(--shadow-1, 0 10px 30px rgba(12, 20, 40, .08)) !important;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+/* Equal height cards */
+.equal-cards-row {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.equal-cards-row .col-lg-3,
+.equal-cards-row .col-md-6,
+.equal-cards-row .col-sm-6,
+.equal-cards-row .col-12 {
+    display: flex;
+    flex-direction: column;
 }
 
 .card-header {
@@ -48,12 +65,12 @@
 /* Header cards dengan icon seperti dashboard */
 .card.card-stats .card-header.card-header-icon {
     display: grid;
-    grid-template-columns: 92px 1fr auto;
+    grid-template-columns: 64px 1fr auto;
     grid-auto-rows: auto;
     align-items: center;
-    column-gap: 16px;
-    min-height: 128px;
-    padding-bottom: 14px;
+    column-gap: 14px;
+    height: 100px;
+    padding: 16px 18px 14px;
     border-bottom: 1px solid var(--border);
     background: linear-gradient(180deg, var(--card-solid, #fff), transparent);
 }
@@ -61,24 +78,35 @@
 .card.card-stats .card-header .card-icon {
     grid-column: 1;
     grid-row: 1 / span 2;
-    width: 92px;
-    height: 92px;
-    border-radius: 14px;
+    width: 64px;
+    height: 64px;
+    border-radius: 12px;
     display: grid;
     place-items: center;
     margin: 0;
-    box-shadow: 0 10px 20px rgba(12, 20, 40, .12);
+    box-shadow: 0 6px 16px rgba(12, 20, 40, .08);
+    transition: transform 0.2s ease;
+}
+
+.card.card-stats .card-header .card-icon:hover {
+    transform: translateY(-2px);
+}
+
+.card.card-stats .card-header .card-icon .material-icons {
+    font-size: 28px !important;
+    color: white;
 }
 
 .card.card-stats .card-header .card-category {
     grid-column: 2;
     grid-row: 1;
     margin: 0;
-    line-height: 1.15;
-    font-weight: 800;
-    font-size: var(--fz-micro, 13px);
+    line-height: 1.2;
+    font-weight: 600;
+    font-size: 12px;
     color: var(--muted);
     text-transform: none;
+    letter-spacing: 0.3px;
 }
 
 .card.card-stats .card-header .card-title {
@@ -87,8 +115,8 @@
     margin: 0;
     text-align: right;
     line-height: 1;
-    font-size: clamp(24px, 2.2vw + 12px, 32px);
-    font-weight: 900;
+    font-size: clamp(20px, 1.8vw + 10px, 26px);
+    font-weight: 800;
     color: var(--text);
 }
 
@@ -154,11 +182,19 @@
 }
 
 /* Form styling konsisten */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
 .form-group label {
     font-weight: 600;
     color: var(--text, #0b132b);
     margin-bottom: 8px;
-    display: block;
+    display: flex;
+    align-items: center;
+    min-height: 24px;
 }
 
 .form-control {
@@ -168,12 +204,91 @@
     background: var(--card, #fff);
     color: var(--text, #0b132b);
     transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    height: 42px;
+    flex: 1;
 }
 
 .form-control:focus {
     border-color: var(--primary, #3b82f6);
     box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
     outline: 0;
+}
+
+/* Department dropdown styling */
+#id_departemen option {
+    padding: 8px 12px;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+#id_departemen option:first-child {
+    font-weight: 600;
+    color: var(--primary);
+}
+
+/* Enhanced select styling */
+select.form-control {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 12px center;
+    background-repeat: no-repeat;
+    background-size: 16px 12px;
+    padding-right: 40px;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+
+/* Filter form alignment */
+#filterForm .row {
+    align-items: end;
+}
+
+#filterForm .col-md-3 {
+    display: flex;
+    flex-direction: column;
+}
+
+#filterForm .form-group:last-child {
+    justify-content: flex-end;
+}
+
+#filterForm .d-flex.gap-2 {
+    height: 42px;
+    align-items: center;
+}
+
+/* Additional alignment fixes */
+#filterForm .form-group {
+    margin-bottom: 0;
+}
+
+#filterForm .form-group label {
+    margin-bottom: 8px;
+    line-height: 1.2;
+}
+
+#filterForm .form-control {
+    margin-bottom: 0;
+}
+
+/* Responsive filter alignment */
+@media (max-width: 767.98px) {
+    #filterForm .row {
+        align-items: stretch;
+    }
+    
+    #filterForm .col-md-3 {
+        margin-bottom: 16px;
+    }
+    
+    #filterForm .form-group:last-child {
+        justify-content: flex-start;
+    }
+    
+    #filterForm .d-flex.gap-2 {
+        height: auto;
+        justify-content: center;
+    }
 }
 
 /* Button styling konsisten */
@@ -221,13 +336,46 @@
 /* Responsive */
 @media (max-width: 575.98px) {
     .card.card-stats .card-header.card-header-icon {
-        grid-template-columns: 80px 1fr auto;
-        min-height: 112px;
+        grid-template-columns: 56px 1fr auto;
+        height: 88px;
+        padding: 14px 16px 12px;
+        column-gap: 12px;
     }
 
     .card.card-stats .card-header .card-icon {
-        width: 80px;
-        height: 80px;
+        width: 56px;
+        height: 56px;
+        border-radius: 10px;
+    }
+
+    .card.card-stats .card-header .card-icon .material-icons {
+        font-size: 24px !important;
+    }
+
+    .card.card-stats .card-header .card-category {
+        font-size: 11px;
+    }
+
+    .card.card-stats .card-header .card-title {
+        font-size: clamp(18px, 1.5vw + 8px, 22px);
+    }
+}
+
+@media (max-width: 767.98px) {
+    .card.card-stats .card-header.card-header-icon {
+        grid-template-columns: 60px 1fr auto;
+        height: 92px;
+        padding: 15px 16px 13px;
+        column-gap: 13px;
+    }
+
+    .card.card-stats .card-header .card-icon {
+        width: 60px;
+        height: 60px;
+    }
+
+    .card.card-stats .card-header .card-icon .material-icons {
+        font-size: 26px !important;
     }
 }
 </style>
@@ -242,10 +390,10 @@
         </div>
         <div class="d-flex gap-2">
             <button class="btn btn-success" onclick="exportToCSV()">
-                <i class="material-icons">file_download</i> Export CSV
+                <i class="material-icons" style="font-size:18px;">file_download</i> Export CSV
             </button>
             <a href="<?= base_url('admin/gaji') ?>" class="btn btn-secondary">
-                <i class="material-icons">arrow_back</i> Kembali
+                <i class="material-icons" style="font-size:18px;">arrow_back</i> Kembali
             </a>
         </div>
     </div>
@@ -254,7 +402,7 @@
     <div class="card">
         <div class="card-header">
             <h6 class="m-0 font-weight-bold" style="color: var(--text);">
-                <i class="material-icons" style="vertical-align:middle;margin-right:8px;">filter_list</i>
+                <i class="material-icons" style="vertical-align:middle;margin-right:8px;font-size:18px;">filter_list</i>
                 Filter Laporan
             </h6>
         </div>
@@ -264,7 +412,7 @@
                     <div class="col-md-3">
                         <div class="form-group">
                             <label for="start_date">
-                                <i class="material-icons" style="vertical-align:middle;margin-right:6px;font-size:18px;">date_range</i>
+                                <i class="material-icons" style="vertical-align:middle;margin-right:6px;font-size:16px;">date_range</i>
                                 Tanggal Mulai
                             </label>
                             <input type="date" 
@@ -279,7 +427,7 @@
                     <div class="col-md-3">
                         <div class="form-group">
                             <label for="end_date">
-                                <i class="material-icons" style="vertical-align:middle;margin-right:6px;font-size:18px;">date_range</i>
+                                <i class="material-icons" style="vertical-align:middle;margin-right:6px;font-size:16px;">date_range</i>
                                 Tanggal Akhir
                             </label>
                             <input type="date" 
@@ -294,7 +442,7 @@
                     <div class="col-md-3">
                         <div class="form-group">
                             <label for="id_departemen">
-                                <i class="material-icons" style="vertical-align:middle;margin-right:6px;font-size:18px;">business</i>
+                                <i class="material-icons" style="vertical-align:middle;margin-right:6px;font-size:16px;">business</i>
                                 Departemen
                             </label>
                             <select class="form-control" id="id_departemen" name="id_departemen">
@@ -302,7 +450,7 @@
                                 <?php foreach ($departemen as $dept): ?>
                                     <option value="<?= $dept['id_departemen'] ?>" 
                                             <?= ($id_departemen == $dept['id_departemen']) ? 'selected' : '' ?>>
-                                        <?= $dept['departemen'] ?>
+                                        <?= $dept['departemen'] ?> - <?= $dept['jabatan'] ?>
                                     </option>
                                 <?php endforeach; ?>
                             </select>
@@ -314,10 +462,10 @@
                             <label>&nbsp;</label>
                             <div class="d-flex gap-2">
                                 <button type="submit" class="btn btn-primary">
-                                    <i class="material-icons">search</i> Filter
+                                    <i class="material-icons" style="font-size:18px;">search</i> Filter
                                 </button>
                                 <a href="<?= base_url('admin/gaji/report') ?>" class="btn btn-secondary">
-                                    <i class="material-icons">refresh</i> Reset
+                                    <i class="material-icons" style="font-size:18px;">refresh</i> Reset
                                 </a>
                             </div>
                         </div>
@@ -341,7 +489,7 @@
                         </div>
                     </div>
                 <div class="card-footer">
-                    <div class="stats"><i class="material-icons" style="color:var(--primary)">check</i> Dalam Laporan</div>
+                    <div class="stats"><i class="material-icons" style="color:var(--primary);font-size:16px;">check</i> Dalam Laporan</div>
                 </div>
             </div>
         </div>
@@ -358,7 +506,7 @@
                         </div>
                     </div>
                 <div class="card-footer">
-                    <div class="stats"><i class="material-icons" style="color:var(--success)">trending_up</i> Total Pembayaran</div>
+                    <div class="stats"><i class="material-icons" style="color:var(--success);font-size:16px;">trending_up</i> Total Pembayaran</div>
                 </div>
             </div>
         </div>
@@ -375,7 +523,7 @@
                         </div>
                     </div>
                 <div class="card-footer">
-                    <div class="stats"><i class="material-icons" style="color:var(--primary)">timer</i> Jam Kerja</div>
+                    <div class="stats"><i class="material-icons" style="color:var(--primary);font-size:16px;">timer</i> Jam Kerja</div>
                 </div>
             </div>
         </div>
@@ -397,7 +545,7 @@
                             </div>
                         </div>
                 <div class="card-footer">
-                    <div class="stats"><i class="material-icons" style="color:var(--danger)">analytics</i> Per Karyawan</div>
+                    <div class="stats"><i class="material-icons" style="color:var(--danger);font-size:16px;">analytics</i> Per Karyawan</div>
                 </div>
             </div>
         </div>
@@ -407,7 +555,7 @@
     <div class="panel">
         <div class="panel__head">
             <h4 class="panel__title">
-                <i class="material-icons">assessment</i>
+                <i class="material-icons" style="font-size:20px;">assessment</i>
                 Data Laporan Gaji 
                 (<?= date('d/m/Y', strtotime($start_date)) ?> - <?= date('d/m/Y', strtotime($end_date)) ?>)
             </h4>
@@ -441,25 +589,25 @@
                                 <td><?= $no++ ?></td>
                                 <td>
                                     <div class="d-flex align-items-center">
-                                        <i class="material-icons" style="margin-right:8px;color:var(--primary);font-size:18px;">badge</i>
+                                        <i class="material-icons" style="margin-right:6px;color:var(--primary);font-size:16px;">badge</i>
                                         <span style="font-weight:600;"><?= $row['nis'] ?></span>
                                     </div>
                                 </td>
                                 <td>
                                     <div class="d-flex align-items-center">
-                                        <i class="material-icons" style="margin-right:8px;color:var(--success);font-size:18px;">person</i>
+                                        <i class="material-icons" style="margin-right:6px;color:var(--success);font-size:16px;">person</i>
                                         <span><?= $row['nama_karyawan'] ?></span>
                                     </div>
                                 </td>
                                 <td>
                                     <div class="d-flex align-items-center">
-                                        <i class="material-icons" style="margin-right:8px;color:var(--primary);font-size:18px;">business</i>
+                                        <i class="material-icons" style="margin-right:6px;color:var(--primary);font-size:16px;">business</i>
                                         <span><?= $row['departemen'] ?></span>
                                     </div>
                                 </td>
                                 <td>
                                     <div class="d-flex align-items-center">
-                                        <i class="material-icons" style="margin-right:8px;color:var(--success);font-size:18px;">work</i>
+                                        <i class="material-icons" style="margin-right:6px;color:var(--success);font-size:16px;">work</i>
                                         <span><?= $row['jabatan'] ?></span>
                                     </div>
                                 </td>
@@ -475,7 +623,7 @@
                                 </td>
                                 <td>
                                     <div class="d-flex align-items-center">
-                                        <i class="material-icons" style="margin-right:8px;color:var(--primary);font-size:18px;">schedule</i>
+                                        <i class="material-icons" style="margin-right:6px;color:var(--primary);font-size:16px;">schedule</i>
                                         <span style="font-weight:600;"><?= $row['total_jam_kerja'] ?> jam</span>
                                     </div>
                                 </td>

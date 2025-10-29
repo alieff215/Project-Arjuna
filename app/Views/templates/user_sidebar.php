@@ -51,6 +51,14 @@ function nav_active(string $current, string $key, array $patterns = []): string 
   <div class="sidebar-wrapper">
     <ul class="nav">
 
+      <!-- Menu Dashboard -->
+      <li class="nav-item">
+        <a class="nav-link" href="<?= base_url('admin/dashboard'); ?>">
+          <i class="material-icons">dashboard</i>
+          <p>Kembali ke Dashboard</p>
+        </a>
+      </li>
+
       <!-- Menu Scan (untuk user) -->
       <li class="nav-item <?= nav_active($context,'scan',['scan*']) ?>">
         <a class="nav-link" href="<?= base_url('scan'); ?>">

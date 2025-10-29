@@ -32,6 +32,23 @@
     border-radius: var(--radius, 18px) !important;
     box-shadow: var(--shadow-1, 0 10px 30px rgba(12, 20, 40, .08)) !important;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+/* Equal height cards */
+.equal-cards-row {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.equal-cards-row .col-lg-3,
+.equal-cards-row .col-md-6,
+.equal-cards-row .col-sm-6,
+.equal-cards-row .col-12 {
+    display: flex;
+    flex-direction: column;
 }
 
 .card-header {
@@ -48,12 +65,12 @@
 /* Header cards dengan icon seperti dashboard */
 .card.card-stats .card-header.card-header-icon {
     display: grid;
-    grid-template-columns: 92px 1fr auto;
+    grid-template-columns: 64px 1fr auto;
     grid-auto-rows: auto;
     align-items: center;
-    column-gap: 16px;
-    min-height: 128px;
-    padding-bottom: 14px;
+    column-gap: 14px;
+    height: 100px;
+    padding: 16px 18px 14px;
     border-bottom: 1px solid var(--border);
     background: linear-gradient(180deg, var(--card-solid, #fff), transparent);
 }
@@ -61,24 +78,35 @@
 .card.card-stats .card-header .card-icon {
     grid-column: 1;
     grid-row: 1 / span 2;
-    width: 92px;
-    height: 92px;
-    border-radius: 14px;
+    width: 64px;
+    height: 64px;
+    border-radius: 12px;
     display: grid;
     place-items: center;
     margin: 0;
-    box-shadow: 0 10px 20px rgba(12, 20, 40, .12);
+    box-shadow: 0 6px 16px rgba(12, 20, 40, .08);
+    transition: transform 0.2s ease;
+}
+
+.card.card-stats .card-header .card-icon:hover {
+    transform: translateY(-2px);
+}
+
+.card.card-stats .card-header .card-icon .material-icons {
+    font-size: 28px !important;
+    color: white;
 }
 
 .card.card-stats .card-header .card-category {
     grid-column: 2;
     grid-row: 1;
     margin: 0;
-    line-height: 1.15;
-    font-weight: 800;
-    font-size: var(--fz-micro, 13px);
+    line-height: 1.2;
+    font-weight: 600;
+    font-size: 12px;
     color: var(--muted);
     text-transform: none;
+    letter-spacing: 0.3px;
 }
 
 .card.card-stats .card-header .card-title {
@@ -87,8 +115,8 @@
     margin: 0;
     text-align: right;
     line-height: 1;
-    font-size: clamp(24px, 2.2vw + 12px, 32px);
-    font-weight: 900;
+    font-size: clamp(20px, 1.8vw + 10px, 26px);
+    font-weight: 800;
     color: var(--text);
 }
 
@@ -155,36 +183,70 @@
 
 /* Action buttons konsisten */
 .btn-icon {
-    width: 38px;
-    height: 38px;
+    width: 34px;
+    height: 34px;
     display: grid;
     place-items: center;
-    border-radius: 12px;
+    border-radius: 10px;
     border: 1px solid var(--border, rgba(16, 24, 40, .12));
     background: var(--card, #fff);
     cursor: pointer;
-    transition: transform .15s ease;
+    transition: all .15s ease;
     touch-action: manipulation;
 }
 
 .btn-icon:hover {
     transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(12, 20, 40, .1);
 }
 
 .btn-icon .material-icons {
-    font-size: 20px;
+    font-size: 18px;
 }
 
 /* Responsive */
 @media (max-width: 575.98px) {
     .card.card-stats .card-header.card-header-icon {
-        grid-template-columns: 80px 1fr auto;
-        min-height: 112px;
+        grid-template-columns: 56px 1fr auto;
+        height: 88px;
+        padding: 14px 16px 12px;
+        column-gap: 12px;
     }
 
     .card.card-stats .card-header .card-icon {
-        width: 80px;
-        height: 80px;
+        width: 56px;
+        height: 56px;
+        border-radius: 10px;
+    }
+
+    .card.card-stats .card-header .card-icon .material-icons {
+        font-size: 24px !important;
+    }
+
+    .card.card-stats .card-header .card-category {
+        font-size: 11px;
+    }
+
+    .card.card-stats .card-header .card-title {
+        font-size: clamp(18px, 1.5vw + 8px, 22px);
+    }
+}
+
+@media (max-width: 767.98px) {
+    .card.card-stats .card-header.card-header-icon {
+        grid-template-columns: 60px 1fr auto;
+        height: 92px;
+        padding: 15px 16px 13px;
+        column-gap: 13px;
+    }
+
+    .card.card-stats .card-header .card-icon {
+        width: 60px;
+        height: 60px;
+    }
+
+    .card.card-stats .card-header .card-icon .material-icons {
+        font-size: 26px !important;
     }
 }
 </style>
@@ -199,10 +261,10 @@
         </div>
         <div class="d-flex gap-2">
             <a href="<?= base_url('admin/gaji/add') ?>" class="btn btn-primary">
-                <i class="material-icons">add</i> Tambah Konfigurasi
+                <i class="material-icons" style="font-size:18px;">add</i> Tambah Konfigurasi
             </a>
             <a href="<?= base_url('admin/gaji/report') ?>" class="btn btn-success">
-                <i class="material-icons">assessment</i> Laporan Gaji
+                <i class="material-icons" style="font-size:18px;">assessment</i> Laporan Gaji
             </a>
         </div>
     </div>
@@ -221,7 +283,7 @@
                     </div>
                 </div>
                 <div class="card-footer">
-                    <div class="stats"><i class="material-icons" style="color:var(--primary)">check</i> Konfigurasi Aktif</div>
+                    <div class="stats"><i class="material-icons" style="color:var(--primary);font-size:16px;">check</i> Konfigurasi Aktif</div>
                 </div>
             </div>
         </div>
@@ -238,7 +300,7 @@
                     </div>
                 </div>
                 <div class="card-footer">
-                    <div class="stats"><i class="material-icons" style="color:var(--success)">trending_up</i> Per Jam Kerja</div>
+                    <div class="stats"><i class="material-icons" style="color:var(--success);font-size:16px;">trending_up</i> Per Jam Kerja</div>
                 </div>
             </div>
         </div>
@@ -255,7 +317,7 @@
                     </div>
                 </div>
                 <div class="card-footer">
-                    <div class="stats"><i class="material-icons" style="color:var(--primary)">star</i> Tertinggi</div>
+                    <div class="stats"><i class="material-icons" style="color:var(--primary);font-size:16px;">star</i> Tertinggi</div>
                 </div>
             </div>
         </div>
@@ -272,7 +334,7 @@
                     </div>
                 </div>
                 <div class="card-footer">
-                    <div class="stats"><i class="material-icons" style="color:var(--danger)">trending_down</i> Terendah</div>
+                    <div class="stats"><i class="material-icons" style="color:var(--danger);font-size:16px;">trending_down</i> Terendah</div>
                 </div>
             </div>
         </div>
@@ -282,10 +344,10 @@
     <div class="panel">
         <div class="panel__head">
             <h4 class="panel__title">
-                <i class="material-icons">list</i>
+                <i class="material-icons" style="font-size:20px;">list</i>
                 Daftar Konfigurasi Gaji
             </h4>
-            <div class="toolbar">
+            <div class="toolbar d-flex gap-1">
                 <a class="btn-icon" href="<?= base_url('admin/gaji/add') ?>" title="Tambah konfigurasi" aria-label="Tambah konfigurasi gaji">
                     <i class="material-icons">add</i>
                 </a>
@@ -297,7 +359,7 @@
         <div class="panel__body">
             <?php if (session()->getFlashdata('success')): ?>
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    <i class="material-icons" style="vertical-align:middle;margin-right:6px;">check_circle</i>
+                    <i class="material-icons" style="vertical-align:middle;margin-right:6px;font-size:18px;">check_circle</i>
                     <?= session()->getFlashdata('success') ?>
                     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
@@ -307,7 +369,7 @@
 
             <?php if (session()->getFlashdata('error')): ?>
                 <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <i class="material-icons" style="vertical-align:middle;margin-right:6px;">error</i>
+                    <i class="material-icons" style="vertical-align:middle;margin-right:6px;font-size:18px;">error</i>
                     <?= session()->getFlashdata('error') ?>
                     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
@@ -333,13 +395,13 @@
                             <td><?= $no++ ?></td>
                             <td>
                                 <div class="d-flex align-items-center">
-                                    <i class="material-icons" style="margin-right:8px;color:var(--primary);font-size:18px;">business</i>
+                                    <i class="material-icons" style="margin-right:6px;color:var(--primary);font-size:16px;">business</i>
                                     <span><?= $row['departemen'] ?></span>
                                 </div>
                             </td>
                             <td>
                                 <div class="d-flex align-items-center">
-                                    <i class="material-icons" style="margin-right:8px;color:var(--success);font-size:18px;">work</i>
+                                    <i class="material-icons" style="margin-right:6px;color:var(--success);font-size:16px;">work</i>
                                     <span><?= $row['jabatan'] ?></span>
                                 </div>
                             </td>
@@ -350,7 +412,7 @@
                             </td>
                             <td>
                                 <div class="d-flex align-items-center">
-                                    <i class="material-icons" style="margin-right:8px;color:var(--primary);font-size:18px;">schedule</i>
+                                    <i class="material-icons" style="margin-right:6px;color:var(--primary);font-size:16px;">schedule</i>
                                     <span><?= date('d/m/Y H:i', strtotime($row['tanggal_update'])) ?></span>
                                 </div>
                             </td>
