@@ -91,3 +91,4 @@ Sistem gaji telah dimodernisasi dengan tampilan yang lebih profesional dan user-
 ---
 
 *Sistem gaji sekarang memiliki tampilan yang modern, profesional, dan mudah digunakan oleh semua kalangan pengguna.*
+
