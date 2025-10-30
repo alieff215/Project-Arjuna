@@ -166,7 +166,8 @@
                <th class="sticky-top"><b>Jenis Kelamin</b></th>
                <th class="sticky-top"><b>Departemen</b></th>
                <th class="sticky-top"><b>Jabatan</b></th>
-               <th class="sticky-top"><b>No HP</b></th>
+              <th class="sticky-top"><b>No HP</b></th>
+              <th class="sticky-top"><b>Tanggal Join</b></th>
                <th class="sticky-top"><b>Status Approval</b></th>
                <th class="sticky-top" width="1%"><b>Aksi</b></th>
             </tr>
@@ -184,7 +185,8 @@
                   <td data-label="Jenis Kelamin"><?= $value['jenis_kelamin']; ?></td>
                   <td data-label="Departemen"><?= $value['departemen']; ?></td>
                   <td data-label="Jabatan"><?= $value['jabatan']; ?></td>
-                  <td data-label="No HP"><?= $value['no_hp']; ?></td>
+                 <td data-label="No HP"><?= $value['no_hp']; ?></td>
+                 <td data-label="Tanggal Join"><?= !empty($value['tanggal_join']) ? date('d M Y', strtotime($value['tanggal_join'])) : '-'; ?></td>
                   <td data-label="Status Approval">
                      <?php
                      // Cek status approval untuk record ini

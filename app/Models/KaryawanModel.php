@@ -14,6 +14,7 @@ class KaryawanModel extends Model
          'id_departemen',
          'jenis_kelamin',
          'no_hp',
+         'tanggal_join',
          'unique_code'
       ];
    }
@@ -79,7 +80,7 @@ class KaryawanModel extends Model
          ->findAll();
    }
 
-   public function createKaryawan($nis, $nama, $idDepartemen, $jenisKelamin, $noHp)
+   public function createKaryawan($nis, $nama, $idDepartemen, $jenisKelamin, $noHp, $tanggalJoin = null)
    {
       return $this->save([
          'nis' => $nis,
@@ -87,11 +88,12 @@ class KaryawanModel extends Model
          'id_departemen' => $idDepartemen,
          'jenis_kelamin' => $jenisKelamin,
          'no_hp' => $noHp,
+         'tanggal_join' => $tanggalJoin,
          'unique_code' => generateToken()
       ]);
    }
 
-   public function updateKaryawan($id, $nis, $nama, $idDepartemen, $jenisKelamin, $noHp)
+   public function updateKaryawan($id, $nis, $nama, $idDepartemen, $jenisKelamin, $noHp, $tanggalJoin = null)
    {
       return $this->save([
          $this->primaryKey => $id,
@@ -100,6 +102,7 @@ class KaryawanModel extends Model
          'id_departemen' => $idDepartemen,
          'jenis_kelamin' => $jenisKelamin,
          'no_hp' => $noHp,
+         'tanggal_join' => $tanggalJoin,
       ]);
    }
 
