@@ -107,6 +107,14 @@
                         </div>
                      </div>
 
+                     <div class="form-group mt-4">
+                        <label for="tanggal_join">Tanggal Join</label>
+                        <input type="date" id="tanggal_join" name="tanggal_join" class="form-control <?= $validation->getError('tanggal_join') ? 'is-invalid' : ''; ?>" value="<?= old('tanggal_join') ?? $oldInput['tanggal_join'] ?? ($data['tanggal_join'] ?? '') ?>">
+                        <div class="invalid-feedback">
+                           <?= $validation->getError('tanggal_join'); ?>
+                        </div>
+                     </div>
+
                      <button type="submit" class="btn btn-primary btn-block">Simpan</button>
                   </form>
 

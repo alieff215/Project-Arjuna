@@ -45,6 +45,13 @@ class DataKaryawan extends BaseController
       ],
       'jk' => ['rules' => 'required', 'errors' => ['required' => 'Jenis kelamin wajib diisi']],
       'no_hp' => 'required|numeric|max_length[20]|min_length[5]'
+      ,
+      'tanggal_join' => [
+         'rules' => 'required',
+         'errors' => [
+            'required' => 'Tanggal join harus diisi'
+         ]
+      ]
    ];
 
    public function __construct()
@@ -142,6 +149,7 @@ class DataKaryawan extends BaseController
          'id_departemen' => intval($this->request->getVar('id_departemen')),
          'jenis_kelamin' => $this->request->getVar('jk'),
          'no_hp' => $this->request->getVar('no_hp'),
+         'tanggal_join' => $this->request->getVar('tanggal_join'),
       ];
 
       // Cek apakah memerlukan approval
@@ -174,6 +182,7 @@ class DataKaryawan extends BaseController
             idDepartemen: intval($this->request->getVar('id_departemen')),
             jenisKelamin: $this->request->getVar('jk'),
             noHp: $this->request->getVar('no_hp'),
+            tanggalJoin: $this->request->getVar('tanggal_join'),
          );
 
          if ($result) {
@@ -250,6 +259,7 @@ class DataKaryawan extends BaseController
          'id_departemen' => intval($this->request->getVar('id_departemen')),
          'jenis_kelamin' => $this->request->getVar('jk'),
          'no_hp' => $this->request->getVar('no_hp'),
+         'tanggal_join' => $this->request->getVar('tanggal_join'),
       ];
 
       // Cek apakah memerlukan approval
@@ -284,6 +294,7 @@ class DataKaryawan extends BaseController
             idDepartemen: intval($this->request->getVar('id_departemen')),
             jenisKelamin: $this->request->getVar('jk'),
             noHp: $this->request->getVar('no_hp'),
+            tanggalJoin: $this->request->getVar('tanggal_join'),
          );
 
          if ($result) {
@@ -295,6 +306,7 @@ class DataKaryawan extends BaseController
                   'id_departemen' => $karyawanLama['id_departemen'] ?? null,
                   'jenis_kelamin' => $karyawanLama['jenis_kelamin'] ?? null,
                   'no_hp' => $karyawanLama['no_hp'] ?? null,
+                  'tanggal_join' => $karyawanLama['tanggal_join'] ?? null,
                ];
                $after = [
                   'nis' => $karyawanBaru['nis'] ?? null,
@@ -302,6 +314,7 @@ class DataKaryawan extends BaseController
                   'id_departemen' => $karyawanBaru['id_departemen'] ?? null,
                   'jenis_kelamin' => $karyawanBaru['jenis_kelamin'] ?? null,
                   'no_hp' => $karyawanBaru['no_hp'] ?? null,
+                  'tanggal_join' => $karyawanBaru['tanggal_join'] ?? null,
                ];
                $changed = [];
                foreach ($after as $key => $val) {
