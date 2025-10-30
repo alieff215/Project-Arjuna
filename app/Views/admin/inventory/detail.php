@@ -142,13 +142,13 @@
             <h6 class="alert-heading">📊 Qty Kumulatif Saat Ini:</h6>
             <div class="row">
               <div class="col-md-4">
-                <strong>Cutting:</strong> <?= $inventory['cutting_qty'] ?> / <?= $inventory['cutting_target'] ?>
+                <strong>Cutting:</strong> <?= $inventory['cutting_qty'] ?> / <?= $inventory['total_target'] ?>
               </div>
               <div class="col-md-4">
-                <strong>Produksi:</strong> <?= $inventory['produksi_qty'] ?> / <?= $inventory['produksi_target'] ?>
+                <strong>Produksi:</strong> <?= $inventory['produksi_qty'] ?> / <?= $inventory['total_target'] ?>
               </div>
               <div class="col-md-4">
-                <strong>Finishing:</strong> <?= $inventory['finishing_qty'] ?> / <?= $inventory['finishing_target'] ?>
+                <strong>Finishing:</strong> <?= $inventory['finishing_qty'] ?> / <?= $inventory['total_target'] ?>
               </div>
             </div>
           </div>
