@@ -128,6 +128,12 @@
       font-size: clamp(12px, 1.6vw, 13px);
    }
 
+   /* Samakan ukuran tombol Refresh di footer dengan tombol di header */
+   .u-foot .btn-hero {
+      font-size: clamp(14px, 2.2vw, 15px);
+      padding: 10px 14px;
+   }
+
    .btn-hero {
       display: inline-flex;
       align-items: center;
@@ -148,6 +154,18 @@
 
    .btn-hero .material-icons {
       font-size: 20px;
+   }
+
+   /* ===== Refresh spin animation ===== */
+   @keyframes spin360 {
+      to {
+         transform: rotate(360deg);
+      }
+   }
+
+   .btn-refresh.is-loading .material-icons {
+      animation: spin360 .9s linear infinite;
+      color: var(--ring) !important;
    }
 
    /* =============== FILTER PILLS =============== */
@@ -425,10 +443,7 @@
          </div>
 
          <div class="u-foot">
-            <small>Tips: pilih filter atau klik <b>Refresh</b> untuk memuat ulang data.</small>
-            <button id="btnRefresh" class="btn-soft btn-refresh" type="button" style="background: #e8f5e8; border: 1px solid #4caf50; color: #2e7d32; padding: 8px 16px; border-radius: 6px; font-weight: 500;">
-               <i class="material-icons" style="margin-right: 4px;">refresh</i> Refresh
-            </button>
+            <small>Tips: pilih filter atau gunakan tombol <b>Refresh</b> pada tabel di bawah.</small>
          </div>
       </div>
 
@@ -439,7 +454,7 @@
                <h4 class="u-title"><i class="material-icons" style="color:var(--success)">people</i> Data Karyawan</h4>
                <p class="u-sub">Total Karyawan: <span style="background: var(--success); color: white; padding: 2px 8px; border-radius: 8px; font-weight: 700;"><?= $total_karyawan; ?></span> | <?= date('d M Y H:i'); ?></p>
             </div>
-            <button class="btn-hero" type="button" onclick="loadKaryawan()">
+            <button class="btn-hero btn-refresh btn-refresh-table" type="button" onclick="loadKaryawan()">
                <i class="material-icons" style="color:var(--success)">refresh</i> Refresh
             </button>
          </div>
@@ -460,7 +475,6 @@
 </div>
 
 <script>
-
    /* ============ STATE & FILTER ============ */
    var lastIdDepartemen = 'all';
    var lastDepartemen = 'Semua Departemen & Jabatan';
@@ -484,6 +498,11 @@
    /* ============ AJAX LOAD ============ */
    function loadKaryawan() {
       setLoading();
+      // aktifkan animasi spin hanya pada tombol refresh di header tabel
+      var $btn = $('.btn-refresh-table');
+      if ($btn.length) {
+         $btn.addClass('is-loading').attr('disabled', true);
+      }
       $.ajax({
          url: "<?= base_url('/admin/karyawan'); ?>",
          type: 'post',
@@ -496,11 +515,17 @@
             $('html, body').animate({
                scrollTop: $("#dataKaryawan").offset().top - 80
             }, 260);
+            if ($btn.length) {
+               $btn.removeClass('is-loading').attr('disabled', false);
+            }
          },
          error: function(xhr, status, err) {
             console.log('Error:', err);
             console.log('Response:', xhr.responseText);
             $('#dataKaryawan').html(`<div class="placeholder">Gagal memuat data.<br><small class="text-danger">${err}</small></div>`);
+            if ($btn.length) {
+               $btn.removeClass('is-loading').attr('disabled', false);
+            }
          }
       });
    }
@@ -514,8 +539,7 @@
    });
 
    /* ================== EVENT BINDINGS ================== */
-   $('#btnRefresh').on('click', loadKaryawan);
-   
+
    // Event handler untuk dropdown gabungan
    $('#filterDepartemenJabatan').on('change', function() {
       const selectedOption = $(this).find('option:selected');
@@ -547,11 +571,11 @@
       cursor: pointer;
       transition: all 0.2s ease;
    }
-   
+
    .custom-select:hover {
       border-color: #90caf9;
    }
-   
+
    .custom-select:focus {
       border-color: #2196f3;
       box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2);

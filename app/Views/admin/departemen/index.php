@@ -98,6 +98,76 @@
     align-items: center;
   }
 
+  /* Refresh button look & animation (match data admin) */
+  .btn-refresh {
+    border-radius: 12px;
+    border-color: #e2e8f0;
+    box-shadow: 0 6px 14px rgba(80, 120, 255, 0.12);
+  }
+
+  .btn-refresh .material-icons {
+    color: #0b132b;
+  }
+
+  .btn-refresh[disabled] {
+    opacity: .6;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  @keyframes spin360 {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .btn-refresh.is-loading .material-icons {
+    animation: spin360 .9s linear infinite;
+    color: #2563eb;
+  }
+
+  /* Collapsible table helpers */
+  .collapse-gradient {
+    position: relative;
+  }
+
+  .collapse-gradient::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 36px;
+    pointer-events: none;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, #ffffff 80%);
+    display: none;
+  }
+
+  .is-collapsed.collapse-gradient::after {
+    display: block;
+  }
+
+  .collapse-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    margin-top: 8px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    color: #1e293b;
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all .2s ease;
+  }
+
+  .collapse-toggle:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, .08);
+  }
+
   .skeleton {
     display: grid;
     gap: 10px;
@@ -118,6 +188,7 @@
     0% {
       background-position: 0% 50%;
     }
+
     100% {
       background-position: 100% 50%;
     }
@@ -161,7 +232,7 @@
               <a class="btn btn--primary" href="<?= base_url('admin/departemen/tambah'); ?>" aria-label="Tambah data departemen">
                 <i class="material-icons">add</i><span class="label">Tambah</span>
               </a>
-              <button class="btn" type="button" onclick="refreshSection('departemen','#dataDepartemen')" aria-label="Refresh daftar departemen">
+              <button class="btn btn-refresh" type="button" onclick="refreshSection('departemen','#dataDepartemen', this)" aria-label="Refresh daftar departemen">
                 <i class="material-icons">refresh</i><span class="label">Refresh</span>
               </button>
             </div>
@@ -189,7 +260,7 @@
               <a class="btn btn--primary" href="<?= base_url('admin/jabatan/tambah'); ?>" aria-label="Tambah data jabatan">
                 <i class="material-icons">add</i><span class="label">Tambah</span>
               </a>
-              <button class="btn" type="button" onclick="refreshSection('jabatan','#dataJabatan')" aria-label="Refresh daftar jabatan">
+              <button class="btn btn-refresh" type="button" onclick="refreshSection('jabatan','#dataJabatan', this)" aria-label="Refresh daftar jabatan">
                 <i class="material-icons">refresh</i><span class="label">Refresh</span>
               </button>
             </div>
@@ -212,11 +283,12 @@
 </div>
 
 <script>
-
   /* ========= LOADING UX + FETCH WRAPPER ========= */
   function setSkeleton(target) {
     const el = document.querySelector(target);
     if (!el) return;
+    // Reset flag agar collapsible dipasang ulang setelah konten diperbarui
+    el.removeAttribute('data-collapsible-applied');
     el.innerHTML = `
     <div class="skeleton">
       <div class="sk-line" style="width:58%"></div>
@@ -225,8 +297,31 @@
     </div>`;
   }
 
-  function refreshSection(kind, target) {
+  function refreshSection(kind, target, btnEl) {
     setSkeleton(target);
+    // jika ada button, aktifkan animasi spin dan disable sementara
+    if (btnEl) {
+      btnEl.classList.add('is-loading');
+      btnEl.disabled = true;
+    }
+    // observer satu-kali: hentikan loading ketika konten berubah
+    try {
+      const el = document.querySelector(target);
+      if (el) {
+        const once = new MutationObserver(() => {
+          if (btnEl) {
+            btnEl.classList.remove('is-loading');
+            btnEl.disabled = false;
+          }
+          once.disconnect();
+        });
+        once.observe(el, {
+          childList: true,
+          subtree: true
+        });
+      }
+    } catch (e) {}
+
     // jeda kecil supaya transisi terasa halus
     setTimeout(() => {
       fetchDepartemenJabatanData(kind, target);
@@ -234,9 +329,83 @@
   }
 
   document.addEventListener('DOMContentLoaded', function() {
+    // Ubah angka ini untuk menentukan jumlah baris awal yang ditampilkan
+    // Contoh: window.__COLLAPSE_MAX = 8
+    if (typeof window.__COLLAPSE_MAX !== 'number') {
+      window.__COLLAPSE_MAX = 6;
+    }
+
     refreshSection('departemen', '#dataDepartemen');
     refreshSection('jabatan', '#dataJabatan');
+
+    /* ========== COLLAPSIBLE TABLE (apply on dynamic loads) ========== */
+    function applyCollapsible(container) {
+      const root = typeof container === 'string' ? document.querySelector(container) : container;
+      if (!root) return;
+      // Hindari loop observer: bila sudah diaplikasikan, jangan jalankan lagi
+      if (root.dataset.collapsibleApplied === '1') return;
+      const table = root.querySelector('table');
+      if (!table) return;
+
+      const rows = Array.from(table.querySelectorAll('tbody tr'));
+      const wrapper = root; // body container already present
+
+      // remove previous toggle if any
+      const oldBtn = root.querySelector('.collapse-toggle');
+      if (oldBtn) oldBtn.remove();
+
+      // reset any previous state
+      rows.forEach(r => r.style.removeProperty('display'));
+      wrapper.classList.remove('is-collapsed', 'collapse-gradient');
+
+      const MAX_VISIBLE = window.__COLLAPSE_MAX;
+      if (rows.length <= MAX_VISIBLE) return;
+
+      // hide beyond threshold
+      rows.slice(MAX_VISIBLE).forEach(r => r.style.display = 'none');
+      wrapper.classList.add('is-collapsed', 'collapse-gradient');
+
+      // add toggle button
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'collapse-toggle';
+      btn.innerHTML = '<i class="material-icons">unfold_more</i><span class="label">Lihat semua</span>';
+      btn.addEventListener('click', () => {
+        const collapsed = wrapper.classList.contains('is-collapsed');
+        if (collapsed) {
+          rows.forEach(r => r.style.removeProperty('display'));
+          wrapper.classList.remove('is-collapsed');
+          btn.innerHTML = '<i class="material-icons">unfold_less</i><span class="label">Sembunyikan</span>';
+        } else {
+          rows.slice(MAX_VISIBLE).forEach(r => r.style.display = 'none');
+          wrapper.classList.add('is-collapsed');
+          btn.innerHTML = '<i class="material-icons">unfold_more</i><span class="label">Lihat semua</span>';
+        }
+      });
+      root.appendChild(btn);
+      // Tandai sudah dipasang
+      root.dataset.collapsibleApplied = '1';
+    }
+
+    // Expose globally so partials can trigger if needed
+    window.__applyCollapsible = applyCollapsible;
+
+    // Observe dynamic content replacement
+    const targets = ['#dataDepartemen', '#dataJabatan'];
+    targets.forEach(sel => {
+      const el = document.querySelector(sel);
+      if (!el) return;
+      const observer = new MutationObserver(() => {
+        // Debounce agar tidak loop akibat perubahan kecil pada DOM
+        if (el.__collapsDebounce) cancelAnimationFrame(el.__collapsDebounce);
+        el.__collapsDebounce = requestAnimationFrame(() => applyCollapsible(el));
+      });
+      observer.observe(el, {
+        childList: true,
+        subtree: true
+      });
+    });
   });
 </script>
 
-<?= $this->endSection() ?> ini kan untuk tampilan data departemen dan jabatan, tetapi ini masih salah karna style untuk header dan navbar nya malah ditaruh disini, kemudian mode terang dan gelap nya juga malah ditaruh disini, tolong yang tidak sesuai dihilangkan ya dan dibenarkan, sisanya tidak perlu dirubah
+<?= $this->endSection() ?>

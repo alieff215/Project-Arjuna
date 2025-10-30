@@ -58,6 +58,46 @@
       align-items: center;
    }
 
+   /* ===== Refresh Button (match Data Admin style) ===== */
+   .btn-modern {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: color-mix(in oklab, var(--card-solid) 90%, transparent);
+      color: var(--text);
+      font-weight: 800;
+      box-shadow: var(--neon);
+      transition: transform .12s ease, box-shadow .12s ease;
+   }
+
+   .btn-modern:hover {
+      transform: translateY(-1px);
+   }
+
+   .btn-modern[disabled] {
+      opacity: .6;
+      cursor: not-allowed;
+      transform: none;
+   }
+
+   .btn-modern .material-icons {
+      color: var(--text);
+   }
+
+   @keyframes spin360 {
+      to {
+         transform: rotate(360deg);
+      }
+   }
+
+   .btn-modern.is-loading .material-icons {
+      animation: spin360 .9s linear infinite;
+      color: var(--ring);
+   }
+
    /* ===== Stats Cards ===== */
    .stats-grid {
       display: grid;
@@ -430,6 +470,10 @@
 
    /* ===== AJAX load ===== */
    function getApprovalRequests() {
+      const $btn = jQuery('#refreshBtn');
+      if ($btn.length) {
+         $btn.addClass('is-loading').prop('disabled', true);
+      }
       const tokenName = (window.BaseConfig && BaseConfig.csrfTokenName) ? BaseConfig.csrfTokenName : '';
       const tokenVal = tokenName ? (document.querySelector(`meta[name="${tokenName}"]`)?.getAttribute('content') || '') : '';
 
@@ -446,11 +490,17 @@
                dataEl.innerHTML = resp;
                bindCheckboxes();
             }
+            if ($btn.length) {
+               $btn.removeClass('is-loading').prop('disabled', false);
+            }
          },
          error: function(_, __, thrown) {
             const dataEl = document.getElementById('dataContainer');
             if (dataEl) {
                dataEl.innerHTML = `<div class="p-3">Gagal memuat data: <b>${thrown}</b></div>`;
+            }
+            if ($btn.length) {
+               $btn.removeClass('is-loading').prop('disabled', false);
             }
          }
       });
@@ -473,7 +523,7 @@
    function updateBulkActions() {
       const bulkActions = document.getElementById('bulkActions');
       const selectedCount = document.getElementById('selectedCount');
-      
+
       if (selectedItems.size > 0) {
          bulkActions.classList.add('show');
          selectedCount.textContent = `${selectedItems.size} item dipilih`;
@@ -590,4 +640,3 @@
 </script>
 
 <?= $this->endSection() ?>
-
