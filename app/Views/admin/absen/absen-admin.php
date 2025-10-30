@@ -152,6 +152,18 @@
       transform: none;
    }
 
+   /* Refresh spin animation */
+   @keyframes spin360 {
+      to {
+         transform: rotate(360deg);
+      }
+   }
+
+   .btn-refresh.is-loading .material-icons {
+      animation: spin360 .9s linear infinite;
+      color: var(--ring);
+   }
+
    /* =============== DATA AREA =============== */
    #dataAdmin {
       min-height: 140px;
@@ -582,14 +594,14 @@
    function setLoading(isLoading) {
       const $btn = $('#btnRefresh');
       if (isLoading) {
-         $btn.prop('disabled', true);
+         $btn.addClass('is-loading').prop('disabled', true);
          $('#dataAdmin').html(`
            <div class="skeleton"></div>
            <div class="skeleton" style="height:64px"></div>
            <div class="skeleton" style="height:64px"></div>
          `);
       } else {
-         $btn.prop('disabled', false);
+         $btn.removeClass('is-loading').prop('disabled', false);
       }
    }
 
@@ -631,7 +643,9 @@
       $.ajax({
          url: "<?= base_url('/admin/absen-admin/history'); ?>",
          type: 'post',
-         data: { tanggal },
+         data: {
+            tanggal
+         },
          success: function(res) {
             $('#historyAdmin').html(res);
          },

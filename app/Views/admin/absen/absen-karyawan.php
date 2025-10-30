@@ -212,6 +212,18 @@
       transform: none;
    }
 
+   /* Refresh spin animation */
+   @keyframes spin360 {
+      to {
+         transform: rotate(360deg);
+      }
+   }
+
+   .btn-refresh.is-loading .material-icons {
+      animation: spin360 .9s linear infinite;
+      color: var(--ring);
+   }
+
    /* =============== CUSTOM DROPDOWN STYLING =============== */
    .custom-select {
       width: 100%;
@@ -528,7 +540,6 @@
 </div>
 
 <script>
-
    /* ================== TOAST MINI ================== */
    function showToast(text, icon = 'info') {
       const t = $('#toastLite');
@@ -541,14 +552,14 @@
    function setLoading(isLoading) {
       const $btn = $('#btnRefresh');
       if (isLoading) {
-         $btn.prop('disabled', true);
+         $btn.addClass('is-loading').prop('disabled', true);
          $('#dataKaryawan').html(`
            <div class="skeleton"></div>
            <div class="skeleton" style="height:64px"></div>
            <div class="skeleton" style="height:64px"></div>
          `);
       } else {
-         $btn.prop('disabled', false);
+         $btn.removeClass('is-loading').prop('disabled', false);
       }
    }
 
@@ -597,7 +608,9 @@
       $.ajax({
          url: "<?= base_url('/admin/absen-karyawan/history'); ?>",
          type: 'post',
-         data: { tanggal },
+         data: {
+            tanggal
+         },
          success: function(res) {
             $('#historyKaryawan').html(res);
          },
@@ -610,7 +623,7 @@
    /* ================== EVENT BINDINGS ================== */
    $('#btnRefresh').on('click', fetchKaryawan);
    $('#tanggal').on('change input', debounce(fetchKaryawan, 250));
-   
+
    // Event handler untuk dropdown gabungan
    $('#filterDepartemenJabatan').on('change', function() {
       const selectedOption = $(this).find('option:selected');
@@ -636,8 +649,8 @@
          type: 'post',
          data: {
             id_presensi: idPresensi,
-           id_karyawan: idKaryawan,
-           tanggal: $('#tanggal').val()
+            id_karyawan: idKaryawan,
+            tanggal: $('#tanggal').val()
          },
          success: function(res) {
             $('#modalFormUbahKaryawan').html(res);
@@ -669,7 +682,9 @@
             $.ajax({
                url: "<?= base_url('/admin/absen-karyawan/history'); ?>",
                type: 'post',
-               data: { tanggal },
+               data: {
+                  tanggal
+               },
                success: function(res) {
                   $('#historyKaryawan').html(res);
                },
