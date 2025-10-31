@@ -130,3 +130,8 @@ Sistem gaji sekarang memiliki tampilan yang:
 Perubahan ini memastikan bahwa sistem gaji terintegrasi dengan baik dalam ekosistem aplikasi yang sudah ada, memberikan pengalaman pengguna yang seragam dan profesional.
 
 
+
+
+
+
+

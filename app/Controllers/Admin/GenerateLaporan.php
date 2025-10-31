@@ -60,7 +60,21 @@ class GenerateLaporan extends BaseController
    public function generateLaporanKaryawan()
    {
       $idDepartemen = $this->request->getVar('departemen');
-      $karyawan = $this->karyawanModel->getKaryawanByDepartemen($idDepartemen);
+      // Jika departemen tidak dipilih, ambil semua karyawan di semua departemen
+      if (empty($idDepartemen)) {
+         $karyawan = $this->karyawanModel->getAllKaryawanWithDepartemen();
+         // Urutkan agar pengelompokan per departemen di view rapi
+         usort($karyawan, function ($a, $b) {
+            $deptA = ($a['departemen'] ?? '') . ' ' . ($a['jabatan'] ?? '');
+            $deptB = ($b['departemen'] ?? '') . ' ' . ($b['jabatan'] ?? '');
+            if ($deptA === $deptB) {
+               return strcmp($a['nama_karyawan'] ?? '', $b['nama_karyawan'] ?? '');
+            }
+            return strcmp($deptA, $deptB);
+         });
+      } else {
+         $karyawan = $this->karyawanModel->getKaryawanByDepartemen($idDepartemen);
+      }
       $type = $this->request->getVar('type');
 
       if (empty($karyawan)) {
@@ -71,9 +85,17 @@ class GenerateLaporan extends BaseController
          return redirect()->to('/admin/laporan');
       }
 
-      $departemen = $this->departemenModel->where(['id_departemen' => $idDepartemen])
-         ->join('tb_jabatan', 'tb_departemen.id_jabatan = tb_jabatan.id', 'left')
-         ->first();
+      // Informasi departemen untuk header laporan
+      if (empty($idDepartemen)) {
+         $departemen = [
+            'departemen' => 'Semua Departemen',
+            'jabatan' => ''
+         ];
+      } else {
+         $departemen = $this->departemenModel->where(['id_departemen' => $idDepartemen])
+            ->join('tb_jabatan', 'tb_departemen.id_jabatan = tb_jabatan.id', 'left')
+            ->first();
+      }
 
       $bulan = $this->request->getVar('tanggalKaryawan');
 
@@ -94,8 +116,14 @@ class GenerateLaporan extends BaseController
          if (!($value->format('D') == 'Sat' || $value->format('D') == 'Sun')) {
             $lewat = Time::parse($value->format('Y-m-d'))->isAfter(Time::today());
 
-            $absenByTanggal = $this->presensiKaryawanModel
-               ->getPresensiByDepartemenTanggal($idDepartemen, $value->format('Y-m-d'));
+            // Jika semua departemen dipilih, ambil presensi semua departemen pada tanggal tsb
+            if (empty($idDepartemen)) {
+               $absenByTanggal = $this->presensiKaryawanModel
+                  ->getPresensiAllDepartemenTanggal($value->format('Y-m-d'));
+            } else {
+               $absenByTanggal = $this->presensiKaryawanModel
+                  ->getPresensiByDepartemenTanggal($idDepartemen, $value->format('Y-m-d'));
+            }
 
             $absenByTanggal['lewat'] = $lewat;
 
@@ -122,7 +150,7 @@ class GenerateLaporan extends BaseController
             'perempuan' => count($karyawan) - $laki
          ],
          'departemen' => $departemen,
-         'grup' => "departemen " . $departemen['departemen'] . " " . $departemen['jabatan'],
+         'grup' => empty($idDepartemen) ? 'semua departemen' : ("departemen " . $departemen['departemen'] . " " . $departemen['jabatan']),
       ];
 
       if ($type == 'doc') {

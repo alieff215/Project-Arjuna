@@ -519,7 +519,7 @@ select.form-control {
                             </div>
                     <div>
                         <p class="card-category">Total Jam Kerja</p>
-                        <h3 class="card-title"><?= array_sum(array_column($report_data, 'total_jam_kerja')) ?> jam</h3>
+                        <h3 class="card-title"><?= number_format(array_sum(array_column($report_data, 'total_jam_kerja')), 1, ',', '.') ?> jam</h3>
                         </div>
                     </div>
                 <div class="card-footer">
@@ -579,7 +579,7 @@ select.form-control {
                                 <th>Jabatan</th>
                                 <th>Gaji/Jam</th>
                                 <th>Kehadiran</th>
-                                <th>Total Jam</th>
+                                <th>Total Jam (Kelipatan 0.5)</th>
                                 <th>Total Gaji</th>
                             </tr>
                         </thead>
@@ -624,7 +624,7 @@ select.form-control {
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <i class="material-icons" style="margin-right:6px;color:var(--primary);font-size:16px;">schedule</i>
-                                        <span style="font-weight:600;"><?= $row['total_jam_kerja'] ?> jam</span>
+                                        <span style="font-weight:600;"><?= number_format($row['total_jam_kerja'], 1, ',', '.') ?> jam</span>
                                     </div>
                                 </td>
                                 <td>

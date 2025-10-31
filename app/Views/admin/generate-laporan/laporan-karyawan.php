@@ -43,8 +43,26 @@
    </tr>
 
    <?php $i = 0; ?>
+   <?php $isAllDepartemen = isset($departemen['departemen']) && $departemen['departemen'] === 'Semua Departemen'; ?>
+   <?php $lastDepartemenKey = null; ?>
 
    <?php foreach ($listKaryawan as $karyawan) : ?>
+      <?php
+      // Cetak pemisah departemen saat berpindah departemen (khusus semua departemen)
+      if ($isAllDepartemen) {
+         $deptKey = ($karyawan['departemen'] ?? '') . ' ' . ($karyawan['jabatan'] ?? '');
+         if ($deptKey !== $lastDepartemenKey) {
+            $lastDepartemenKey = $deptKey;
+            ?>
+            <tr>
+               <td colspan="<?= 2 + count($tanggal) + 4; ?>" style="background-color:#f0f0f0;font-weight:bold;">
+                  Departemen: <?= trim($deptKey); ?>
+               </td>
+            </tr>
+            <?php
+         }
+      }
+      ?>
       <?php
       $jumlahHadir = count(array_filter($listAbsen, function ($a) use ($i) {
          if ($a['lewat'] || is_null($a[$i]['id_kehadiran'])) return false;
@@ -67,8 +85,19 @@
       <tr>
          <td align="center"><?= $i + 1; ?></td>
          <td><?= $karyawan['nama_karyawan']; ?></td>
-         <?php foreach ($listAbsen as $absen) : ?>
-            <?= kehadiran($absen[$i]['id_kehadiran'] ?? ($absen['lewat'] ? 5 : 4)); ?>
+         <?php foreach ($listAbsen as $j => $absen) : ?>
+            <?php
+            $jm = $absen[$i]['jam_masuk'] ?? null;
+            $jk = $absen[$i]['jam_keluar'] ?? null;
+            $hoursText = '-';
+            if (!empty($jm) && !empty($jk)) {
+               $durasiDetik = strtotime($jk) - strtotime($jm);
+               if ($durasiDetik > 0) {
+                  $hoursText = number_format($durasiDetik / 3600, 1);
+               }
+            }
+            ?>
+            <?= kehadiran($absen[$i]['id_kehadiran'] ?? ($absen['lewat'] ? 5 : 4), $hoursText); ?>
          <?php endforeach; ?>
          <td align="center">
             <?= $jumlahHadir != 0 ? $jumlahHadir : '-'; ?>
@@ -87,6 +116,8 @@
       $i++;
    endforeach; ?>
 
+   
+
 </table>
 <br></br>
 <table>
@@ -104,29 +135,28 @@
    </tr>
 </table>
 <?php
-function kehadiran($kehadiran)
+function kehadiran($kehadiran, $content = '-')
 {
-   $text = '';
+   $style = '';
    switch ($kehadiran) {
-      case 1:
-         $text = "<td align='center' style='background-color:lightgreen;'>H</td>";
+      case 1: // Hadir
+         $style = "background-color:lightgreen;";
          break;
-      case 2:
-         $text = "<td align='center' style='background-color:yellow;'>S</td>";
+      case 2: // Sakit
+      case 3: // Izin
+         $style = "background-color:yellow;";
          break;
-      case 3:
-         $text = "<td align='center' style='background-color:yellow;'>I</td>";
+      case 4: // Alpha
+         $style = "background-color:red;";
          break;
-      case 4:
-         $text = "<td align='center' style='background-color:red;'>A</td>";
-         break;
-      case 5:
+      case 5: // Lewat (belum terjadi)
       default:
-         $text = "<td></td>";
+         $style = '';
+         $content = '';
          break;
    }
 
-   return $text;
+   return "<td align='center' style='${style}'>${content}</td>";
 }
 ?>
 <?= $this->endSection() ?>
