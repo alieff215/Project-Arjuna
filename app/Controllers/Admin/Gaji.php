@@ -357,7 +357,7 @@ class Gaji extends BaseController
         // Standard header row
         fputcsv($output, [
             'No',
-            'NIS',
+            'NIP',
             'Nama Karyawan',
             'Jabatan',
             'Gaji/Jam (Rp)',
@@ -372,7 +372,7 @@ class Gaji extends BaseController
             $subTotalKehadiran = 0;
 
             foreach ($rows as $row) {
-                $subTotalJam += (int)($row['total_jam_kerja'] ?? 0);
+                $subTotalJam += (float)($row['total_jam_kerja'] ?? 0);
                 $subTotalGaji += (int)($row['total_gaji'] ?? 0);
                 $subTotalKehadiran += (int)($row['total_kehadiran'] ?? 0);
                 fputcsv($output, [
@@ -382,7 +382,7 @@ class Gaji extends BaseController
                     $row['jabatan'],
                     (int)($row['gaji_per_jam'] ?? 0),
                     (int)($row['total_kehadiran'] ?? 0),
-                    (int)($row['total_jam_kerja'] ?? 0),
+                    number_format((float)$row['total_jam_kerja'], 1, ',', '.'),
                     (int)($row['total_gaji'] ?? 0)
                 ], $delimiter);
             }
@@ -396,7 +396,7 @@ class Gaji extends BaseController
                 '',
                 '',
                 $subTotalKehadiran,
-                $subTotalJam,
+                number_format((float)$subTotalJam, 1, ',', '.'),
                 (int)$subTotalGaji
             ], $delimiter);
 
@@ -415,7 +415,7 @@ class Gaji extends BaseController
             '',
             '',
             $grandTotalKehadiran,
-            $grandTotalJam,
+            number_format((float)$grandTotalJam, 1, ',', '.'),
             (int)$grandTotalGaji
         ], $delimiter);
 
