@@ -1,4 +1,39 @@
 <div class="card-body table-responsive">
+   <style>
+      /* Cream header and rows, consistent with karyawan table */
+      .table-cream thead th {
+         background: #ffe3b8 !important;
+         /* krem header */
+         color: #2e7d32 !important;
+         text-align: center;
+         border-bottom: 0 !important;
+      }
+
+      .table-cream thead {
+         background: #ffe3b8 !important;
+      }
+
+      .table-cream tbody td {
+         background-color: #fffaf0;
+         /* krem tipis isi data */
+         vertical-align: middle;
+      }
+
+      /* Remove borders so tampil soft */
+      .table-cream thead th,
+      .table-cream tbody td {
+         border: 0 !important;
+      }
+
+      /* Hover subtle */
+      .table-cream tbody tr:hover td {
+         background: #fff3d6;
+      }
+
+      .table-cream td:last-child {
+         text-align: center;
+      }
+   </style>
    <?php if (!$empty) : ?>
       <!-- Total Admin Info -->
       <div class="mb-3" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: linear-gradient(135deg, #e8f5e8 0%, #f0f8f0 100%); border-radius: 8px; border-left: 4px solid #4caf50;">
@@ -11,8 +46,8 @@
             <?= date('d M Y H:i'); ?>
          </div>
       </div>
-      
-      <table class="table table-hover">
+
+      <table class="table table-hover table-cream">
          <thead class="text-success">
             <th><b>No</b></th>
             <th><b>NIP</b></th>
@@ -38,10 +73,10 @@
                      // Cek status approval untuk record ini
                      $approvalModel = new \App\Models\ApprovalModel();
                      $pendingRequests = $approvalModel->where('table_name', 'tb_admin')
-                                                   ->where('record_id', $value['id_admin'])
-                                                   ->where('status', 'pending')
-                                                   ->findAll();
-                     
+                        ->where('record_id', $value['id_admin'])
+                        ->where('status', 'pending')
+                        ->findAll();
+
                      if (!empty($pendingRequests)): ?>
                         <span class="badge badge-warning">
                            <i class="material-icons" style="font-size: 14px; vertical-align: middle;">schedule</i>
