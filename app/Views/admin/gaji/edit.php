@@ -42,31 +42,20 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label for="id_departemen">Departemen <span class="text-danger">*</span></label>
+                            <label for="id_departemen">Departemen & Jabatan <span class="text-danger">*</span></label>
                             <select class="form-control" id="id_departemen" name="id_departemen" required>
-                                <option value="">Pilih Departemen</option>
+                                <option value="">Pilih Departemen & Jabatan</option>
                                 <?php foreach ($departemen as $dept): ?>
                                     <option value="<?= $dept['id_departemen'] ?>" 
+                                            data-jabatan-id="<?= $dept['id_jabatan'] ?>"
                                             <?= (old('id_departemen', $gaji['id_departemen']) == $dept['id_departemen']) ? 'selected' : '' ?>>
-                                        <?= $dept['departemen'] ?>
+                                        <?= $dept['departemen'] ?> - <?= $dept['jabatan'] ?>
                                     </option>
                                 <?php endforeach; ?>
                             </select>
-                        </div>
-                    </div>
-                    
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label for="id_jabatan">Jabatan <span class="text-danger">*</span></label>
-                            <select class="form-control" id="id_jabatan" name="id_jabatan" required>
-                                <option value="">Pilih Jabatan</option>
-                                <?php foreach ($jabatan as $jab): ?>
-                                    <option value="<?= $jab['id'] ?>" 
-                                            <?= (old('id_jabatan', $gaji['id_jabatan']) == $jab['id']) ? 'selected' : '' ?>>
-                                        <?= $jab['jabatan'] ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
+                            <small class="form-text text-muted">
+                                Setiap departemen sudah memiliki jabatan yang terkait
+                            </small>
                         </div>
                     </div>
                 </div>
@@ -309,10 +298,9 @@ $(document).ready(function() {
     // Validasi form
     $('form').on('submit', function(e) {
         let id_departemen = $('#id_departemen').val();
-        let id_jabatan = $('#id_jabatan').val();
         let gaji_per_jam = $('#gaji_per_jam').val();
 
-        if (!id_departemen || !id_jabatan || !gaji_per_jam) {
+        if (!id_departemen || !gaji_per_jam) {
             e.preventDefault();
             alert('Mohon lengkapi semua field yang wajib diisi');
             return false;

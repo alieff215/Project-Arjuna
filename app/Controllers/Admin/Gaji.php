@@ -64,7 +64,6 @@ class Gaji extends BaseController
     {
         $rules = [
                 'id_departemen' => 'required|integer',
-                'id_jabatan' => 'required|integer', 
                 'gaji_per_jam' => 'required|numeric|greater_than[0]'
         ];
 
@@ -74,9 +73,19 @@ class Gaji extends BaseController
                 ->with('errors', $this->validator->getErrors());
             }
 
+        // Get departemen data to retrieve id_jabatan
+        $id_departemen = $this->request->getPost('id_departemen');
+        $departemen = $this->departemenModel->where('id_departemen', $id_departemen)->first();
+        
+        if (!$departemen) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Departemen tidak ditemukan');
+        }
+
             $data = [
-            'id_departemen' => $this->request->getPost('id_departemen'),
-            'id_jabatan' => $this->request->getPost('id_jabatan'),
+            'id_departemen' => $id_departemen,
+            'id_jabatan' => $departemen['id_jabatan'],
             'gaji_per_jam' => $this->request->getPost('gaji_per_jam'),
             'tanggal_update' => date('Y-m-d H:i:s')
         ];
@@ -149,7 +158,6 @@ class Gaji extends BaseController
     {
         $rules = [
                 'id_departemen' => 'required|integer',
-                'id_jabatan' => 'required|integer', 
                 'gaji_per_jam' => 'required|numeric|greater_than[0]'
         ];
 
@@ -159,9 +167,19 @@ class Gaji extends BaseController
                 ->with('errors', $this->validator->getErrors());
             }
 
+        // Get departemen data to retrieve id_jabatan
+        $id_departemen = $this->request->getPost('id_departemen');
+        $departemen = $this->departemenModel->where('id_departemen', $id_departemen)->first();
+        
+        if (!$departemen) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Departemen tidak ditemukan');
+        }
+
             $data = [
-            'id_departemen' => $this->request->getPost('id_departemen'),
-            'id_jabatan' => $this->request->getPost('id_jabatan'),
+            'id_departemen' => $id_departemen,
+            'id_jabatan' => $departemen['id_jabatan'],
             'gaji_per_jam' => $this->request->getPost('gaji_per_jam'),
             'tanggal_update' => date('Y-m-d H:i:s')
         ];
