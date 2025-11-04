@@ -114,7 +114,7 @@
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <div>
             <h1 class="h3 mb-0" style="color: var(--text); font-weight: 700;">➕ Tambah Konfigurasi Gaji</h1>
-            <p class="text-muted mb-0">Buat konfigurasi gaji baru untuk departemen dan jabatan tertentu</p>
+            <p class="text-muted mb-0">Buat konfigurasi gaji baru untuk departemen (jabatan sudah termasuk)</p>
         </div>
         <div>
             <a href="<?= base_url('admin/gaji') ?>" class="btn btn-secondary">
@@ -164,35 +164,22 @@
                         <div class="form-group">
                             <label for="id_departemen">
                                 <i class="material-icons" style="vertical-align:middle;margin-right:6px;font-size:18px;">business</i>
-                                Departemen <span class="text-danger">*</span>
+                                Departemen & Jabatan <span class="text-danger">*</span>
                             </label>
                             <select class="form-control" id="id_departemen" name="id_departemen" required>
-                                <option value="">Pilih Departemen</option>
+                                <option value="">Pilih Departemen & Jabatan</option>
                                 <?php foreach ($departemen as $dept): ?>
                                     <option value="<?= $dept['id_departemen'] ?>" 
+                                            data-jabatan-id="<?= $dept['id_jabatan'] ?>"
                                             <?= (old('id_departemen') == $dept['id_departemen']) ? 'selected' : '' ?>>
-                                        <?= $dept['departemen'] ?>
+                                        <?= $dept['departemen'] ?> - <?= $dept['jabatan'] ?>
                                     </option>
                                 <?php endforeach; ?>
                             </select>
-                        </div>
-                    </div>
-                    
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label for="id_jabatan">
-                                <i class="material-icons" style="vertical-align:middle;margin-right:6px;font-size:18px;">work</i>
-                                Jabatan <span class="text-danger">*</span>
-                            </label>
-                            <select class="form-control" id="id_jabatan" name="id_jabatan" required>
-                                <option value="">Pilih Jabatan</option>
-                                <?php foreach ($jabatan as $jab): ?>
-                                    <option value="<?= $jab['id'] ?>" 
-                                            <?= (old('id_jabatan') == $jab['id']) ? 'selected' : '' ?>>
-                                        <?= $jab['jabatan'] ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
+                            <small class="form-text text-muted">
+                                <i class="material-icons" style="vertical-align:middle;margin-right:4px;font-size:16px;">info</i>
+                                Setiap departemen sudah memiliki jabatan yang terkait
+                            </small>
                         </div>
                     </div>
                 </div>
@@ -258,7 +245,11 @@
                     <ul class="list-unstyled">
                         <li class="mb-2">
                             <i class="material-icons" style="vertical-align:middle;margin-right:6px;color:var(--success);font-size:18px;">check_circle</i>
-                            Setiap kombinasi departemen dan jabatan hanya boleh memiliki satu konfigurasi gaji
+                            Setiap departemen sudah memiliki jabatan yang terkait secara otomatis
+                        </li>
+                        <li class="mb-2">
+                            <i class="material-icons" style="vertical-align:middle;margin-right:6px;color:var(--success);font-size:18px;">check_circle</i>
+                            Setiap departemen hanya boleh memiliki satu konfigurasi gaji
                         </li>
                         <li class="mb-2">
                             <i class="material-icons" style="vertical-align:middle;margin-right:6px;color:var(--success);font-size:18px;">check_circle</i>
@@ -278,7 +269,11 @@
                     <ul class="list-unstyled">
                         <li class="mb-2">
                             <i class="material-icons" style="vertical-align:middle;margin-right:6px;color:var(--primary);font-size:18px;">star</i>
-                            Pastikan departemen dan jabatan sudah tersedia sebelum membuat konfigurasi gaji
+                            Pastikan departemen sudah tersedia sebelum membuat konfigurasi gaji
+                        </li>
+                        <li class="mb-2">
+                            <i class="material-icons" style="vertical-align:middle;margin-right:6px;color:var(--primary);font-size:18px;">star</i>
+                            Jabatan sudah termasuk dalam departemen, tidak perlu memilih secara terpisah
                         </li>
                         <li class="mb-2">
                             <i class="material-icons" style="vertical-align:middle;margin-right:6px;color:var(--primary);font-size:18px;">star</i>
@@ -307,7 +302,7 @@ $(document).ready(function() {
         
         // Validate form
         let isValid = true;
-        const requiredFields = ['id_departemen', 'id_jabatan', 'gaji_per_jam'];
+        const requiredFields = ['id_departemen', 'gaji_per_jam'];
         
         requiredFields.forEach(field => {
             const $field = $(`#${field}`);
