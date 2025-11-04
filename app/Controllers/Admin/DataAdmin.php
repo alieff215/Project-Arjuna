@@ -19,11 +19,9 @@ class DataAdmin extends BaseController
 
    protected $adminValidationRules = [
       'nuptk' => [
-         'rules' => 'required|max_length[20]|min_length[16]',
+         'rules' => 'permit_empty',
          'errors' => [
-            'required' => 'NUPTK harus diisi.',
-            'is_unique' => 'NUPTK ini telah terdaftar.',
-            'min_length[16]' => 'Panjang NUPTK minimal 16 karakter'
+            'is_unique' => 'NUPTK ini telah terdaftar.'
          ]
       ],
       'nama' => [
@@ -106,6 +104,7 @@ class DataAdmin extends BaseController
          'jenis_kelamin' => $this->request->getVar('jk'),
          'alamat' => $this->request->getVar('alamat'),
          'no_hp' => $this->request->getVar('no_hp'),
+         'tanggal_join' => $this->request->getVar('tanggal_join'),
       ];
 
       // Cek apakah memerlukan approval
@@ -138,6 +137,7 @@ class DataAdmin extends BaseController
             jenisKelamin: $this->request->getVar('jk'),
             alamat: $this->request->getVar('alamat'),
             noHp: $this->request->getVar('no_hp'),
+            tanggalJoin: $this->request->getVar('tanggal_join'),
          );
 
          if ($result) {
@@ -200,6 +200,7 @@ class DataAdmin extends BaseController
          'jenis_kelamin' => $this->request->getVar('jk'),
          'alamat' => $this->request->getVar('alamat'),
          'no_hp' => $this->request->getVar('no_hp'),
+         'tanggal_join' => $this->request->getVar('tanggal_join'),
       ];
 
       // Cek apakah memerlukan approval
@@ -234,6 +235,7 @@ class DataAdmin extends BaseController
             jenisKelamin: $this->request->getVar('jk'),
             alamat: $this->request->getVar('alamat'),
             noHp: $this->request->getVar('no_hp'),
+            tanggalJoin: $this->request->getVar('tanggal_join'),
          );
 
          if ($result) {
@@ -246,6 +248,7 @@ class DataAdmin extends BaseController
                   'jenis_kelamin' => $adminLama['jenis_kelamin'] ?? null,
                   'alamat' => $adminLama['alamat'] ?? null,
                   'no_hp' => $adminLama['no_hp'] ?? null,
+                  'tanggal_join' => $adminLama['tanggal_join'] ?? null,
                ];
                $after = [
                   'nuptk' => $adminBaru['nuptk'] ?? null,
@@ -253,6 +256,7 @@ class DataAdmin extends BaseController
                   'jenis_kelamin' => $adminBaru['jenis_kelamin'] ?? null,
                   'alamat' => $adminBaru['alamat'] ?? null,
                   'no_hp' => $adminBaru['no_hp'] ?? null,
+                  'tanggal_join' => $adminBaru['tanggal_join'] ?? null,
                ];
                $changed = [];
                foreach ($after as $key => $val) {

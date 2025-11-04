@@ -24,11 +24,9 @@ class DataKaryawan extends BaseController
 
    protected $karyawanValidationRules = [
       'nis' => [
-         'rules' => 'required|max_length[20]|min_length[4]',
+         'rules' => 'permit_empty',
          'errors' => [
-            'required' => 'NIS harus diisi.',
-            'is_unique' => 'NIS ini telah terdaftar.',
-            'min_length[4]' => 'Panjang NIS minimal 4 karakter'
+            'is_unique' => 'NIS ini telah terdaftar.'
          ]
       ],
       'nama' => [
@@ -233,7 +231,7 @@ class DataKaryawan extends BaseController
       $karyawanLama = $this->karyawanModel->getKaryawanById($idKaryawan);
 
       if ($karyawanLama['nis'] != $this->request->getVar('nis')) {
-         $this->karyawanValidationRules['nis']['rules'] = 'required|max_length[20]|min_length[4]|is_unique[tb_karyawan.nis]';
+         $this->karyawanValidationRules['nis']['rules'] = 'permit_empty|is_unique[tb_karyawan.nis]';
       }
 
       // validasi
