@@ -297,6 +297,20 @@
     </div>`;
   }
 
+  function showAlert(type, message) {
+    if (typeof swal !== 'undefined') {
+      // Gunakan SweetAlert jika tersedia
+      swal({
+        text: message,
+        icon: type === 'success' ? 'success' : 'error',
+        button: 'OK',
+      });
+    } else {
+      // Fallback ke alert biasa
+      alert(message);
+    }
+  }
+
   function refreshSection(kind, target, btnEl) {
     setSkeleton(target);
     // jika ada button, aktifkan animasi spin dan disable sementara

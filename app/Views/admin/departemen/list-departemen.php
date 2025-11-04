@@ -41,7 +41,7 @@
 function deleteDepartemen(id) {
   if (confirm('Apakah Anda yakin ingin menghapus data ini?')) {
     $.ajax({
-      url: '<?= base_url('admin/departemen/delete') ?>',
+      url: '<?= base_url('admin/departemen/deleteDepartemenPost') ?>',
       type: 'POST',
       data: {
         id: id,

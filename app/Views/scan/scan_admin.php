@@ -364,22 +364,56 @@
                      </div>
                   </div>
                   <div class="card-body">
+                     <!-- Toggle Scan Mode -->
                      <div class="mb-3">
-                        <label class="form-label"><b>Pilih Kamera</b></label>
-                        <select id="pilihKamera" class="form-select" aria-label="Pilih kamera">
-                           <option selected>Pilih kamera yang tersedia</option>
-                        </select>
+                        <label class="form-label"><b>Mode Scan</b></label>
+                        <div class="btn-group w-100" role="group">
+                           <input type="radio" class="btn-check" name="scanMode" id="cameraMode" value="camera" checked>
+                           <label class="btn btn-outline-primary" for="cameraMode">
+                              <i class="material-icons mr-1" style="font-size: 16px;">camera_alt</i>
+                              Kamera
+                           </label>
+                           
+                           <input type="radio" class="btn-check" name="scanMode" id="usbMode" value="usb">
+                           <label class="btn btn-outline-primary" for="usbMode">
+                              <i class="material-icons mr-1" style="font-size: 16px;">usb</i>
+                              USB Scanner
+                           </label>
+                        </div>
                      </div>
 
-                     <div class="mb-3">
-                        <div class="previewParent border rounded" style="background: #f8f9fa;">
-                           <div class="text-center py-4" id="searching">
-                              <div class="spinner-border text-primary" role="status">
-                                 <span class="visually-hidden">Loading...</span>
+                     <!-- Camera Mode Section -->
+                     <div id="cameraModeSection">
+                        <div class="mb-3">
+                           <label class="form-label"><b>Pilih Kamera</b></label>
+                           <select id="pilihKamera" class="form-select" aria-label="Pilih kamera">
+                              <option selected>Pilih kamera yang tersedia</option>
+                           </select>
+                        </div>
+
+                        <div class="mb-3">
+                           <div class="previewParent border rounded" style="background: #f8f9fa;">
+                              <div class="text-center py-4" id="searching">
+                                 <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                 </div>
+                                 <p class="mt-2 mb-0"><b>Mencari kamera...</b></p>
                               </div>
-                              <p class="mt-2 mb-0"><b>Mencari kamera...</b></p>
+                              <video id="previewKamera" class="w-100 rounded" style="height: 300px; object-fit: cover; display: none;"></video>
                            </div>
-                           <video id="previewKamera" class="w-100 rounded" style="height: 300px; object-fit: cover; display: none;"></video>
+                        </div>
+                     </div>
+
+                     <!-- USB Scanner Mode Section -->
+                     <div id="usbModeSection" style="display: none;">
+                        <div class="mb-3">
+                           <label class="form-label"><b>Scan QR Code dengan USB Scanner</b></label>
+                           <input type="text" id="usbScanInput" class="form-control form-control-lg" placeholder="Arahkan scanner ke QR Code..." autocomplete="off">
+                           <small class="text-muted">Klik pada kolom input ini, lalu scan QR Code dengan USB scanner Anda</small>
+                        </div>
+                        <div class="alert alert-info">
+                           <i class="material-icons mr-2" style="font-size: 18px;">info</i>
+                           <strong>Petunjuk:</strong> Pastikan kursor ada di kolom input, lalu arahkan USB scanner ke QR Code. Sistem akan otomatis memproses setelah scan.
                         </div>
                      </div>
 
@@ -433,6 +467,82 @@
    let audio = new Audio("<?= base_url('assets/audio/beep.mp3'); ?>");
    const codeReader = new ZXing.BrowserMultiFormatReader();
    const sourceSelect = $('#pilihKamera');
+   let currentMode = 'camera';
+
+   // Toggle between Camera and USB Scanner mode
+   $(document).on('change', 'input[name="scanMode"]', function() {
+      currentMode = $(this).val();
+      
+      if (currentMode === 'camera') {
+         // Show camera section, hide USB section
+         $('#cameraModeSection').show();
+         $('#usbModeSection').hide();
+         
+         // Stop any existing camera stream first
+         if (codeReader) {
+            codeReader.reset();
+         }
+         
+         // Reinitialize scanner
+         if (navigator.mediaDevices) {
+            initScanner();
+         }
+      } else {
+         // Show USB section, hide camera section
+         $('#cameraModeSection').hide();
+         $('#usbModeSection').show();
+         
+         // Stop camera
+         if (codeReader) {
+            codeReader.reset();
+         }
+         
+         // Focus on USB input
+         $('#usbScanInput').focus();
+      }
+   });
+
+   // Handle USB Scanner Input
+   let usbScanBuffer = '';
+   let usbScanTimeout = null;
+   
+   $(document).on('input', '#usbScanInput', function(e) {
+      clearTimeout(usbScanTimeout);
+      usbScanBuffer = $(this).val();
+      
+      // Wait for scanner to finish (usually sends Enter key)
+      usbScanTimeout = setTimeout(() => {
+         if (usbScanBuffer.trim().length > 0) {
+            processUSBScan(usbScanBuffer.trim());
+            $(this).val(''); // Clear input
+            usbScanBuffer = '';
+         }
+      }, 100);
+   });
+
+   // Handle Enter key for USB scanner
+   $(document).on('keypress', '#usbScanInput', function(e) {
+      if (e.which === 13) { // Enter key
+         e.preventDefault();
+         clearTimeout(usbScanTimeout);
+         const code = $(this).val().trim();
+         if (code.length > 0) {
+            processUSBScan(code);
+            $(this).val(''); // Clear input
+            usbScanBuffer = '';
+         }
+      }
+   });
+
+   function processUSBScan(code) {
+      console.log('USB Scanner detected code:', code);
+      cekData(code);
+      
+      // Re-focus input for next scan after delay
+      setTimeout(() => {
+         $('#usbScanInput').focus();
+      }, 2500);
+   }
 
    $(document).on('change', '#pilihKamera', function() {
       selectedDeviceId = $(this).val();

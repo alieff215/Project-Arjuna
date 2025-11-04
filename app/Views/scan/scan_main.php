@@ -63,6 +63,10 @@
                   <i class="material-icons mr-1" style="font-size: 18px;">qr_code_scanner</i>
                   Scan QR Code
                </span>
+               <span class="badge bg-warning px-3 py-2">
+                  <i class="material-icons mr-1" style="font-size: 18px;">usb</i>
+                  USB Scanner
+               </span>
                <span class="badge bg-success px-3 py-2">
                   <i class="material-icons mr-1" style="font-size: 18px;">schedule</i>
                   Real-time
@@ -192,17 +196,18 @@
                   <h6><b>Langkah-langkah Absensi:</b></h6>
                   <ol>
                      <li>Pilih menu "Absen Masuk" atau "Absen Pulang"</li>
-                     <li>Izinkan akses kamera saat diminta</li>
-                     <li>Tunjukkan QR Code ke kamera</li>
+                     <li>Pilih mode scan: Kamera atau USB Scanner</li>
+                     <li><strong>Mode Kamera:</strong> Izinkan akses kamera dan tunjukkan QR Code</li>
+                     <li><strong>Mode USB Scanner:</strong> Klik kolom input dan scan QR Code</li>
                      <li>Tunggu konfirmasi berhasil</li>
                   </ol>
                </div>
                <div class="col-md-6">
                   <h6><b>Tips Sukses:</b></h6>
                   <ul>
-                     <li>Pastikan pencahayaan cukup</li>
+                     <li>Gunakan USB Scanner untuk scan lebih cepat dan akurat</li>
+                     <li>Pastikan pencahayaan cukup (untuk mode kamera)</li>
                      <li>QR Code harus terlihat jelas</li>
-                     <li>Jangan bergerak terlalu cepat</li>
                      <li>Pastikan koneksi internet stabil</li>
                   </ul>
                </div>

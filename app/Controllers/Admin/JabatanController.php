@@ -199,35 +199,55 @@ class JabatanController extends BaseController
     {
         $id = inputPost('id');
         $jabatan = $this->jabatanModel->getJabatan($id);
-        if (!empty($jabatan)) {
-            if (!empty($this->departemenModel->getDepartemenCountByJabatan($id))) {
-                $this->session->setFlashdata('error', 'Hapus Relasi Data Dulu');
-                exit();
-            }
+        
+        if (empty($jabatan)) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Data jabatan tidak ditemukan'
+            ]);
+        }
+        
+        if (!empty($this->departemenModel->getDepartemenCountByJabatan($id))) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Hapus relasi data departemen terlebih dahulu'
+            ]);
+        }
 
-            // Cek apakah memerlukan approval
-            if ($this->approvalHelper->requiresApproval()) {
-                // Buat request approval untuk delete
-                $approvalId = $this->approvalHelper->createApprovalRequest(
-                    'delete',
-                    'tb_jabatan',
-                    $id,
-                    null,
-                    $jabatan
-                );
+        // Cek apakah memerlukan approval
+        if ($this->approvalHelper->requiresApproval()) {
+            // Buat request approval untuk delete
+            $approvalId = $this->approvalHelper->createApprovalRequest(
+                'delete',
+                'tb_jabatan',
+                $id,
+                null,
+                $jabatan
+            );
 
-                if ($approvalId) {
-                    $this->session->setFlashdata('success', 'Request penghapusan data jabatan telah dikirim dan menunggu persetujuan superadmin');
-                } else {
-                    $this->session->setFlashdata('error', 'Gagal mengirim request approval');
-                }
+            if ($approvalId) {
+                return $this->response->setJSON([
+                    'success' => true,
+                    'message' => 'Request penghapusan data jabatan telah dikirim dan menunggu persetujuan superadmin'
+                ]);
             } else {
-                // Langsung hapus (untuk super admin)
-                if ($this->jabatanModel->deleteJabatan($id)) {
-                    $this->session->setFlashdata('success', 'Data berhasil dihapus');
-                } else {
-                    $this->session->setFlashdata('error', 'Gagal menghapus data');
-                }
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => 'Gagal mengirim request approval'
+                ]);
+            }
+        } else {
+            // Langsung hapus (untuk super admin)
+            if ($this->jabatanModel->deleteJabatan($id)) {
+                return $this->response->setJSON([
+                    'success' => true,
+                    'message' => 'Data berhasil dihapus'
+                ]);
+            } else {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => 'Gagal menghapus data'
+                ]);
             }
         }
     }
