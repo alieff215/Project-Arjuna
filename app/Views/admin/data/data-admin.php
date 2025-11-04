@@ -470,12 +470,14 @@
                                  <th class="hide-sm">Jenis Kelamin</th>
                                  <th>No HP</th>
                                  <th class="hide-sm">Alamat</th>
+                                 <th class="hide-sm">Tanggal Join</th>
+                                 <th>Status Approval</th>
                                  <th class="col-actions">Aksi</th>
                               </tr>
                            </thead>
                            <tbody id="tbodyInit">
                               <tr>
-                                 <td colspan="7" style="padding:18px; color:var(--muted);">Memuat data…</td>
+                                 <td colspan="9" style="padding:18px; color:var(--muted);">Memuat data…</td>
                               </tr>
                            </tbody>
                         </table>

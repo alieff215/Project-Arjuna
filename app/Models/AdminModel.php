@@ -12,6 +12,7 @@ class AdminModel extends Model
       'jenis_kelamin',
       'alamat',
       'no_hp',
+      'tanggal_join',
       'unique_code'
    ];
 
@@ -34,7 +35,7 @@ class AdminModel extends Model
       return $this->where([$this->primaryKey => $id])->first();
    }
 
-   public function createAdmin($nuptk, $nama, $jenisKelamin, $alamat, $noHp)
+   public function createAdmin($nuptk, $nama, $jenisKelamin, $alamat, $noHp, $tanggalJoin = null)
    {
       return $this->save([
          'nuptk' => $nuptk,
@@ -42,11 +43,12 @@ class AdminModel extends Model
          'jenis_kelamin' => $jenisKelamin,
          'alamat' => $alamat,
          'no_hp' => $noHp,
+         'tanggal_join' => $tanggalJoin,
          'unique_code' => sha1($nama . md5($nuptk . $nama . $noHp)) . substr(sha1($nuptk . rand(0, 100)), 0, 24)
       ]);
    }
 
-   public function updateAdmin($id, $nuptk, $nama, $jenisKelamin, $alamat, $noHp)
+   public function updateAdmin($id, $nuptk, $nama, $jenisKelamin, $alamat, $noHp, $tanggalJoin = null)
    {
       return $this->save([
          $this->primaryKey => $id,
@@ -55,6 +57,7 @@ class AdminModel extends Model
          'jenis_kelamin' => $jenisKelamin,
          'alamat' => $alamat,
          'no_hp' => $noHp,
+         'tanggal_join' => $tanggalJoin,
       ]);
    }
 }
