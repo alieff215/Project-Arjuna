@@ -221,36 +221,56 @@ class DepartemenController extends BaseController
     {
         $id = inputPost('id');
         $departemen = $this->departemenModel->getDepartemen($id);
-        if (!empty($departemen)) {
-            $KaryawanModel = new \App\Models\KaryawanModel();
-            if (!empty($KaryawanModel->getKaryawanCountByDepartemen($id))) {
-                $this->session->setFlashdata('error', 'Departemen Masih Memiliki Karyawan Aktif');
-                exit();
-            }
+        
+        if (empty($departemen)) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Data departemen tidak ditemukan'
+            ]);
+        }
+        
+        $KaryawanModel = new \App\Models\KaryawanModel();
+        if (!empty($KaryawanModel->getKaryawanCountByDepartemen($id))) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Departemen masih memiliki karyawan aktif'
+            ]);
+        }
 
-            // Cek apakah memerlukan approval
-            if ($this->approvalHelper->requiresApproval()) {
-                // Buat request approval untuk delete
-                $approvalId = $this->approvalHelper->createApprovalRequest(
-                    'delete',
-                    'tb_departemen',
-                    $id,
-                    null,
-                    $departemen
-                );
+        // Cek apakah memerlukan approval
+        if ($this->approvalHelper->requiresApproval()) {
+            // Buat request approval untuk delete
+            $approvalId = $this->approvalHelper->createApprovalRequest(
+                'delete',
+                'tb_departemen',
+                $id,
+                null,
+                $departemen
+            );
 
-                if ($approvalId) {
-                    $this->session->setFlashdata('success', 'Request penghapusan data departemen telah dikirim dan menunggu persetujuan superadmin');
-                } else {
-                    $this->session->setFlashdata('error', 'Gagal mengirim request approval');
-                }
+            if ($approvalId) {
+                return $this->response->setJSON([
+                    'success' => true,
+                    'message' => 'Request penghapusan data departemen telah dikirim dan menunggu persetujuan superadmin'
+                ]);
             } else {
-                // Langsung hapus (untuk super admin)
-                if ($this->departemenModel->deleteDepartemen($id)) {
-                    $this->session->setFlashdata('success', 'Data berhasil dihapus');
-                } else {
-                    $this->session->setFlashdata('error', 'Gagal menghapus data');
-                }
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => 'Gagal mengirim request approval'
+                ]);
+            }
+        } else {
+            // Langsung hapus (untuk super admin)
+            if ($this->departemenModel->deleteDepartemen($id)) {
+                return $this->response->setJSON([
+                    'success' => true,
+                    'message' => 'Data berhasil dihapus'
+                ]);
+            } else {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => 'Gagal menghapus data'
+                ]);
             }
         }
     }
