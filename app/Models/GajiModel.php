@@ -121,6 +121,19 @@ class GajiModel extends Model
             $total_kehadiran = 0;
             $total_menit_kerja = 0;
             $reportJamPerHari = [];
+            
+            // Hitung total hari kerja (Senin-Sabtu) dalam periode
+            $totalHariKerjaDalamPeriode = 0;
+            $currentDate = new \DateTime($start_date);
+            $endDateTime = new \DateTime($end_date);
+            while ($currentDate <= $endDateTime) {
+                $dayOfWeek = (int)$currentDate->format('N'); // 1=Senin, 7=Minggu
+                if ($dayOfWeek <= 6) { // Senin-Sabtu
+                    $totalHariKerjaDalamPeriode++;
+                }
+                $currentDate->modify('+1 day');
+            }
+            
             // Ambil presensi selama rentang tanggal
             $presensis = $this->db->table('tb_presensi_karyawan')
                 ->where('id_karyawan', $kar['id_karyawan'])
@@ -143,18 +156,18 @@ class GajiModel extends Model
                 // Dapatkan hari dalam format angka 1 (Senin) s/d 6 (Sabtu)
                 $hari = date('N', strtotime($tanggal));
                 // Jam kerja efektif
-                if ($hari == 6) { // Sabtu: 08:00-13:00 semua dihitung, tidak ada istirahat
-                    $jam_kerja_mulai = strtotime($tanggal.' 08:00');
+                if ($hari == 6) { // Sabtu: 07:45-13:00 semua dihitung, tidak ada istirahat
+                    $jam_kerja_mulai = strtotime($tanggal.' 07:45');
                     $jam_kerja_selesai = strtotime($tanggal.' 13:00');
                     // Batasi jika datang sebelum/jam kerja mulai atau keluar setelah kerja selesai
                     $masuk = max($dt_masuk, $jam_kerja_mulai);
                     $keluar = min($dt_keluar, $jam_kerja_selesai);
                 } else {
-                    // Senin-Jumat: 08:00-16:00, istirahat 12:00-13:00 tidak dihitung
-                    $jam_kerja_mulai = strtotime($tanggal.' 08:00');
+                    // Senin-Jumat: 07:45-16:45, istirahat 12:00-13:00 tidak dihitung
+                    $jam_kerja_mulai = strtotime($tanggal.' 07:45');
                     $jam_istirahat_mulai = strtotime($tanggal.' 12:00');
                     $jam_istirahat_selesai = strtotime($tanggal.' 13:00');
-                    $jam_kerja_selesai = strtotime($tanggal.' 16:00');
+                    $jam_kerja_selesai = strtotime($tanggal.' 16:45');
                     $masuk = max($dt_masuk, $jam_kerja_mulai);
                     $keluar = min($dt_keluar, $jam_kerja_selesai);
                 }
@@ -181,6 +194,10 @@ class GajiModel extends Model
                         $menit_kerja = 0;
                     }
                 }
+                
+                // Kurangi 1 jam (60 menit) sebagai punishment wajib yang tidak dibayar
+                $menit_kerja = max(0, $menit_kerja - 60);
+                
                 // Pembulatan kelipatan 30 menit dengan toleransi 15 menit (jam normal)
                 $blocks30 = 0;
                 if ($menit_kerja > 0) {
@@ -220,6 +237,22 @@ class GajiModel extends Model
             $gaji_per_jam = $kar['gaji_per_jam'] ?? 0;
             $blok_30menit_total = $total_menit_kerja / 30;
             $total_jam_kerja = $blok_30menit_total * 0.5;
+            
+            // Logika jam kerja per bulan:
+            // 1. Jika karyawan hadir FULL (100% hari kerja), otomatis dapat 173 jam
+            // 2. Jika tidak full, hitung berdasarkan jam aktual
+            // 3. Maksimal tetap 173 jam (cap)
+            
+            if ($total_kehadiran >= $totalHariKerjaDalamPeriode && $totalHariKerjaDalamPeriode > 0) {
+                // Karyawan hadir full (100%), berikan 173 jam standar
+                $total_jam_kerja = 173;
+                $blok_30menit_total = 173 * 2; // 173 jam = 346 blok 30 menit
+            } elseif ($total_jam_kerja > 173) {
+                // Jika jam kerja melebihi 173, cap menjadi 173 jam
+                $total_jam_kerja = 173;
+                $blok_30menit_total = 173 * 2;
+            }
+            
             $gaji_per_30menit = $gaji_per_jam / 2;
             $total_gaji = $blok_30menit_total * $gaji_per_30menit;
             $results[] = [

@@ -97,6 +97,11 @@
                         </div>
                      </div>
 
+                     <div class="form-group mt-4">
+                        <label for="tanggal_join">Tanggal Join</label>
+                        <input type="date" id="tanggal_join" name="tanggal_join" class="form-control" value="<?= old('tanggal_join') ?? $oldInput['tanggal_join'] ?? $data['tanggal_join'] ?? '' ?>">
+                     </div>
+
                      <button type="submit" class="btn btn-success btn-block">Simpan</button>
                   </form>
 
@@ -126,8 +131,10 @@
                            'jenis_kelamin' => 'Jenis Kelamin',
                            'alamat' => 'Alamat',
                            'no_hp' => 'No HP',
+                           'tanggal_join' => 'Tanggal Join',
                         ];
                         $fmtJK = function($v){ return ($v==='1'||$v===1)?'Laki-laki':(($v==='2'||$v===2)?'Perempuan':$v); };
+                        $fmtDate = function($d){ return !empty($d) ? date('d M Y', strtotime($d)) : '-'; };
                         ?>
                         <?php foreach ($histories as $h) : ?>
                            <?php
@@ -158,6 +165,7 @@
                                        $old = $before[$f] ?? '';
                                        $new = $after[$f] ?? '';
                                        if ($f === 'jenis_kelamin') { $old = $fmtJK($old); $new = $fmtJK($new); }
+                                       if ($f === 'tanggal_join') { $old = $fmtDate($old); $new = $fmtDate($new); }
                                     ?>
                                        <tr>
                                           <td><b><?= esc($labels[$f] ?? $f) ?></b></td>
