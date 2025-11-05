@@ -55,6 +55,7 @@
             <th><b>Jenis Kelamin</b></th>
             <th><b>No HP</b></th>
             <th><b>Alamat</b></th>
+            <th><b>Tanggal Join</b></th>
             <th><b>Status Approval</b></th>
             <th width="1%"><b>Aksi</b></th>
          </thead>
@@ -68,6 +69,7 @@
                   <td><?= $value['jenis_kelamin']; ?></td>
                   <td><?= $value['no_hp']; ?></td>
                   <td><?= $value['alamat']; ?></td>
+                  <td><?= !empty($value['tanggal_join']) ? date('d M Y', strtotime($value['tanggal_join'])) : '-'; ?></td>
                   <td>
                      <?php
                      // Cek status approval untuk record ini

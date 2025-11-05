@@ -96,6 +96,11 @@
                         </div>
                      </div>
 
+                     <div class="form-group mt-4">
+                        <label for="tanggal_join">Tanggal Join</label>
+                        <input type="date" id="tanggal_join" name="tanggal_join" class="form-control" value="<?= old('tanggal_join') ?? $oldInput['tanggal_join'] ?? '' ?>">
+                     </div>
+
                      <button type="submit" class="btn btn-success btn-block">Simpan</button>
                   </form>
 
