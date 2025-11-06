@@ -42,6 +42,21 @@
                         </div>
                      </div>
 
+                     <div class="form-group mt-4">
+                        <label for="id_departemen">Departemen - Jabatan</label>
+                        <select class="form-control" id="id_departemen" name="id_departemen">
+                           <option value="">-- Pilih Departemen - Jabatan --</option>
+                           <?php if (!empty($departemen_list)): ?>
+                              <?php foreach ($departemen_list as $dept): ?>
+                                 <option value="<?= $dept['id_departemen']; ?>" <?= (old('id_departemen') ?? $oldInput['id_departemen'] ?? '') == $dept['id_departemen'] ? 'selected' : ''; ?>>
+                                    <?= $dept['departemen']; ?> - <?= $dept['jabatan']; ?>
+                                 </option>
+                              <?php endforeach; ?>
+                           <?php endif; ?>
+                        </select>
+                        <small class="form-text text-muted">Pilih kombinasi departemen dan jabatan untuk admin ini</small>
+                     </div>
+
                      <div class="form-group mt-2">
                         <label for="jk">Jenis Kelamin</label>
                         <?php

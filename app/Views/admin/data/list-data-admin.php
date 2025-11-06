@@ -52,6 +52,8 @@
             <th><b>No</b></th>
             <th><b>NIP</b></th>
             <th><b>Nama Admin</b></th>
+            <th><b>Departemen</b></th>
+            <th><b>Jabatan</b></th>
             <th><b>Jenis Kelamin</b></th>
             <th><b>No HP</b></th>
             <th><b>Alamat</b></th>
@@ -66,6 +68,8 @@
                   <td><?= $i; ?></td>
                   <td><?= $value['nuptk']; ?></td>
                   <td><b><?= $value['nama_admin']; ?></b></td>
+                  <td><?= !empty($value['departemen']) ? $value['departemen'] : '<span class="badge badge-secondary">Belum diset</span>'; ?></td>
+                  <td><?= !empty($value['jabatan']) ? $value['jabatan'] : '<span class="badge badge-secondary">-</span>'; ?></td>
                   <td><?= $value['jenis_kelamin']; ?></td>
                   <td><?= $value['no_hp']; ?></td>
                   <td><?= $value['alamat']; ?></td>

@@ -9,6 +9,7 @@ class AdminModel extends Model
    protected $allowedFields = [
       'nuptk',
       'nama_admin',
+      'id_departemen',
       'jenis_kelamin',
       'alamat',
       'no_hp',
@@ -27,19 +28,28 @@ class AdminModel extends Model
 
    public function getAllAdmin()
    {
-      return $this->orderBy('nama_admin')->findAll();
+      return $this->select('tb_admin.*, tb_departemen.departemen, tb_jabatan.jabatan')
+         ->join('tb_departemen', 'tb_admin.id_departemen = tb_departemen.id_departemen', 'left')
+         ->join('tb_jabatan', 'tb_departemen.id_jabatan = tb_jabatan.id', 'left')
+         ->orderBy('nama_admin')
+         ->findAll();
    }
 
    public function getAdminById($id)
    {
-      return $this->where([$this->primaryKey => $id])->first();
+      return $this->select('tb_admin.*, tb_departemen.departemen, tb_jabatan.jabatan')
+         ->join('tb_departemen', 'tb_admin.id_departemen = tb_departemen.id_departemen', 'left')
+         ->join('tb_jabatan', 'tb_departemen.id_jabatan = tb_jabatan.id', 'left')
+         ->where([$this->primaryKey => $id])
+         ->first();
    }
 
-   public function createAdmin($nuptk, $nama, $jenisKelamin, $alamat, $noHp, $tanggalJoin = null)
+   public function createAdmin($nuptk, $nama, $jenisKelamin, $alamat, $noHp, $tanggalJoin = null, $idDepartemen = null)
    {
       return $this->save([
          'nuptk' => $nuptk,
          'nama_admin' => $nama,
+         'id_departemen' => $idDepartemen,
          'jenis_kelamin' => $jenisKelamin,
          'alamat' => $alamat,
          'no_hp' => $noHp,
@@ -48,12 +58,13 @@ class AdminModel extends Model
       ]);
    }
 
-   public function updateAdmin($id, $nuptk, $nama, $jenisKelamin, $alamat, $noHp, $tanggalJoin = null)
+   public function updateAdmin($id, $nuptk, $nama, $jenisKelamin, $alamat, $noHp, $tanggalJoin = null, $idDepartemen = null)
    {
       return $this->save([
          $this->primaryKey => $id,
          'nuptk' => $nuptk,
          'nama_admin' => $nama,
+         'id_departemen' => $idDepartemen,
          'jenis_kelamin' => $jenisKelamin,
          'alamat' => $alamat,
          'no_hp' => $noHp,

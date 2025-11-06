@@ -8,6 +8,7 @@ use App\Libraries\ApprovalHelper;
 
 use App\Controllers\BaseController;
 use App\Models\AdminUpdateHistoryModel;
+use App\Models\DepartemenModel;
 use CodeIgniter\Exceptions\PageNotFoundException;
 
 class DataAdmin extends BaseController
@@ -16,6 +17,7 @@ class DataAdmin extends BaseController
    protected AdminUpdateHistoryModel $adminUpdateHistoryModel;
    protected ApprovalModel $approvalModel;
    protected ApprovalHelper $approvalHelper;
+   protected DepartemenModel $departemenModel;
 
    protected $adminValidationRules = [
       'nuptk' => [
@@ -40,6 +42,7 @@ class DataAdmin extends BaseController
       $this->adminUpdateHistoryModel = new AdminUpdateHistoryModel();
       $this->approvalModel = new ApprovalModel();
       $this->approvalHelper = new ApprovalHelper();
+      $this->departemenModel = new DepartemenModel();
    }
 
    public function index()
@@ -78,7 +81,8 @@ class DataAdmin extends BaseController
    {
       $data = [
          'ctx' => 'admin',
-         'title' => 'Tambah Data Admin'
+         'title' => 'Tambah Data Admin',
+         'departemen_list' => $this->departemenModel->getDataDepartemen()
       ];
 
       return view('admin/data/create/create-data-admin', $data);
@@ -101,6 +105,7 @@ class DataAdmin extends BaseController
       $requestData = [
          'nuptk' => $this->request->getVar('nuptk'),
          'nama_admin' => $this->request->getVar('nama'),
+         'id_departemen' => $this->request->getVar('id_departemen'),
          'jenis_kelamin' => $this->request->getVar('jk'),
          'alamat' => $this->request->getVar('alamat'),
          'no_hp' => $this->request->getVar('no_hp'),
@@ -138,6 +143,7 @@ class DataAdmin extends BaseController
             alamat: $this->request->getVar('alamat'),
             noHp: $this->request->getVar('no_hp'),
             tanggalJoin: $this->request->getVar('tanggal_join'),
+            idDepartemen: $this->request->getVar('id_departemen'),
          );
 
          if ($result) {
@@ -168,7 +174,8 @@ class DataAdmin extends BaseController
          'data' => $admin,
          'ctx' => 'admin',
          'title' => 'Edit Data admin',
-         'histories' => $this->adminUpdateHistoryModel->getByAdminId((int)$id)
+         'histories' => $this->adminUpdateHistoryModel->getByAdminId((int)$id),
+         'departemen_list' => $this->departemenModel->getDataDepartemen()
       ];
 
       return view('admin/data/edit/edit-data-admin', $data);
@@ -197,6 +204,7 @@ class DataAdmin extends BaseController
       $requestData = [
          'nuptk' => $this->request->getVar('nuptk'),
          'nama_admin' => $this->request->getVar('nama'),
+         'id_departemen' => $this->request->getVar('id_departemen'),
          'jenis_kelamin' => $this->request->getVar('jk'),
          'alamat' => $this->request->getVar('alamat'),
          'no_hp' => $this->request->getVar('no_hp'),
@@ -236,6 +244,7 @@ class DataAdmin extends BaseController
             alamat: $this->request->getVar('alamat'),
             noHp: $this->request->getVar('no_hp'),
             tanggalJoin: $this->request->getVar('tanggal_join'),
+            idDepartemen: $this->request->getVar('id_departemen'),
          );
 
          if ($result) {
@@ -245,6 +254,7 @@ class DataAdmin extends BaseController
                $before = [
                   'nuptk' => $adminLama['nuptk'] ?? null,
                   'nama_admin' => $adminLama['nama_admin'] ?? null,
+                  'id_departemen' => $adminLama['id_departemen'] ?? null,
                   'jenis_kelamin' => $adminLama['jenis_kelamin'] ?? null,
                   'alamat' => $adminLama['alamat'] ?? null,
                   'no_hp' => $adminLama['no_hp'] ?? null,
@@ -253,6 +263,7 @@ class DataAdmin extends BaseController
                $after = [
                   'nuptk' => $adminBaru['nuptk'] ?? null,
                   'nama_admin' => $adminBaru['nama_admin'] ?? null,
+                  'id_departemen' => $adminBaru['id_departemen'] ?? null,
                   'jenis_kelamin' => $adminBaru['jenis_kelamin'] ?? null,
                   'alamat' => $adminBaru['alamat'] ?? null,
                   'no_hp' => $adminBaru['no_hp'] ?? null,
