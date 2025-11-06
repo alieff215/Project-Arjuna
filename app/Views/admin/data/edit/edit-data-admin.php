@@ -44,6 +44,21 @@
                         </div>
                      </div>
 
+                     <div class="form-group mt-4">
+                        <label for="id_departemen">Departemen - Jabatan</label>
+                        <select class="form-control" id="id_departemen" name="id_departemen">
+                           <option value="">-- Pilih Departemen - Jabatan --</option>
+                           <?php if (!empty($departemen_list)): ?>
+                              <?php foreach ($departemen_list as $dept): ?>
+                                 <option value="<?= $dept['id_departemen']; ?>" <?= (old('id_departemen') ?? $oldInput['id_departemen'] ?? $data['id_departemen'] ?? '') == $dept['id_departemen'] ? 'selected' : ''; ?>>
+                                    <?= $dept['departemen']; ?> - <?= $dept['jabatan']; ?>
+                                 </option>
+                              <?php endforeach; ?>
+                           <?php endif; ?>
+                        </select>
+                        <small class="form-text text-muted">Pilih kombinasi departemen dan jabatan untuk admin ini</small>
+                     </div>
+
                      <div class="form-group mt-2">
                         <label for="jk">Jenis Kelamin</label>
                         <?php
@@ -128,6 +143,7 @@
                         $labels = [
                            'nuptk' => 'NIP',
                            'nama_admin' => 'Nama',
+                           'id_departemen' => 'Departemen',
                            'jenis_kelamin' => 'Jenis Kelamin',
                            'alamat' => 'Alamat',
                            'no_hp' => 'No HP',
@@ -135,6 +151,15 @@
                         ];
                         $fmtJK = function($v){ return ($v==='1'||$v===1)?'Laki-laki':(($v==='2'||$v===2)?'Perempuan':$v); };
                         $fmtDate = function($d){ return !empty($d) ? date('d M Y', strtotime($d)) : '-'; };
+                        $fmtDept = function($id) use ($departemen_list) {
+                           if (empty($id)) return '-';
+                           foreach ($departemen_list as $dept) {
+                              if ($dept['id_departemen'] == $id) {
+                                 return $dept['departemen'] . ' - ' . $dept['jabatan'];
+                              }
+                           }
+                           return 'ID: ' . $id;
+                        };
                         ?>
                         <?php foreach ($histories as $h) : ?>
                            <?php
@@ -166,6 +191,7 @@
                                        $new = $after[$f] ?? '';
                                        if ($f === 'jenis_kelamin') { $old = $fmtJK($old); $new = $fmtJK($new); }
                                        if ($f === 'tanggal_join') { $old = $fmtDate($old); $new = $fmtDate($new); }
+                                       if ($f === 'id_departemen') { $old = $fmtDept($old); $new = $fmtDept($new); }
                                     ?>
                                        <tr>
                                           <td><b><?= esc($labels[$f] ?? $f) ?></b></td>
