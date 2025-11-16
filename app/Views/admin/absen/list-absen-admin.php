@@ -1,10 +1,10 @@
 <div id="dataKaryawan" class="card-body table-responsive pb-5">
    <?php if (!empty($data)) : ?>
-      <!-- Total Admin Info -->
+      <!-- Total Supervisor Info -->
       <div class="mb-3" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: linear-gradient(135deg, #e8f5e8 0%, #f0f8f0 100%); border-radius: 8px; border-left: 4px solid #4caf50;">
          <div style="display: flex; align-items: center; gap: 8px;">
             <i class="material-icons" style="color: #4caf50; font-size: 24px;">admin_panel_settings</i>
-            <span style="font-weight: 700; color: #2e7d32; font-size: 16px;">Total Admin: <span style="background: #4caf50; color: white; padding: 4px 8px; border-radius: 12px; font-size: 14px;"><?= $total_admin; ?></span></span>
+            <span style="font-weight: 700; color: #2e7d32; font-size: 16px;">Total Supervisor: <span style="background: #4caf50; color: white; padding: 4px 8px; border-radius: 12px; font-size: 14px;"><?= $total_admin; ?></span></span>
          </div>
          <div style="color: #666; font-size: 14px;">
             <i class="material-icons" style="font-size: 18px; vertical-align: middle;">schedule</i>
@@ -16,7 +16,7 @@
          <thead class="text-success">
             <th><b>No.</b></th>
             <th><b>NIP</b></th>
-            <th><b>Nama admin</b></th>
+            <th><b>Nama Supervisor</b></th>
             <th><b>Kehadiran</b></th>
             <th><b>Jam masuk</b></th>
             <th><b>Jam pulang</b></th>

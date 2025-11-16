@@ -164,10 +164,10 @@
                         <div class="form-group">
                             <label for="id_departemen">
                                 <i class="material-icons" style="vertical-align:middle;margin-right:6px;font-size:18px;">business</i>
-                                Departemen & Jabatan <span class="text-danger">*</span>
+                                Departemen & Grade <span class="text-danger">*</span>
                             </label>
                             <select class="form-control" id="id_departemen" name="id_departemen" required>
-                                <option value="">Pilih Departemen & Jabatan</option>
+                                <option value="">Pilih Departemen & Grade</option>
                                 <?php foreach ($departemen as $dept): ?>
                                     <option value="<?= $dept['id_departemen'] ?>" 
                                             data-jabatan-id="<?= $dept['id_jabatan'] ?>"
@@ -178,7 +178,7 @@
                             </select>
                             <small class="form-text text-muted">
                                 <i class="material-icons" style="vertical-align:middle;margin-right:4px;font-size:16px;">info</i>
-                                Setiap departemen sudah memiliki jabatan yang terkait
+                                Setiap departemen sudah memiliki grade yang terkait
                             </small>
                         </div>
                     </div>

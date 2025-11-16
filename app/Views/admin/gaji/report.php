@@ -576,7 +576,7 @@ select.form-control {
                                 <th>NIP</th>
                                 <th>Nama Karyawan</th>
                                 <th>Departemen</th>
-                                <th>Jabatan</th>
+                                <th>Grade</th>
                                 <th>Gaji/Jam</th>
                                 <th>Kehadiran</th>
                                 <th>Total Jam (Kelipatan 0.5)</th>

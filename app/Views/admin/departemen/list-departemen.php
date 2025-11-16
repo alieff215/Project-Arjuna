@@ -5,7 +5,7 @@
         <tr>
           <th>No</th>
           <th>Departemen</th>
-          <th>Jabatan</th>
+          <th>Grade</th>
           <th>Aksi</th>
         </tr>
       </thead>

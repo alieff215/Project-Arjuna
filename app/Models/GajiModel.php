@@ -107,6 +107,11 @@ class GajiModel extends Model
             $end_date = date('Y-m-t');
         }
         $presensiModel = new PresensiKaryawanModel();
+        $startDateObj = new \DateTime($start_date);
+        $endDateObj = new \DateTime($end_date);
+        $isFullMonthRange = $startDateObj->format('Y-m') === $endDateObj->format('Y-m')
+            && $startDateObj->format('Y-m-d') === $startDateObj->format('Y-m-01')
+            && $endDateObj->format('Y-m-d') === $endDateObj->format('Y-m-t');
         $builder = $this->db->table('tb_karyawan as k')
             ->select('k.id_karyawan, k.nis, k.nama_karyawan, d.departemen, j.jabatan, g.gaji_per_jam')
             ->join('tb_departemen as d', 'k.id_departemen = d.id_departemen', 'left')
@@ -243,7 +248,7 @@ class GajiModel extends Model
             // 2. Jika tidak full, hitung berdasarkan jam aktual
             // 3. Maksimal tetap 173 jam (cap)
             
-            if ($total_kehadiran >= $totalHariKerjaDalamPeriode && $totalHariKerjaDalamPeriode > 0) {
+            if ($isFullMonthRange && $total_kehadiran >= $totalHariKerjaDalamPeriode && $totalHariKerjaDalamPeriode > 0) {
                 // Karyawan hadir full (100%), berikan 173 jam standar
                 $total_jam_kerja = 173;
                 $blok_30menit_total = 173 * 2; // 173 jam = 346 blok 30 menit

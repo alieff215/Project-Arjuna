@@ -386,8 +386,8 @@
                <div class="card-header gradient">
                   <div class="d-flex flex-wrap align-items-center justify-content-between">
                      <div>
-                        <h4 class="title"><i class="material-icons">task_alt</i> Absen Admin</h4>
-                        <div class="subtitle">Total Admin: <span style="background: var(--success); color: white; padding: 2px 8px; border-radius: 8px; font-weight: 700;"><?= $total_admin; ?></span> | <?= date('d M Y H:i'); ?></div>
+                        <h4 class="title"><i class="material-icons">task_alt</i> Data Supervisor</h4>
+                        <div class="subtitle">Total Supervisor: <span style="background: var(--success); color: white; padding: 2px 8px; border-radius: 8px; font-weight: 700;"><?= $total_admin; ?></span> | <?= date('d M Y H:i'); ?></div>
                      </div>
                      <div class="toolbar">
                         <button type="button" class="btn-modern" id="filtersBtn">
@@ -461,12 +461,12 @@
 
                      <!-- KONTEN ASLI -->
                      <div id="dataContainer" class="data-container">
-                        <table class="data" aria-label="Tabel data admin">
+                        <table class="data" aria-label="Tabel data supervisor">
                            <thead>
                               <tr>
                                  <th>NO</th>
                                  <th>NIP</th>
-                                 <th>Nama Admin</th>
+                                 <th>Nama Supervisor</th>
                                  <th class="hide-sm">Jenis Kelamin</th>
                                  <th>No HP</th>
                                  <th class="hide-sm">Alamat</th>

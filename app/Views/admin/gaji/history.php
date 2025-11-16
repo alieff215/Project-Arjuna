@@ -22,7 +22,7 @@
                     <?= $gaji['departemen'] ?>
                 </div>
                 <div class="col-md-3">
-                    <strong>Jabatan:</strong><br>
+                    <strong>Grade:</strong><br>
                     <?= $gaji['jabatan'] ?>
                 </div>
                 <div class="col-md-3">
@@ -107,7 +107,7 @@
                                         
                                         <?php if ($record['action'] == 'updated' && $record['jabatan_old'] != $record['jabatan_new']): ?>
                                         <div class="col-md-6 mb-3">
-                                            <strong>Jabatan:</strong><br>
+                                            <strong>Grade:</strong><br>
                                             <div class="change-item">
                                                 <span class="old-value"><?= $record['jabatan_old'] ?></span>
                                                 <i class="fas fa-arrow-right mx-2 text-muted"></i>
@@ -121,7 +121,7 @@
                                             <div class="alert alert-success">
                                                 <h6><i class="fas fa-info-circle"></i> Data Awal:</h6>
                                                 <strong>Departemen:</strong> <?= $record['departemen_new'] ?><br>
-                                                <strong>Jabatan:</strong> <?= $record['jabatan_new'] ?><br>
+                                                <strong>Grade:</strong> <?= $record['jabatan_new'] ?><br>
                                                 <strong>Gaji Per Jam:</strong> Rp <?= number_format($record['gaji_per_jam_new'], 0, ',', '.') ?>
                                             </div>
                                         </div>

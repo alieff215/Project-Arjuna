@@ -42,9 +42,9 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label for="id_departemen">Departemen & Jabatan <span class="text-danger">*</span></label>
+                            <label for="id_departemen">Departemen & Grade <span class="text-danger">*</span></label>
                             <select class="form-control" id="id_departemen" name="id_departemen" required>
-                                <option value="">Pilih Departemen & Jabatan</option>
+                                <option value="">Pilih Departemen & Grade</option>
                                 <?php foreach ($departemen as $dept): ?>
                                     <option value="<?= $dept['id_departemen'] ?>" 
                                             data-jabatan-id="<?= $dept['id_jabatan'] ?>"
@@ -54,7 +54,7 @@
                                 <?php endforeach; ?>
                             </select>
                             <small class="form-text text-muted">
-                                Setiap departemen sudah memiliki jabatan yang terkait
+                                Setiap departemen sudah memiliki grade yang terkait
                             </small>
                         </div>
                     </div>
@@ -109,7 +109,7 @@
                     <?= $gaji['departemen'] ?>
                 </div>
                 <div class="col-md-3">
-                    <strong>Jabatan:</strong><br>
+                    <strong>Grade:</strong><br>
                     <?= $gaji['jabatan'] ?>
                 </div>
                 <div class="col-md-3">
@@ -199,7 +199,7 @@
                                         
                                         <?php if ($record['action'] == 'updated' && $record['jabatan_old'] != $record['jabatan_new']): ?>
                                         <div class="col-md-6">
-                                            <strong>Jabatan:</strong><br>
+                                            <strong>Grade:</strong><br>
                                             <span class="text-danger"><?= $record['jabatan_old'] ?></span>
                                             <i class="fas fa-arrow-right mx-2"></i>
                                             <span class="text-success"><?= $record['jabatan_new'] ?></span>
@@ -209,7 +209,7 @@
                                         <?php if ($record['action'] == 'created'): ?>
                                         <div class="col-md-6">
                                             <strong>Departemen:</strong> <?= $record['departemen_new'] ?><br>
-                                            <strong>Jabatan:</strong> <?= $record['jabatan_new'] ?><br>
+                                            <strong>Grade:</strong> <?= $record['jabatan_new'] ?><br>
                                             <strong>Gaji Per Jam:</strong> Rp <?= number_format($record['gaji_per_jam_new'], 0, ',', '.') ?>
                                         </div>
                                         <?php endif; ?>

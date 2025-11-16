@@ -383,7 +383,7 @@
                         <tr>
                             <th>No</th>
                             <th>Departemen</th>
-                            <th>Jabatan</th>
+                            <th>Grade</th>
                             <th>Gaji Per Jam</th>
                             <th>Tanggal Update</th>
                             <th>Aksi</th>

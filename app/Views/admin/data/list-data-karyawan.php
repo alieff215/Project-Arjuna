@@ -368,7 +368,7 @@
                <th class="sticky-top"><b>Nama Karyawan</b></th>
                <th class="sticky-top col-gender"><b>Jenis Kelamin</b></th>
                <th class="sticky-top col-dept"><b>Departemen</b></th>
-               <th class="sticky-top col-jabatan"><b>Jabatan</b></th>
+               <th class="sticky-top col-jabatan"><b>Grade</b></th>
                <th class="sticky-top col-hp"><b>No HP</b></th>
                <th class="sticky-top col-join"><b>Tanggal Join</b></th>
                <th class="sticky-top col-status"><b>Status Approval</b></th>

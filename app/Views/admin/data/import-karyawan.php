@@ -93,7 +93,7 @@
                         <thead class="text-primary">
                             <th><b>ID</b></th>
                             <th><b>Departemen / Tingkat</b></th>
-                            <th><b>Jabatan</b></th>
+                            <th><b>Grade</b></th>
                         </thead>
                         <tbody>
                             <?php

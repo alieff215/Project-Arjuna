@@ -468,10 +468,10 @@
                 <div class="card card-stats">
                     <div class="card-header card-header-success card-header-icon">
                         <div class="card-icon">
-                            <a href="<?= base_url('admin/admin'); ?>" aria-label="Menu Admin"><i class="material-icons">person_4</i></a>
+                            <a href="<?= base_url('admin/admin'); ?>" aria-label="Menu Supervisor"><i class="material-icons">person_4</i></a>
                         </div>
                         <div>
-                            <p class="card-category">Jumlah Admin</p>
+                            <p class="card-category">Jumlah Supervisor</p>
                             <h3 class="card-title"><?= count($admin); ?></h3>
                         </div>
                     </div>
@@ -556,12 +556,12 @@
                 </div>
             </div>
 
-            <!-- Absensi Admin -->
+            <!-- Absensi Supervisor -->
             <div class="panel">
                 <div class="panel__head">
                     <h4 class="panel__title">
-                        <span>Absensi Admin Hari Ini</span>
-                        <span class="badge-soft">Administrator</span>
+                        <span>Absensi Supervisor Hari Ini</span>
+                        <span class="badge-soft">Supervisor</span>
                     </h4>
                     <span class="panel__date"><?= $dateNow; ?></span>
                 </div>
@@ -586,10 +586,10 @@
                     </div>
                 </div>
                 <div class="panel__foot">
-                    <span><i class="material-icons" style="vertical-align:middle;margin-right:6px;color:var(--success)">verified</i>Sinkron dengan data admin</span>
+                    <span><i class="material-icons" style="vertical-align:middle;margin-right:6px;color:var(--success)">verified</i>Sinkron dengan data supervisor</span>
                     <div class="toolbar">
-                        <a class="btn-icon" href="<?= base_url('admin/admin'); ?>" title="Kelola admin" aria-label="Kelola admin"><i class="material-icons">admin_panel_settings</i></a>
-                        <a class="btn-icon" href="<?= base_url('admin/absen-Admin'); ?>" title="Lihat data" aria-label="Lihat data absen admin"><i class="material-icons">open_in_new</i></a>
+                        <a class="btn-icon" href="<?= base_url('admin/admin'); ?>" title="Kelola supervisor" aria-label="Kelola supervisor"><i class="material-icons">admin_panel_settings</i></a>
+                        <a class="btn-icon" href="<?= base_url('admin/absen-Admin'); ?>" title="Lihat data" aria-label="Lihat data absen supervisor"><i class="material-icons">open_in_new</i></a>
                     </div>
                 </div>
             </div>
