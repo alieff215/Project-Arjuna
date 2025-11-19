@@ -126,6 +126,7 @@ class GajiModel extends Model
             $total_kehadiran = 0;
             $total_menit_kerja = 0;
             $reportJamPerHari = [];
+            $reportJamPerHariRegular = [];
             
             // Hitung total hari kerja (Senin-Sabtu) dalam periode
             $totalHariKerjaDalamPeriode = 0;
@@ -216,6 +217,8 @@ class GajiModel extends Model
                 $total_menit_kerja += $blocks30 * 30;
                 if ($blocks30 > 0) $total_kehadiran++;
                 $reportJamPerHari[$tanggal] = ($reportJamPerHari[$tanggal] ?? 0) + ($blocks30 * 0.5); // 1 blok 30menit = 0.5 jam
+                // Catat jam reguler per hari (tanpa lembur) untuk perhitungan minus jam
+                $reportJamPerHariRegular[$tanggal] = ($reportJamPerHariRegular[$tanggal] ?? 0) + ($blocks30 * 0.5);
 
                 // Lembur: dihitung jika absen keluar lebih dari 17:00, rate sama dengan regular
                 $lembur_mulai = strtotime($tanggal.' 17:00');
@@ -234,6 +237,8 @@ class GajiModel extends Model
                     }
 
                     if ($blocks30Lembur > 0) {
+                        // Tetap catat lembur ke total_menit_kerja dan report harian,
+                        // namun tidak memengaruhi perhitungan minus jam (minus hanya dari jam reguler)
                         $total_menit_kerja += $blocks30Lembur * 30;
                         $reportJamPerHari[$tanggal] = ($reportJamPerHari[$tanggal] ?? 0) + ($blocks30Lembur * 0.5);
                     }
@@ -242,21 +247,35 @@ class GajiModel extends Model
             $gaji_per_jam = $kar['gaji_per_jam'] ?? 0;
             $blok_30menit_total = $total_menit_kerja / 30;
             $total_jam_kerja = $blok_30menit_total * 0.5;
-            
-            // Logika jam kerja per bulan:
-            // 1. Jika karyawan hadir FULL (100% hari kerja), otomatis dapat 173 jam
-            // 2. Jika tidak full, hitung berdasarkan jam aktual
-            // 3. Maksimal tetap 173 jam (cap)
-            
-            if ($isFullMonthRange && $total_kehadiran >= $totalHariKerjaDalamPeriode && $totalHariKerjaDalamPeriode > 0) {
-                // Karyawan hadir full (100%), berikan 173 jam standar
-                $total_jam_kerja = 173;
-                $blok_30menit_total = 173 * 2; // 173 jam = 346 blok 30 menit
-            } elseif ($total_jam_kerja > 173) {
-                // Jika jam kerja melebihi 173, cap menjadi 173 jam
-                $total_jam_kerja = 173;
-                $blok_30menit_total = 173 * 2;
+
+            // Logika baru: Total jam bulanan dipatok 173 jam,
+            // lalu dikurangi akumulasi "minus jam" harian (telat, pulang cepat, atau absen).
+            // Minus jam dihitung dari selisih antara jam reguler ideal per hari
+            // dengan jam reguler aktual yang tercatat (tanpa lembur).
+
+            $minus_jam_total = 0.0;
+            $curDateForMinus = new \DateTime($start_date);
+            $endDateForMinus = new \DateTime($end_date);
+            while ($curDateForMinus <= $endDateForMinus) {
+                $dow = (int)$curDateForMinus->format('N'); // 1=Senin..6=Sabtu, 7=Minggu
+                if ($dow <= 6) {
+                    // Jam ideal reguler per hari: Senin-Jumat = 7.0 jam, Sabtu = 4.5 jam
+                    // Diselaraskan ke kelipatan 0.5 agar konsisten dengan pembulatan blok 30 menit
+                    $expectedJam = ($dow === 6) ? 4.5 : 7.0;
+                    $tglKey = $curDateForMinus->format('Y-m-d');
+                    $actualRegularJam = (float)($reportJamPerHariRegular[$tglKey] ?? 0.0);
+                    // Batasi actual ke maksimum expected (lembur tidak mengurangi minus)
+                    $actualCapped = min($actualRegularJam, $expectedJam);
+                    $minusHariIni = max(0.0, $expectedJam - $actualCapped);
+                    $minus_jam_total += $minusHariIni;
+                }
+                $curDateForMinus->modify('+1 day');
             }
+
+            // Total jam akhir: 173 dikurangi minus jam total, tidak kurang dari 0 dan tidak lebih dari 173
+            $total_jam_kerja = max(0.0, 173.0 - $minus_jam_total);
+            // Untuk konsistensi gaji, gunakan total_jam_kerja yang sudah dipatok
+            $blok_30menit_total = $total_jam_kerja * 2; // 1 jam = 2 blok 30 menit
             
             $gaji_per_30menit = $gaji_per_jam / 2;
             $total_gaji = $blok_30menit_total * $gaji_per_30menit;

@@ -531,7 +531,7 @@
                            <div style="display: flex; align-items: center; gap: 12px; flex: 1;">
                               <select name="type" class="form-select" style="flex: 0 0 120px;" required>
                                  <option value="pdf">PDF</option>
-                                 <option value="doc">DOC</option>
+                                 <option value="csv">CSV</option>
                               </select>
                               <button type="submit" class="btn btn-primary">
                                  <i class="material-icons">description</i>
@@ -574,7 +574,7 @@
                            <div style="display: flex; align-items: center; gap: 12px; flex: 1;">
                               <select name="type" class="form-select" style="flex: 0 0 120px;" required>
                                  <option value="pdf">PDF</option>
-                                 <option value="doc">DOC</option>
+                                 <option value="csv">CSV</option>
                               </select>
                               <button type="submit" class="btn btn-primary">
                                  <i class="material-icons">description</i>
