@@ -295,6 +295,103 @@ class GajiModel extends Model
     }
 
     /**
+     * Ambil laporan lembur saja untuk periode tertentu
+     * - Lembur dihitung jika absen pulang > 17:00
+     * - Pembulatan tetap 15 menit ke kelipatan 30 menit
+     * - Rate lembur sama dengan gaji reguler per jam
+     */
+    public function getOvertimeReport($start_date = null, $end_date = null, $id_departemen = null)
+    {
+        if (!$start_date) {
+            $start_date = date('Y-m-01');
+        }
+        if (!$end_date) {
+            $end_date = date('Y-m-t');
+        }
+
+        $builder = $this->db->table('tb_karyawan as k')
+            ->select('k.id_karyawan, k.nis, k.nama_karyawan, d.departemen, j.jabatan, g.gaji_per_jam')
+            ->join('tb_departemen as d', 'k.id_departemen = d.id_departemen', 'left')
+            ->join('tb_jabatan as j', 'd.id_jabatan = j.id', 'left')
+            ->join('tb_gaji as g', 'd.id_departemen = g.id_departemen AND j.id = g.id_jabatan', 'left');
+
+        if ($id_departemen) {
+            $builder->where('k.id_departemen', $id_departemen);
+        }
+
+        $karyawanList = $builder->get()->getResultArray();
+
+        $results = [];
+        foreach ($karyawanList as $kar) {
+            $total_lembur_menit = 0;
+            $hari_lembur = 0;
+
+            // Ambil presensi hadir selama rentang tanggal
+            $presensis = $this->db->table('tb_presensi_karyawan')
+                ->where('id_karyawan', $kar['id_karyawan'])
+                ->where('id_kehadiran', 1)
+                ->where('tanggal >=', $start_date)
+                ->where('tanggal <=', $end_date)
+                ->orderBy('tanggal', 'ASC')
+                ->get()->getResultArray();
+
+            foreach ($presensis as $presensi) {
+                $jam_masuk = $presensi['jam_masuk'];
+                $jam_keluar = $presensi['jam_keluar'];
+                $tanggal = $presensi['tanggal'];
+                if (!$jam_masuk || !$jam_keluar) continue;
+
+                $dt_masuk = strtotime($tanggal.' '.substr($jam_masuk,0,5));
+                $dt_keluar = strtotime($tanggal.' '.substr($jam_keluar,0,5));
+                if ($dt_keluar <= $dt_masuk) continue;
+
+                // Lembur mulai pukul 17:00
+                $lembur_mulai = strtotime($tanggal.' 17:00');
+                if ($dt_keluar > $lembur_mulai) {
+                    $startLembur = max($lembur_mulai, $dt_masuk);
+                    $menit_lembur = max(0, ($dt_keluar - $startLembur) / 60);
+
+                    // Pembulatan ke blok 30 menit, toleransi 15 menit
+                    $blocks30Lembur = 0;
+                    if ($menit_lembur > 0) {
+                        $sisaL = $menit_lembur % 30;
+                        if ($sisaL >= 15) {
+                            $blocks30Lembur = (int)ceil($menit_lembur / 30);
+                        } else {
+                            $blocks30Lembur = (int)floor($menit_lembur / 30);
+                        }
+                    }
+
+                    if ($blocks30Lembur > 0) {
+                        $total_lembur_menit += $blocks30Lembur * 30;
+                        $hari_lembur++;
+                    }
+                }
+            }
+
+            $gaji_per_jam = (float)($kar['gaji_per_jam'] ?? 0);
+            $blok_30menit_lembur = $total_lembur_menit / 30;
+            $total_jam_lembur = $blok_30menit_lembur * 0.5; // 1 blok = 0.5 jam
+            $gaji_per_30menit = $gaji_per_jam / 2.0;
+            $total_gaji_lembur = (int)round($blok_30menit_lembur * $gaji_per_30menit);
+
+            $results[] = [
+                'id_karyawan' => $kar['id_karyawan'],
+                'nis' => $kar['nis'],
+                'nama_karyawan' => $kar['nama_karyawan'],
+                'departemen' => $kar['departemen'],
+                'jabatan' => $kar['jabatan'],
+                'gaji_per_jam' => (int)$gaji_per_jam,
+                'hari_lembur' => $hari_lembur,
+                'total_jam_lembur' => $total_jam_lembur,
+                'total_gaji_lembur' => $total_gaji_lembur,
+            ];
+        }
+
+        return $results;
+    }
+
+    /**
      * Get attendance breakdown (hadir/sakit/izin/alpa) per karyawan in period
      */
     public function getAttendanceBreakdown($start_date, $end_date, $id_departemen = null)

@@ -253,21 +253,8 @@
 
 <div class="content app-content-bg">
    <div class="container-fluid">
-    <!-- Page Header -->
-    <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <div>
-            <h1 class="h3 mb-0" style="color: var(--text); font-weight: 700;">💰 Manajemen Gaji</h1>
-            <p class="text-muted mb-0">Kelola konfigurasi gaji karyawan dengan mudah dan efisien</p>
-        </div>
-        <div class="d-flex gap-2">
-            <a href="<?= base_url('admin/gaji/add') ?>" class="btn btn-primary">
-                <i class="material-icons" style="font-size:18px;">add</i> Tambah Konfigurasi
-            </a>
-            <a href="<?= base_url('admin/gaji/report') ?>" class="btn btn-success">
-                <i class="material-icons" style="font-size:18px;">assessment</i> Laporan Gaji
-            </a>
-        </div>
-    </div>
+    <!-- Page Header removed per request -->
+    <div class="mb-2"></div>
 
     <!-- Statistics Cards -->
     <div class="row equal-cards-row">
@@ -347,12 +334,18 @@
                 <i class="material-icons" style="font-size:20px;">list</i>
                 Daftar Konfigurasi Gaji
             </h4>
-            <div class="toolbar d-flex gap-1">
-                <a class="btn-icon" href="<?= base_url('admin/gaji/add') ?>" title="Tambah konfigurasi" aria-label="Tambah konfigurasi gaji">
-                    <i class="material-icons">add</i>
+            <div class="d-flex gap-2">
+                <a href="<?= base_url('admin/gaji/add') ?>" class="btn btn-primary" title="Tambah Konfigurasi Gaji" aria-label="Tambah Konfigurasi Gaji">
+                    <i class="material-icons" style="font-size:18px;">add</i>
+                    <span>Tambah Konfigurasi Gaji</span>
                 </a>
-                <a class="btn-icon" href="<?= base_url('admin/gaji/report') ?>" title="Lihat laporan" aria-label="Lihat laporan gaji">
-                    <i class="material-icons">assessment</i>
+                <a href="<?= base_url('admin/gaji/report') ?>" class="btn btn-success" title="Laporan Gaji" aria-label="Laporan Gaji">
+                    <i class="material-icons" style="font-size:18px;">assessment</i>
+                    <span>Laporan Gaji</span>
+                </a>
+                <a href="<?= base_url('admin/gaji/lembur') ?>" class="btn btn-secondary" title="Laporan Lembur" aria-label="Laporan Lembur">
+                    <i class="material-icons" style="font-size:18px;">schedule</i>
+                    <span>Laporan Lembur</span>
                 </a>
             </div>
         </div>
@@ -443,6 +436,8 @@
             </div>
         </div>
     </div>
+
+    
 </div>
 
 <script>

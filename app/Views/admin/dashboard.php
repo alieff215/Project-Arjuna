@@ -514,6 +514,8 @@
                     </div>
                 </div>
             </div>
+
+            
         </div>
 
         <!-- ===== BARIS 1 — ABSENSI ===== -->
@@ -628,6 +630,43 @@
                     <a href="<?= base_url('admin/absen-Admin'); ?>" style="text-decoration:none;color:var(--success)">
                         <i class="material-icons" style="vertical-align:middle;margin-right:6px;">query_stats</i>Lihat data
                     </a>
+                </div>
+            </div>
+        </div>
+
+        
+        <!-- ===== PALING BAWAH — Karyawan Tidak Hadir 3 Hari Berturut-turut ===== -->
+        <div class="panel">
+            <div class="panel__head">
+                <h4 class="panel__title">
+                    <span>Karyawan Tidak Hadir 3 Hari Berturut-turut</span>
+                    <span class="badge-soft"><?= (int)($jumlahTidakHadirLebih3Hari ?? 0); ?> orang</span>
+                </h4>
+                <span class="panel__date"><?= $dateNow; ?></span>
+            </div>
+            <div class="panel__body">
+                <?php if (!empty($karyawanTidakHadirLebih3Hari)): ?>
+                    <div style="display:flex;flex-direction:column;gap:10px;max-height:360px;overflow:auto;padding-right:4px;">
+                        <?php foreach ($karyawanTidakHadirLebih3Hari as $item): ?>
+                            <div style="display:flex;align-items:center;gap:10px;border:1px solid var(--border);border-radius:12px;padding:10px 12px;background:var(--card);">
+                                <i class="material-icons" style="color:var(--danger)">event_busy</i>
+                                <div style="display:flex;flex-direction:column;gap:2px;">
+                                    <strong style="color:var(--text);line-height:1;"><?= esc($item['nama_karyawan']); ?></strong>
+                                    <small style="color:var(--muted);">Departemen: <?= esc($item['departemen'] ?? '-'); ?><?= isset($item['jabatan']) ? ' • ' . esc($item['jabatan']) : '' ?></small>
+                                </div>
+                                <span style="margin-left:auto;color:var(--muted);font-weight:700;"><?= (int)($item['streak_days'] ?? 0); ?> hari</span>
+                                <a class="btn-icon" href="<?= base_url('admin/karyawan'); ?>" title="Lihat detail" aria-label="Lihat detail karyawan"><i class="material-icons">open_in_new</i></a>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php else: ?>
+                    <div style="border:1px dashed var(--border);border-radius:12px;padding:16px;color:var(--muted);">Tidak ada karyawan dengan streak absen 3 hari berturut-turut.</div>
+                <?php endif; ?>
+            </div>
+            <div class="panel__foot">
+                <span><i class="material-icons" style="vertical-align:middle;margin-right:6px;color:var(--danger)">warning</i>Streak dihitung untuk hari kerja (Senin–Sabtu)</span>
+                <div class="toolbar">
+                    <a class="btn-icon" href="<?= base_url('admin/karyawan'); ?>" title="Kelola karyawan" aria-label="Kelola karyawan"><i class="material-icons">people</i></a>
                 </div>
             </div>
         </div>

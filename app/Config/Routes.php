@@ -71,6 +71,7 @@ $routes->group('admin', function (RouteCollection $routes) {
       $routes->get('delete/(:num)', 'Gaji::delete/$1');
       $routes->get('restore/(:num)', 'Gaji::restore/$1');
       $routes->get('report', 'Gaji::report');
+      $routes->get('lembur', 'Gaji::lembur');
       $routes->get('export', 'Gaji::export');
       $routes->get('history/(:num)', 'Gaji::history/$1');
       $routes->post('get-data', 'Gaji::getData');

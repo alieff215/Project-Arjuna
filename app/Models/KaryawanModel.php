@@ -80,6 +80,47 @@ class KaryawanModel extends Model
          ->findAll();
    }
 
+   /**
+    * Pencarian karyawan berdasarkan kata kunci dengan dukungan filter departemen/jabatan.
+    * Mencari pada kolom: nama_karyawan, nis, departemen, jabatan, no_hp.
+    */
+   public function searchKaryawan(?string $q, ?int $idDepartemen = null, ?string $departemen = null, ?string $jabatan = null)
+   {
+      $query = $this->join(
+         'tb_departemen',
+         'tb_departemen.id_departemen = tb_karyawan.id_departemen',
+         'LEFT'
+      )->join(
+         'tb_jabatan',
+         'tb_departemen.id_jabatan = tb_jabatan.id',
+         'LEFT'
+      );
+
+      if (!empty($idDepartemen)) {
+         $query = $query->where('tb_karyawan.id_departemen', $idDepartemen);
+      } else {
+         if (!empty($departemen)) {
+            $query = $query->where('tb_departemen.departemen', $departemen);
+         }
+         if (!empty($jabatan)) {
+            $query = $query->where('tb_jabatan.jabatan', $jabatan);
+         }
+      }
+
+      if (!empty($q)) {
+         $q = trim($q);
+         $query = $query->groupStart()
+            ->like('tb_karyawan.nama_karyawan', $q)
+            ->orLike('tb_karyawan.nis', $q)
+            ->orLike('tb_departemen.departemen', $q)
+            ->orLike('tb_jabatan.jabatan', $q)
+            ->orLike('tb_karyawan.no_hp', $q)
+            ->groupEnd();
+      }
+
+      return $query->orderBy('nama_karyawan')->findAll();
+   }
+
    public function createKaryawan($nis, $nama, $idDepartemen, $jenisKelamin, $noHp, $tanggalJoin = null)
    {
       return $this->save([
