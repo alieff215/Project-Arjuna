@@ -33,24 +33,37 @@ class Scan extends BaseController
    {
       // Cek apakah user sudah login
       if (!session()->get('logged_in')) {
-         return redirect()->to('/login');
+         // Jika belum login, redirect ke halaman login absen
+         return redirect()->to('/scan/login')->with('error', 'Silakan login terlebih dahulu untuk mengakses menu absen');
       }
-
+      
       // Jika tidak ada parameter waktu, tampilkan halaman utama
       if ($t === null) {
-         $data = ['title' => 'Absensi Karyawan dan Admin Berbasis QR Code'];
+         $data = [
+            'title' => 'Absensi Karyawan dan Admin Berbasis QR Code',
+            'hideNavbarTitle' => true  // Sembunyikan teks header di navbar
+         ];
          return view('scan/scan_main', $data);
       }
 
-      $data = ['waktu' => $t, 'title' => 'Absensi Karyawan dan Admin Berbasis QR Code'];
+      $data = [
+         'waktu' => $t, 
+         'title' => 'Absensi Karyawan dan Admin Berbasis QR Code',
+         'hideNavbarTitle' => true  // Sembunyikan teks header di navbar
+      ];
       
       // Tentukan view berdasarkan role
-      $userRole = $this->roleHelper->getUserRole();
-      if ($userRole->value === 'user') {
-         return view('scan/scan_user', $data);
+      if (isset($this->roleHelper)) {
+         $userRole = $this->roleHelper->getUserRole();
+         if ($userRole->value === 'user') {
+            return view('scan/scan_user', $data);
+         } else {
+            // Admin dan Super Admin menggunakan halaman scan khusus
+            return view('scan/scan_admin', $data);
+         }
       } else {
-         // Admin dan Super Admin menggunakan halaman scan khusus
-         return view('scan/scan_admin', $data);
+         // Default ke scan_user jika roleHelper tidak tersedia
+         return view('scan/scan_user', $data);
       }
    }
 
@@ -166,11 +179,15 @@ class Scan extends BaseController
             log_message('error', 'Error sending notification: ' . $e->getMessage());
          }
       }
+      
+      // Konversi type enum ke string untuk JavaScript
+      $typeString = ($data['type'] === TipeUser::Karyawan) ? 'Karyawan' : 'Admin';
+      
       return $this->response->setJSON([
          'success' => true,
          'message' => 'Absen ' . $data['waktu'] . ' berhasil',
          'data' => $data['data'],
-         'type' => $data['type'],
+         'type' => $typeString,
          'presensi' => $data['presensi']
       ]);
    }
@@ -236,11 +253,14 @@ class Scan extends BaseController
          }
       }
 
+      // Konversi type enum ke string untuk JavaScript
+      $typeString = ($data['type'] === TipeUser::Karyawan) ? 'Karyawan' : 'Admin';
+      
       return $this->response->setJSON([
          'success' => true,
          'message' => 'Absen ' . $data['waktu'] . ' berhasil',
          'data' => $data['data'],
-         'type' => $data['type'],
+         'type' => $typeString,
          'presensi' => $data['presensi']
       ]);
    }
@@ -257,11 +277,17 @@ class Scan extends BaseController
    {
       $errdata = $data ?? [];
       
+      // Konversi type enum ke string untuk JavaScript jika ada
+      $typeString = null;
+      if (isset($errdata['type'])) {
+         $typeString = ($errdata['type'] === TipeUser::Karyawan) ? 'Karyawan' : 'Admin';
+      }
+      
       return $this->response->setJSON([
          'success' => false,
          'message' => $msg,
          'data' => $errdata['data'] ?? null,
-         'type' => $errdata['type'] ?? null,
+         'type' => $typeString,
          'presensi' => $errdata['presensi'] ?? null
       ]);
    }

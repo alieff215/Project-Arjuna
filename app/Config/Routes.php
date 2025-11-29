@@ -32,6 +32,11 @@ $routes->group('scan', function (RouteCollection $routes) {
    $routes->get('masuk', 'Scan::index/Masuk');
    $routes->get('pulang', 'Scan::index/Pulang');
    $routes->post('cek', 'Scan::cekKode');
+   
+   // Login khusus untuk absen
+   $routes->get('login', 'LoginAbsen::index');
+   $routes->post('login/attempt', 'LoginAbsen::attemptLogin');
+   $routes->get('logout', 'LoginAbsen::logout');
 });
 // Admin
 $routes->group('admin', function (RouteCollection $routes) {

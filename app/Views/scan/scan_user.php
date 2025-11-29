@@ -1,27 +1,527 @@
-<?= $this->extend('templates/user_page_layout'); ?>
-
-<?= $this->section('content'); ?>
-<style>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+   <meta charset="UTF-8">
+   <meta http-equiv="X-UA-Compatible" content="IE=edge">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Absensi QR Code - <?= $waktu ?? 'Masuk'; ?></title>
+   
+   <!-- Theme Bootstrapper -->
+   <script>
+      (function () {
+         var KEY = 'ui-theme';
+         try {
+            var saved = localStorage.getItem(KEY);
+            if (saved !== 'light' && saved !== 'dark') {
+               var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+               saved = prefersDark ? 'dark' : 'light';
+               localStorage.setItem(KEY, saved);
+            }
+            document.documentElement.setAttribute('data-theme', saved);
+         } catch (e) {
+            document.documentElement.setAttribute('data-theme', 'light');
+         }
+      })();
+   </script>
+   
+   <!-- CSS Files -->
+   <link href="<?= base_url('assets/fonts/fonts.css?v=1.0.0'); ?>" rel="stylesheet" />
+   <link href="<?= base_url('assets/css/material-dashboard.css'); ?>" rel="stylesheet" />
+   <link href="<?= base_url('assets/css/style.css?v=1.0.0'); ?>" rel="stylesheet" />
+   
+   <style>
+   :root {
+      --bg: #eef3fb;
+      --bg-accent: #e5efff;
+      --card: #ffffff;
+      --text: #1f2937;
+      --text-muted: #6b7280;
+      --border: rgba(16, 24, 40, 0.12);
+      --primary: #667eea;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --info: #3b82f6;
+   }
+   
+   [data-theme="dark"] {
+      --bg: #0a0f1a;
+      --bg-accent: #141b2d;
+      --card: #1a2332;
+      --text: #f0f4ff;
+      --text-muted: #b8c5d9;
+      --border: rgba(200, 210, 230, 0.2);
+      --primary: #8bb4ff;
+      --success: #4ade80;
+      --warning: #fcd34d;
+      --danger: #f87171;
+      --info: #60a5fa;
+   }
+   
+   body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Roboto', sans-serif;
+      margin: 0;
+      padding: 20px;
+      transition: background-color 0.3s ease, color 0.3s ease;
+   }
+   
+   .theme-toggle-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--text);
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.95rem;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+   }
+   
+   [data-theme="dark"] .theme-toggle-btn {
+      background: var(--card);
+      color: var(--text);
+      border-color: var(--border);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+   }
+   
+   .theme-toggle-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+   }
+   
+   [data-theme="dark"] .theme-toggle-btn:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+      background: var(--bg-accent);
+   }
+   
+   .theme-toggle-btn .material-icons {
+      font-size: 20px;
+   }
+   
+   .card {
+      background: var(--card) !important;
+      color: var(--text) !important;
+      border-color: var(--border) !important;
+   }
+   
+   .card-body {
+      background: var(--card) !important;
+      color: var(--text) !important;
+   }
+   
+   .text-muted {
+      color: var(--text-muted) !important;
+   }
+   
+   .form-control, .form-select {
+      background: var(--card) !important;
+      color: var(--text) !important;
+      border-color: var(--border) !important;
+   }
+   
+   [data-theme="dark"] .form-control,
+   [data-theme="dark"] .form-select {
+      background: var(--card) !important;
+      color: var(--text) !important;
+      border-color: var(--border) !important;
+   }
+   
+   .form-control:focus, .form-select:focus {
+      background: var(--card) !important;
+      color: var(--text) !important;
+      border-color: var(--primary) !important;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+   }
+   
+   [data-theme="dark"] .form-control:focus,
+   [data-theme="dark"] .form-select:focus {
+      border-color: var(--primary) !important;
+      box-shadow: 0 0 0 3px rgba(139, 180, 255, 0.2);
+   }
+   
+   /* Button Styles untuk Dark Mode */
+   [data-theme="dark"] .btn {
+      color: var(--text) !important;
+   }
+   
+   [data-theme="dark"] .btn-secondary {
+      background-color: var(--bg-accent) !important;
+      border-color: var(--border) !important;
+      color: var(--text) !important;
+   }
+   
+   [data-theme="dark"] .btn-secondary:hover {
+      background-color: var(--card) !important;
+      color: var(--text) !important;
+   }
+   
+   [data-theme="dark"] .btn-light {
+      background-color: var(--card) !important;
+      border-color: var(--border) !important;
+      color: var(--text) !important;
+   }
+   
+   [data-theme="dark"] .btn-light:hover {
+      background-color: var(--bg-accent) !important;
+      color: var(--text) !important;
+   }
+   
+   [data-theme="dark"] .btn-danger {
+      background-color: var(--danger) !important;
+      border-color: var(--danger) !important;
+      color: #ffffff !important;
+   }
+   
+   [data-theme="dark"] .btn-danger:hover {
+      background-color: #ef4444 !important;
+      color: #ffffff !important;
+   }
+   
+   [data-theme="dark"] .btn-success {
+      background-color: var(--success) !important;
+      border-color: var(--success) !important;
+      color: #ffffff !important;
+   }
+   
+   /* Professional Button Group Styling */
+   .scan-mode-group {
+      display: flex;
+      gap: 0;
+      background: var(--card);
+      border: 2px solid var(--border);
+      border-radius: 14px;
+      padding: 4px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      transition: all 0.3s ease;
+   }
+   
+   .scan-mode-group:hover {
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+   }
+   
+   /* Hide radio button input completely */
+   .scan-mode-group .btn-check {
+      position: absolute !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
+      width: 0 !important;
+      height: 0 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      border: none !important;
+      clip: rect(0, 0, 0, 0) !important;
+   }
+   
+   /* Remove all radio button indicators */
+   .scan-mode-group .btn-check::before,
+   .scan-mode-group .btn-check::after {
+      display: none !important;
+      content: none !important;
+   }
+   
+   /* Remove any default radio button styling */
+   .scan-mode-group input[type="radio"] {
+      display: none !important;
+   }
+   
+   .scan-mode-btn {
+      flex: 1;
+      padding: 16px 24px;
+      border: none;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      letter-spacing: 0.3px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      background: transparent;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+   }
+   
+   /* Gradient background overlay for hover effect */
+   .scan-mode-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, var(--primary) 0%, rgba(102, 126, 234, 0.8) 100%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      border-radius: 10px;
+      z-index: 0;
+   }
+   
+   .scan-mode-btn i {
+      position: relative;
+      z-index: 1;
+      font-size: 22px;
+      transition: transform 0.3s ease;
+   }
+   
+   .scan-mode-btn span {
+      position: relative;
+      z-index: 1;
+   }
+   
+   .scan-mode-btn:hover {
+      color: var(--primary);
+      transform: translateY(-1px);
+   }
+   
+   .scan-mode-btn:hover i {
+      transform: scale(1.1);
+   }
+   
+   .btn-check:checked + .scan-mode-btn {
+      background: linear-gradient(135deg, var(--primary) 0%, rgba(102, 126, 234, 0.9) 100%);
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+      transform: translateY(-1px);
+   }
+   
+   .btn-check:checked + .scan-mode-btn::before {
+      opacity: 0;
+   }
+   
+   .btn-check:checked + .scan-mode-btn i {
+      transform: scale(1.1);
+      color: #ffffff;
+   }
+   
+   [data-theme="dark"] .btn-check:checked + .scan-mode-btn {
+      background: linear-gradient(135deg, var(--primary) 0%, rgba(139, 180, 255, 0.9) 100%);
+      box-shadow: 0 4px 12px rgba(139, 180, 255, 0.3);
+   }
+   
+   /* Professional Select Styling */
+   .camera-select-wrapper {
+      position: relative;
+   }
+   
+   .camera-select-wrapper::after {
+      content: 'expand_more';
+      font-family: 'Material Icons';
+      position: absolute;
+      right: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      color: var(--text-muted);
+      font-size: 24px;
+      z-index: 1;
+   }
+   
+   .camera-select {
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      background: var(--card);
+      border: 2px solid var(--border);
+      border-radius: 14px;
+      padding: 16px 48px 16px 20px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      letter-spacing: 0.2px;
+      line-height: 1.5;
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      width: 100%;
+   }
+   
+   .camera-select:hover {
+      border-color: var(--primary);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+      transform: translateY(-1px);
+   }
+   
+   .camera-select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1), 0 4px 12px rgba(102, 126, 234, 0.2);
+      transform: translateY(-1px);
+   }
+   
+   [data-theme="dark"] .camera-select {
+      background: var(--card);
+      border-color: var(--border);
+      color: var(--text);
+   }
+   
+   [data-theme="dark"] .camera-select:hover {
+      border-color: var(--primary);
+      box-shadow: 0 4px 12px rgba(139, 180, 255, 0.2);
+   }
+   
+   [data-theme="dark"] .camera-select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(139, 180, 255, 0.15), 0 4px 12px rgba(139, 180, 255, 0.25);
+   }
+   
+   [data-theme="dark"] .btn-outline-primary {
+      border-color: var(--primary) !important;
+      color: var(--primary) !important;
+      background-color: transparent !important;
+   }
+   
+   [data-theme="dark"] .btn-check:checked + .btn-outline-primary {
+      background-color: var(--primary) !important;
+      border-color: var(--primary) !important;
+      color: #ffffff !important;
+   }
+   
+   /* Card Background untuk Dark Mode */
+   [data-theme="dark"] .card {
+      background: var(--card) !important;
+   }
+   
+   [data-theme="dark"] .card[style*="background: linear-gradient"] {
+      background: linear-gradient(135deg, var(--bg-accent) 0%, var(--card) 100%) !important;
+   }
+   
+   /* Preview Parent untuk Dark Mode */
+   [data-theme="dark"] .previewParent {
+      background: var(--bg-accent) !important;
+      border-color: var(--border) !important;
+   }
+   
+   [data-theme="dark"] .previewParent::after {
+      background: rgba(0, 0, 0, 0.8);
+      color: var(--text);
+   }
+   
+   /* Alert untuk Dark Mode */
+   [data-theme="dark"] .alert {
+      background-color: var(--bg-accent) !important;
+      border-color: var(--border) !important;
+      color: var(--text) !important;
+   }
+   
+   [data-theme="dark"] .alert-info {
+      background-color: rgba(96, 165, 250, 0.15) !important;
+      border-color: var(--info) !important;
+      color: var(--text) !important;
+   }
+   
+   /* Select border untuk Dark Mode */
+   [data-theme="dark"] select#pilihKamera {
+      border-color: var(--border) !important;
+   }
+   
+   [data-theme="dark"] input#usbScanInput {
+      border-color: var(--border) !important;
+      background: var(--card) !important;
+      color: var(--text) !important;
+   }
+   
+   [data-theme="dark"] input#usbScanInput::placeholder {
+      color: var(--text-muted) !important;
+   }
+   
+   /* Spinner untuk Dark Mode */
+   [data-theme="dark"] .spinner-border.text-primary {
+      color: var(--primary) !important;
+      border-color: var(--primary) !important;
+   }
+   
+   /* Button Switch Dark Mode Hover */
+   .btn-switch-dark:hover {
+      background: rgba(255, 255, 255, 0.35) !important;
+      border-color: rgba(255, 255, 255, 0.45) !important;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+   }
+   
+   /* Card Header Gradient */
+   .card-header-gradient {
+      position: relative;
+      overflow: hidden;
+   }
+   
+   .card-header-gradient::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%);
+      pointer-events: none;
+   }
+   
+   /* Improved spacing and alignment */
+   .card-body {
+      padding: 2rem !important;
+   }
+   
+   @media (max-width: 768px) {
+      .card-header-gradient {
+         padding: 1.25rem !important;
+      }
+      
+      .card-header-gradient h3 {
+         font-size: 1.75rem !important;
+      }
+      
+      .card-header-gradient h4 {
+         font-size: 1.25rem !important;
+      }
+      
+      .btn-switch-dark {
+         padding: 8px 12px !important;
+         font-size: 0.85rem !important;
+      }
+   }
    .scan-header {
       margin-top: 2rem;
       margin-bottom: 2rem;
-      padding-top: 1.5rem;
-      padding-bottom: 1.5rem;
-      padding-left: 1rem;
-      padding-right: 1rem;
+      padding: 2rem;
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%);
+      border-radius: 16px;
+      border-left: 4px solid var(--primary);
+   }
+   
+   [data-theme="dark"] .scan-header {
+      background: linear-gradient(135deg, rgba(139, 180, 255, 0.15) 0%, rgba(118, 75, 162, 0.2) 100%);
+      border-left-color: var(--primary);
+   }
+   
+   [data-theme="dark"] hr {
+      border-color: var(--border) !important;
+      opacity: 0.5;
    }
    
    .scan-header h2 {
-      font-size: 2rem;
-      font-weight: 700;
-      line-height: 1.2;
+      font-size: 2.25rem;
+      font-weight: 800;
+      line-height: 1.3;
       margin-bottom: 0.5rem;
+      color: var(--text);
+      letter-spacing: 0.3px;
    }
    
    .scan-header p {
-      font-size: 1rem;
+      font-size: 1.05rem;
       font-weight: 400;
       margin-bottom: 0;
+      color: var(--text-muted);
+      line-height: 1.5;
+      letter-spacing: 0.1px;
    }
    
    /* Memastikan garis tidak bertabrakan */
@@ -34,9 +534,11 @@
    
    /* Memastikan tidak bertabrakan dengan sidebar */
    .container-fluid {
-      margin-left: 0;
+      margin-left: auto;
+      margin-right: auto;
       padding-left: 1rem;
       padding-right: 1rem;
+      max-width: 1400px;
    }
    
    /* Mobile-first improvements */
@@ -217,16 +719,17 @@
       top: 20px;
       right: 20px;
       z-index: 9999;
-      max-width: 400px;
-      min-width: 300px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-      border-radius: 8px;
-      animation: slideInRight 0.3s ease-out;
+      max-width: 420px;
+      min-width: 320px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      border-radius: 16px;
+      animation: slideInRight 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow: hidden;
    }
 
    .notification-content {
-      background: white;
-      border-radius: 8px;
+      background: var(--card);
+      border-radius: 16px;
       overflow: hidden;
    }
 
@@ -234,27 +737,77 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 15px 20px;
-      border-bottom: 1px solid #e9ecef;
+      padding: 18px 24px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      position: relative;
+   }
+
+   .notification-header::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
    }
 
    .notification-header h5 {
       margin: 0;
-      font-weight: 600;
+      font-weight: 700;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+   }
+
+   .notification-header h5::before {
+      content: '';
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
    }
 
    .notification-body {
-      padding: 15px 20px;
+      padding: 20px 24px;
+      background: var(--bg-accent);
+   }
+
+   .notification-body p {
+      margin-bottom: 0.5rem;
+      font-size: 0.95rem;
+      color: var(--text-muted);
+   }
+
+   .notification-body p strong {
+      color: var(--text);
+      font-weight: 600;
    }
 
    .notification-success .notification-header {
-      background: #d4edda;
-      color: #155724;
+      background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+      color: #065f46;
+   }
+
+   .notification-success .notification-header::before {
+      background: #10b981;
+   }
+
+   .notification-success .notification-header h5::before {
+      background: #10b981;
    }
 
    .notification-error .notification-header {
-      background: #f8d7da;
-      color: #721c24;
+      background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+      color: #991b1b;
+   }
+
+   .notification-error .notification-header::before {
+      background: #ef4444;
+   }
+
+   .notification-error .notification-header h5::before {
+      background: #ef4444;
    }
 
    .btn-close {
@@ -290,7 +843,9 @@
          min-width: auto;
       }
    }
-</style>
+   </style>
+</head>
+<body>
 
 <?php
    $oppBtn = '';
@@ -307,7 +862,11 @@
                      <h2><b>Absensi Karyawan dan Admin Berbasis QR Code</b></h2>
                      <p class="text-muted">Sistem absensi menggunakan QR Code</p>
                   </div>
-                  <div>
+                  <div class="d-flex gap-2 align-items-center">
+                     <button class="theme-toggle-btn" type="button" onclick="toggleTheme()" aria-label="Toggle theme">
+                        <i class="material-icons" id="themeIcon">dark_mode</i>
+                        <span id="themeText">Gelap</span>
+                     </button>
                      <a href="<?= base_url('scan'); ?>" class="btn btn-secondary">
                         <i class="material-icons mr-2">arrow_back</i>
                         Kembali
@@ -318,91 +877,125 @@
             </div>
          </div>
          
-         <div class="row mx-auto">
+         <div class="row g-4 justify-content-center">
             <div class="col-lg-3 col-xl-4">
-               <div class="card shadow-sm">
+               <div class="card shadow-sm border-0" style="border-radius: 16px; background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);">
                   <div class="card-body">
-                     <h4 class="mb-3"><b>Tips Penggunaan</b></h4>
+                     <h4 class="mb-4" style="font-weight: 700; color: var(--text); font-size: 1.25rem; letter-spacing: 0.2px; line-height: 1.4;">
+                        <i class="material-icons mr-2" style="vertical-align: middle; color: var(--success); line-height: 1;">lightbulb</i>
+                        Tips Penggunaan
+                     </h4>
                      <div class="mb-3">
-                        <div class="d-flex align-items-start mb-2">
-                           <i class="material-icons text-success mr-2" style="font-size: 20px;">visibility</i>
-                           <small>Tunjukkan QR Code sampai terlihat jelas di kamera</small>
+                        <div class="d-flex align-items-start mb-3 p-3 tip-item-dark" style="background: var(--card); border-radius: 12px; border-left: 4px solid var(--success);">
+                           <i class="material-icons text-success mr-3" style="font-size: 24px; margin-top: 2px; color: var(--success); line-height: 1;">visibility</i>
+                           <div>
+                              <strong style="color: var(--text); display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.95rem; letter-spacing: 0.2px; line-height: 1.4;">Tunjukkan QR Code dengan jelas</strong>
+                              <small class="text-muted" style="font-size: 0.875rem; line-height: 1.5; letter-spacing: 0.1px;">Pastikan QR Code terlihat jelas di kamera</small>
+                           </div>
                         </div>
-                        <div class="d-flex align-items-start mb-2">
-                           <i class="material-icons text-success mr-2" style="font-size: 20px;">center_focus_strong</i>
-                           <small>Posisikan QR Code tidak terlalu jauh maupun terlalu dekat</small>
+                        <div class="d-flex align-items-start p-3 tip-item-dark" style="background: var(--card); border-radius: 12px; border-left: 4px solid var(--success);">
+                           <i class="material-icons text-success mr-3" style="font-size: 24px; margin-top: 2px; color: var(--success); line-height: 1;">center_focus_strong</i>
+                           <div>
+                              <strong style="color: var(--text); display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.95rem; letter-spacing: 0.2px; line-height: 1.4;">Posisikan dengan benar</strong>
+                              <small class="text-muted" style="font-size: 0.875rem; line-height: 1.5; letter-spacing: 0.1px;">Jaga jarak optimal antara QR Code dan kamera</small>
+                           </div>
                         </div>
                      </div>
                   </div>
                </div>
             </div>
             <div class="col-lg-6 col-xl-4">
-               <div class="card shadow-sm">
-                  <div class="card-header card-header-primary">
-                     <div class="row align-items-center">
-                        <div class="col">
-                           <h4 class="card-title mb-1"><b>Absen <?= $waktu; ?></b></h4>
-                           <p class="card-category mb-0">Silahkan tunjukkan QR Code anda</p>
+               <div class="card shadow-sm border-0" style="border-radius: 16px;">
+                  <div class="card-header card-header-gradient" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 16px 16px 0 0; padding: 2rem;">
+                     <div class="text-center">
+                        <div class="d-flex align-items-center justify-content-center mb-3">
+                           <i class="material-icons mr-3" style="font-size: 36px; color: white; opacity: 0.95; line-height: 1;">qr_code_scanner</i>
+                           <h3 class="card-title mb-0" style="font-weight: 800; font-size: 2.5rem; color: white; line-height: 1.2; letter-spacing: 0.5px;">
+                              Absen <?= $waktu; ?>
+                           </h3>
                         </div>
-                        <div class="col-auto">
-                           <a href="<?= base_url("scan/$oppBtn"); ?>" class="btn btn-<?= $oppBtn == 'masuk' ? 'success' : 'warning'; ?> btn-sm">
-                              <i class="material-icons mr-1" style="font-size: 18px;">swap_horiz</i>
+                        <p class="mb-4" style="font-size: 1rem; color: rgba(255, 255, 255, 0.95); font-weight: 400; line-height: 1.5;">
+                           Silahkan tunjukkan QR Code anda
+                        </p>
+                        <div class="text-center">
+                           <a href="<?= base_url("scan/$oppBtn"); ?>" class="btn btn-light btn-sm btn-switch-dark" style="border-radius: 12px; font-weight: 600; background: rgba(255, 255, 255, 0.25); border: 1px solid rgba(255, 255, 255, 0.35); color: white; padding: 12px 24px; white-space: nowrap; transition: all 0.3s ease; font-size: 0.95rem; letter-spacing: 0.3px; display: inline-flex; align-items: center; justify-content: center; margin: 0 auto;">
+                              <i class="material-icons mr-2" style="font-size: 20px; vertical-align: middle; line-height: 1;">swap_horiz</i>
                               Absen <?= $oppBtn; ?>
                            </a>
                         </div>
                      </div>
                   </div>
-                  <div class="card-body">
+                  <div class="card-body" style="padding: 2rem;">
                      <!-- Toggle Scan Mode -->
-                     <div class="mb-3">
-                        <label class="form-label"><b>Mode Scan</b></label>
-                        <div class="btn-group w-100" role="group">
+                     <div class="mb-4">
+                        <label class="form-label d-flex align-items-center mb-3" style="font-weight: 600; color: var(--text); font-size: 1.05rem; letter-spacing: 0.2px;">
+                           <i class="material-icons mr-2" style="font-size: 22px; color: var(--text); line-height: 1;">settings</i>
+                           <span>Mode Scan</span>
+                        </label>
+                        <div class="scan-mode-group" role="group">
                            <input type="radio" class="btn-check" name="scanMode" id="cameraMode" value="camera" checked>
-                           <label class="btn btn-outline-primary" for="cameraMode">
-                              <i class="material-icons mr-1" style="font-size: 16px;">camera_alt</i>
-                              Kamera
+                           <label class="scan-mode-btn" for="cameraMode">
+                              <i class="material-icons">camera_alt</i>
+                              <span>Kamera</span>
                            </label>
                            
                            <input type="radio" class="btn-check" name="scanMode" id="usbMode" value="usb">
-                           <label class="btn btn-outline-primary" for="usbMode">
-                              <i class="material-icons mr-1" style="font-size: 16px;">usb</i>
-                              USB Scanner
+                           <label class="scan-mode-btn" for="usbMode">
+                              <i class="material-icons">usb</i>
+                              <span>USB Scanner</span>
                            </label>
                         </div>
                      </div>
 
                      <!-- Camera Mode Section -->
                      <div id="cameraModeSection">
-                        <div class="mb-3">
-                           <label class="form-label"><b>Pilih Kamera</b></label>
-                           <select id="pilihKamera" class="form-select" aria-label="Pilih kamera">
-                              <option selected>Pilih kamera yang tersedia</option>
-                           </select>
+                        <div class="mb-4">
+                           <label class="form-label d-flex align-items-center mb-3" style="font-weight: 600; color: var(--text); font-size: 1.05rem; letter-spacing: 0.2px;">
+                              <i class="material-icons mr-2" style="font-size: 22px; color: var(--text); line-height: 1;">videocam</i>
+                              <span>Pilih Kamera</span>
+                           </label>
+                           <div class="camera-select-wrapper">
+                              <select id="pilihKamera" class="camera-select" aria-label="Pilih kamera">
+                                 <option selected>Pilih kamera yang tersedia</option>
+                              </select>
+                           </div>
                         </div>
 
                         <div class="mb-3">
-                           <div class="previewParent border rounded" style="background: #f8f9fa;">
-                              <div class="text-center py-4" id="searching">
-                                 <div class="spinner-border text-primary" role="status">
+                           <div class="previewParent border rounded" style="background: var(--bg-accent); border-radius: 16px; overflow: hidden; border: 2px solid var(--border) !important; min-height: 400px; display: flex; align-items: center; justify-content: center;">
+                              <div class="text-center py-5 w-100" id="searching">
+                                 <div class="spinner-border text-primary mb-4" role="status" style="width: 3.5rem; height: 3.5rem; border-width: 4px;">
                                     <span class="visually-hidden">Loading...</span>
                                  </div>
-                                 <p class="mt-2 mb-0"><b>Mencari kamera...</b></p>
+                                 <p class="mt-3 mb-0 d-flex align-items-center justify-content-center" style="font-weight: 600; color: var(--text-muted); font-size: 1.05rem; letter-spacing: 0.2px; line-height: 1.5;">
+                                    <i class="material-icons mr-2" style="font-size: 24px; color: var(--text-muted); line-height: 1;">search</i>
+                                    <span>Mencari kamera...</span>
+                                 </p>
                               </div>
-                              <video id="preview" class="w-100 rounded" style="height: 300px; object-fit: cover; display: none;"></video>
+                              <video id="preview" class="w-100 rounded" style="height: 400px; object-fit: cover; display: none;"></video>
                            </div>
                         </div>
                      </div>
 
                      <!-- USB Scanner Mode Section -->
                      <div id="usbModeSection" style="display: none;">
-                        <div class="mb-3">
-                           <label class="form-label"><b>Scan QR Code dengan USB Scanner</b></label>
-                           <input type="text" id="usbScanInput" class="form-control form-control-lg" placeholder="Arahkan scanner ke QR Code..." autocomplete="off">
-                           <small class="text-muted">Klik pada kolom input ini, lalu scan QR Code dengan USB scanner Anda</small>
+                        <div class="mb-4">
+                           <label class="form-label d-flex align-items-center mb-3" style="font-weight: 600; color: var(--text); font-size: 1.05rem; letter-spacing: 0.2px;">
+                              <i class="material-icons mr-2" style="font-size: 22px; color: var(--text); line-height: 1;">keyboard</i>
+                              <span>Scan QR Code dengan USB Scanner</span>
+                           </label>
+                           <input type="text" id="usbScanInput" class="form-control form-control-lg" placeholder="Arahkan USB Scanner ke QR Code dan scan..." autofocus style="font-size: 1.05rem; padding: 16px 18px; border-radius: 12px; border: 2px solid var(--border); font-weight: 500; letter-spacing: 0.2px; line-height: 1.5;">
+                           <small class="text-muted d-flex align-items-center mt-3" style="font-size: 0.875rem; line-height: 1.5; letter-spacing: 0.1px;">
+                              <i class="material-icons mr-2" style="font-size: 18px; vertical-align: middle; color: var(--text-muted); line-height: 1;">info</i>
+                              <span>Klik pada kolom input ini, lalu scan QR Code dengan USB scanner Anda</span>
+                           </small>
                         </div>
-                        <div class="alert alert-info">
-                           <i class="material-icons mr-2" style="font-size: 18px;">info</i>
-                           <strong>Petunjuk:</strong> Pastikan kursor ada di kolom input, lalu arahkan USB scanner ke QR Code. Sistem akan otomatis memproses setelah scan.
+                        <div class="alert alert-info d-flex align-items-start" style="border-radius: 12px; padding: 16px; margin-bottom: 0; line-height: 1.6;">
+                           <i class="material-icons mr-2" style="font-size: 20px; margin-top: 2px; color: var(--info); line-height: 1;">lightbulb</i>
+                           <div>
+                              <strong style="color: var(--text); display: block; margin-bottom: 6px; font-weight: 600; letter-spacing: 0.2px;">Petunjuk:</strong>
+                              <span style="color: var(--text-muted); font-size: 0.9rem; letter-spacing: 0.1px; line-height: 1.6;">Pastikan kursor ada di kolom input, lalu arahkan USB scanner ke QR Code. Sistem akan otomatis memproses setelah scan.</span>
+                           </div>
                         </div>
                      </div>
 
@@ -426,38 +1019,52 @@
                </div>
             </div>
             <div class="col-lg-3 col-xl-4">
-               <div class="card shadow-sm">
+               <div class="card shadow-sm border-0" style="border-radius: 16px; background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);">
                   <div class="card-body">
-                     <h4 class="mb-3"><b>Informasi</b></h4>
+                     <h4 class="mb-4" style="font-weight: 700; color: var(--text); font-size: 1.25rem; letter-spacing: 0.2px; line-height: 1.4;">
+                        <i class="material-icons mr-2" style="vertical-align: middle; color: var(--info); line-height: 1;">info</i>
+                        Informasi
+                     </h4>
                      <div class="mb-4">
-                        <div class="d-flex align-items-start mb-2">
-                           <i class="material-icons text-info mr-2" style="font-size: 20px;">check_circle</i>
-                           <small>Pastikan QR Code dalam kondisi baik</small>
+                        <div class="d-flex align-items-start mb-3 p-3 info-item-dark" style="background: var(--card); border-radius: 12px; border-left: 4px solid var(--info);">
+                           <i class="material-icons text-info mr-3" style="font-size: 24px; margin-top: 2px; color: var(--info); line-height: 1;">check_circle</i>
+                           <div>
+                              <strong style="color: var(--text); display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.95rem; letter-spacing: 0.2px; line-height: 1.4;">QR Code dalam kondisi baik</strong>
+                              <small class="text-muted" style="font-size: 0.875rem; line-height: 1.5; letter-spacing: 0.1px;">Pastikan QR Code tidak rusak atau terlipat</small>
+                           </div>
                         </div>
-                        <div class="d-flex align-items-start mb-2">
-                           <i class="material-icons text-info mr-2" style="font-size: 20px;">wifi</i>
-                           <small>Pastikan koneksi internet stabil</small>
+                        <div class="d-flex align-items-start mb-3 p-3 info-item-dark" style="background: var(--card); border-radius: 12px; border-left: 4px solid var(--info);">
+                           <i class="material-icons text-info mr-3" style="font-size: 24px; margin-top: 2px; color: var(--info); line-height: 1;">wifi</i>
+                           <div>
+                              <strong style="color: var(--text); display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.95rem; letter-spacing: 0.2px; line-height: 1.4;">Koneksi internet stabil</strong>
+                              <small class="text-muted" style="font-size: 0.875rem; line-height: 1.5; letter-spacing: 0.1px;">Pastikan koneksi internet berjalan dengan baik</small>
+                           </div>
                         </div>
-                        <div class="d-flex align-items-start mb-2">
-                           <i class="material-icons text-info mr-2" style="font-size: 20px;">support_agent</i>
-                           <small>Jika ada masalah, hubungi admin</small>
+                        <div class="d-flex align-items-start p-3 info-item-dark" style="background: var(--card); border-radius: 12px; border-left: 4px solid var(--info);">
+                           <i class="material-icons text-info mr-3" style="font-size: 24px; margin-top: 2px; color: var(--info); line-height: 1;">support_agent</i>
+                           <div>
+                              <strong style="color: var(--text); display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.95rem; letter-spacing: 0.2px; line-height: 1.4;">Butuh bantuan?</strong>
+                              <small class="text-muted" style="font-size: 0.875rem; line-height: 1.5; letter-spacing: 0.1px;">Hubungi admin jika mengalami masalah</small>
+                           </div>
                         </div>
                      </div>
                      
                      <!-- Button Logout untuk User -->
+                     <?php if (session()->get('logged_in')): ?>
                      <div class="d-grid">
-                        <a href="<?= base_url('logout'); ?>" class="btn btn-danger">
-                           <i class="material-icons mr-2">logout</i>
+                        <a href="<?= base_url('scan/logout'); ?>" class="btn btn-danger" style="border-radius: 12px; font-weight: 600; padding: 12px; box-shadow: 0 4px 6px rgba(239, 68, 68, 0.2);">
+                           <i class="material-icons mr-2" style="vertical-align: middle;">logout</i>
                            Logout
                         </a>
                      </div>
+                     <?php endif; ?>
                   </div>
                </div>
             </div>
          </div>
 
+<script type="text/javascript" src="<?= base_url('assets/js/core/jquery-3.5.1.min.js') ?>"></script>
 <script type="text/javascript" src="<?= base_url('assets/js/plugins/zxing/zxing.min.js') ?>"></script>
-<script src="<?= base_url('assets/js/core/jquery-3.5.1.min.js') ?>"></script>
 <script type="text/javascript">
    let selectedDeviceId = null;
    let audio = new Audio("<?= base_url('assets/audio/beep.mp3'); ?>");
@@ -657,35 +1264,52 @@
       // Set title
       title.textContent = data.message;
       
-      // Set body content
-      let bodyContent = '<div class="row">';
-      bodyContent += '<div class="col">';
+      // Set body content dengan design yang lebih profesional
+      let bodyContent = '<div style="background: white; border-radius: 12px; padding: 1rem; margin-bottom: 1rem;">';
+      bodyContent += '<div class="row g-3">';
+      bodyContent += '<div class="col-md-6">';
+      bodyContent += '<div style="background: #f9fafb; padding: 1rem; border-radius: 10px; border-left: 3px solid #10b981;">';
+      bodyContent += '<p style="margin: 0; font-size: 0.75rem; color: #6b7280; text-transform: uppercase; font-weight: 600; margin-bottom: 0.5rem;">Data Karyawan</p>';
       
-      if (data.type === 'Karyawan') {
-         bodyContent += `<p><strong>Nama:</strong> ${data.data.nama_karyawan}</p>`;
-         bodyContent += `<p><strong>NIS:</strong> ${data.data.nis}</p>`;
-         bodyContent += `<p><strong>Departemen:</strong> ${data.data.departemen} ${data.data.jabatan}</p>`;
-      } else if (data.type === 'Admin') {
-         bodyContent += `<p><strong>Nama:</strong> ${data.data.nama_admin}</p>`;
-         bodyContent += `<p><strong>NUPTK:</strong> ${data.data.nuptk}</p>`;
-         bodyContent += `<p><strong>No HP:</strong> ${data.data.no_hp}</p>`;
+      // Tampilkan data karyawan/admin
+      if (data.data) {
+         if (data.type === 'Karyawan' && data.data.nama_karyawan) {
+            bodyContent += `<p style="margin: 0 0 0.5rem 0; font-size: 1rem; color: #1f2937;"><strong style="color: #374151;">Nama:</strong> ${data.data.nama_karyawan || '-'}</p>`;
+            bodyContent += `<p style="margin: 0 0 0.5rem 0; font-size: 1rem; color: #1f2937;"><strong style="color: #374151;">NIS:</strong> ${data.data.nis || '-'}</p>`;
+            const dept = data.data.departemen || '';
+            const jab = data.data.jabatan || '';
+            const deptJab = `${dept} ${jab}`.trim();
+            bodyContent += `<p style="margin: 0; font-size: 1rem; color: #1f2937;"><strong style="color: #374151;">Departemen:</strong> ${deptJab || '-'}</p>`;
+         } else if (data.type === 'Admin' && data.data.nama_admin) {
+            bodyContent += `<p style="margin: 0 0 0.5rem 0; font-size: 1rem; color: #1f2937;"><strong style="color: #374151;">Nama:</strong> ${data.data.nama_admin || '-'}</p>`;
+            bodyContent += `<p style="margin: 0 0 0.5rem 0; font-size: 1rem; color: #1f2937;"><strong style="color: #374151;">NUPTK:</strong> ${data.data.nuptk || '-'}</p>`;
+            bodyContent += `<p style="margin: 0; font-size: 1rem; color: #1f2937;"><strong style="color: #374151;">No HP:</strong> ${data.data.no_hp || '-'}</p>`;
+         }
       }
       
       bodyContent += '</div>';
-      bodyContent += '<div class="col">';
-      bodyContent += `<p><strong>Jam masuk:</strong> <span class="text-info">${data.presensi.jam_masuk || '-'}</span></p>`;
-      bodyContent += `<p><strong>Jam pulang:</strong> <span class="text-info">${data.presensi.jam_keluar || '-'}</span></p>`;
+      bodyContent += '</div>';
+      bodyContent += '<div class="col-md-6">';
+      bodyContent += '<div style="background: #f9fafb; padding: 1rem; border-radius: 10px; border-left: 3px solid #3b82f6;">';
+      bodyContent += '<p style="margin: 0; font-size: 0.75rem; color: #6b7280; text-transform: uppercase; font-weight: 600; margin-bottom: 0.5rem;">Waktu Absensi</p>';
+      if (data.presensi) {
+         bodyContent += `<p style="margin: 0 0 0.5rem 0; font-size: 1rem; color: #1f2937;"><strong style="color: #374151;">Jam masuk:</strong> <span style="color: #3b82f6; font-weight: 600;">${data.presensi.jam_masuk || '-'}</span></p>`;
+         bodyContent += `<p style="margin: 0; font-size: 1rem; color: #1f2937;"><strong style="color: #374151;">Jam pulang:</strong> <span style="color: #3b82f6; font-weight: 600;">${data.presensi.jam_keluar || '-'}</span></p>`;
+      } else {
+         bodyContent += `<p style="margin: 0 0 0.5rem 0; font-size: 1rem; color: #1f2937;"><strong style="color: #374151;">Jam masuk:</strong> <span style="color: #9ca3af;">-</span></p>`;
+         bodyContent += `<p style="margin: 0; font-size: 1rem; color: #1f2937;"><strong style="color: #374151;">Jam pulang:</strong> <span style="color: #9ca3af;">-</span></p>`;
+      }
+      bodyContent += '</div>';
+      bodyContent += '</div>';
       bodyContent += '</div>';
       bodyContent += '</div>';
       
-      // Tambahkan tombol untuk scan selanjutnya
-      bodyContent += '<div class="row mt-3">';
-      bodyContent += '<div class="col-12 text-center">';
-      bodyContent += '<button class="btn btn-success btn-sm" onclick="prepareNextScan()">';
-      bodyContent += '<i class="material-icons mr-1" style="font-size: 16px;">refresh</i>';
+      // Tambahkan tombol untuk scan selanjutnya dengan design yang lebih menarik
+      bodyContent += '<div class="text-center" style="padding-top: 0.5rem;">';
+      bodyContent += '<button class="btn btn-success" onclick="prepareNextScan()" style="border-radius: 12px; padding: 12px 24px; font-weight: 600; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2);">';
+      bodyContent += '<i class="material-icons mr-2" style="vertical-align: middle; font-size: 20px;">refresh</i>';
       bodyContent += 'Scan Karyawan Selanjutnya';
       bodyContent += '</button>';
-      bodyContent += '</div>';
       bodyContent += '</div>';
       
       body.innerHTML = bodyContent;
@@ -776,5 +1400,59 @@
    function clearData() {
       $('#hasilScan').html('');
    }
+   
+   // Theme Toggle Function
+   function toggleTheme() {
+      var current = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+      var next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      
+      try {
+         localStorage.setItem('ui-theme', next);
+      } catch (e) {
+         console.error('Error saving theme:', e);
+      }
+      
+      // Update icon and text
+      var icon = document.getElementById('themeIcon');
+      var text = document.getElementById('themeText');
+      
+      if (icon && text) {
+         if (next === 'dark') {
+            icon.textContent = 'light_mode';
+            text.textContent = 'Terang';
+         } else {
+            icon.textContent = 'dark_mode';
+            text.textContent = 'Gelap';
+         }
+      }
+   }
+   
+   // Initialize theme icon on page load
+   document.addEventListener('DOMContentLoaded', function() {
+      var mode = document.documentElement.getAttribute('data-theme') || 'light';
+      var icon = document.getElementById('themeIcon');
+      var text = document.getElementById('themeText');
+      
+      if (icon && text) {
+         if (mode === 'dark') {
+            icon.textContent = 'light_mode';
+            text.textContent = 'Terang';
+         } else {
+            icon.textContent = 'dark_mode';
+            text.textContent = 'Gelap';
+         }
+      }
+   });
 </script>
-<?= $this->endSection(); ?>
+
+<!-- Core JS Files -->
+<script src="<?= base_url('assets/js/plugins.js') ?>" type="text/javascript"></script>
+<script src="<?= base_url('assets/js/core/bootstrap.bundle.min.js') ?>"></script>
+<script src="<?= base_url('assets/js/core/popper.min.js') ?>"></script>
+<script src="<?= base_url('assets/js/core/bootstrap-material-design.min.js') ?>"></script>
+<script src="<?= base_url('assets/js/plugins/perfect-scrollbar.jquery.min.js') ?>"></script>
+<script src="<?= base_url('assets/js/material-dashboard.js') ?>" type="text/javascript"></script>
+
+</body>
+</html>

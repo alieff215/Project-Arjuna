@@ -89,6 +89,8 @@ class Filters extends BaseFilters
                     'webprofile/*', // web profile
                     'login',        // halaman login
                     'login/*',      // proses login
+                    'scan/login',   // halaman login absen (public access)
+                    'scan/login/*', // proses login absen (public access)
                 ],
             ],
             // 'honeypot',
@@ -106,6 +108,8 @@ class Filters extends BaseFilters
                     '/',
                     'webprofile/*',
                     'login/*',
+                    'scan/login',   // halaman login absen (public access)
+                    'scan/login/*',  // proses login absen (public access)
                 ],
             ],
             'secureheaders',
@@ -144,11 +148,6 @@ class Filters extends BaseFilters
                 'register/',
             ]
         ],
-        'role_access' => [
-            'before' => [
-                'scan/',
-                'scan/*',
-            ]
-        ]
+        // role_access filter dihapus untuk scan agar bisa diakses tanpa login
     ];
 }

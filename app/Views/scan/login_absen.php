@@ -1,29 +1,29 @@
 <?= $this->extend('templates/starting_page_layout'); ?>
 
 <?= $this->section('navaction') ?>
-<a href="<?= base_url('scan/login'); ?>" class="btn btn-outline-light ms-auto d-inline-flex align-items-center gap-2 rounded-xl px-3 py-2 fw-medium">
-   <i class="material-icons">qr_code</i>
-   <span class="d-none d-sm-inline">Login Absen</span>
+<a href="<?= base_url('scan'); ?>" class="btn btn-outline-light ms-auto d-inline-flex align-items-center gap-2 rounded-xl px-3 py-2 fw-medium">
+   <i class="material-icons">qr_code_scanner</i>
+   <span class="d-none d-sm-inline">Kembali ke Scan</span>
 </a>
 <?= $this->endSection() ?>
 
 <?= $this->section('content'); ?>
 <style>
    :root {
-      /* ===== Theme tokens ===== */
-      --bg1: rgba(14, 165, 233, .30);
-      --bg2: rgba(139, 92, 246, .28);
-      --bg3: rgba(34, 197, 94, .26);
+      /* ===== Theme tokens untuk Absen ===== */
+      --bg1: rgba(34, 197, 94, .30);
+      --bg2: rgba(59, 130, 246, .28);
+      --bg3: rgba(16, 185, 129, .26);
       --card: #0f1720e6;
       --text-strong: #e6edf4;
       --text-soft: #b8c2cf;
       --label: #cbd5e1;
-      --ring: #5b8def;
+      --ring: #10b981;
       --border: rgba(148, 163, 184, .25);
       --input-bg: #0a0f1a;
       --placeholder: #94a3b8;
-      --btn1: #5b8def;
-      --btn2: #6cc2f6;
+      --btn1: #10b981;
+      --btn2: #34d399;
       --radius: 18px;
 
       /* ===== Responsive type/spacing ===== */
@@ -37,7 +37,6 @@
 
    @media (prefers-color-scheme: light) {
       :root {
-         /* tetap gelas-gelasan, tapi lebih terang jika layout utamanya light */
          --card: #ffffffee;
          --text-strong: #0f172a;
          --text-soft: #475569;
@@ -56,7 +55,7 @@
       font-size: var(--fz-body);
    }
 
-   /* ===== Background responsif (pakai safe-area) ===== */
+   /* ===== Background responsif ===== */
    .auth-bg {
       min-height: 100dvh;
       display: flex;
@@ -67,7 +66,7 @@
          radial-gradient(1200px 600px at 10% 10%, var(--bg1) 0%, transparent 60%),
          radial-gradient(1000px 500px at 90% 15%, var(--bg2) 0%, transparent 60%),
          radial-gradient(900px 600px at 50% 100%, var(--bg3) 0%, transparent 60%),
-         linear-gradient(180deg, #f6f7fb 0%, #eef2f7 100%);
+         linear-gradient(180deg, #f0fdf4 0%, #dcfce7 100%);
       background-attachment: fixed;
       position: relative;
       overflow: hidden;
@@ -104,7 +103,7 @@
       width: 44px;
       height: 44px;
       border-radius: 12px;
-      background: linear-gradient(135deg, #7aa6ff, #71d1ff);
+      background: linear-gradient(135deg, #10b981, #34d399);
       display: inline-grid;
       place-items: center;
       color: white;
@@ -253,14 +252,14 @@
       background: linear-gradient(135deg, var(--btn1), var(--btn2));
       color: #fff;
       cursor: pointer;
-      box-shadow: 0 10px 18px rgba(91, 141, 239, .26);
+      box-shadow: 0 10px 18px rgba(16, 185, 129, .26);
       transition: transform .06s ease, box-shadow .2s ease;
       touch-action: manipulation;
    }
 
    .btn-primary-modern:active {
       transform: translateY(1px);
-      box-shadow: 0 6px 12px rgba(91, 141, 239, .22);
+      box-shadow: 0 6px 12px rgba(16, 185, 129, .22);
    }
 
    .links {
@@ -269,7 +268,7 @@
    }
 
    .links a {
-      color: #86b3ff;
+      color: #34d399;
       text-decoration: none;
       font-size: 14px;
    }
@@ -338,14 +337,14 @@
 <div class="auth-bg">
    <div class="auth-card" role="region" aria-labelledby="authTitle">
       <div class="auth-card-header">
-         <div class="brand-badge" aria-hidden="true"><i class="material-icons">lock</i></div>
-         <h1 id="authTitle" class="auth-title">Login Petugas</h1>
-         <p class="auth-sub">Silakan masukkan username/email dan kata sandi Anda</p>
+         <div class="brand-badge" aria-hidden="true"><i class="material-icons">qr_code_scanner</i></div>
+         <h1 id="authTitle" class="auth-title">Login Absen</h1>
+         <p class="auth-sub">Masuk untuk akses fitur absensi lengkap</p>
       </div>
 
       <div class="auth-body">
          <?= view('\\App\\Views\\admin\\_message_block') ?>
-         <form action="<?= url_to('login') ?>" method="post" novalidate>
+         <form action="<?= base_url('scan/login/attempt'); ?>" method="post" novalidate>
             <?= csrf_field() ?>
 
             <div class="field">
@@ -355,18 +354,18 @@
                      <i class="material-icons icon">mail</i>
                      <input id="loginInput" type="email" name="login" autocomplete="username" autofocus
                         class="input form-control <?php if (session('errors.login')) : ?>is-invalid<?php endif ?>"
-                        placeholder="nama@contoh.com" />
+                        placeholder="nama@contoh.com" value="<?= old('login') ?>" />
                   </div>
-                  <div class="invalid-feedback"><?= session('errors.login') ?></div>
+                  <div class="invalid-feedback"><?= session('errors.login') ?? session('error') ?></div>
                <?php else : ?>
                   <label for="loginInput" class="label"><?= lang('Auth.emailOrUsername') ?></label>
                   <div class="control">
                      <i class="material-icons icon">person</i>
                      <input id="loginInput" type="text" name="login" autocomplete="username" autofocus
                         class="input form-control <?php if (session('errors.login')) : ?>is-invalid<?php endif ?>"
-                        placeholder="email atau username" />
+                        placeholder="email atau username" value="<?= old('login') ?>" />
                   </div>
-                  <div class="invalid-feedback"><?= session('errors.login') ?></div>
+                  <div class="invalid-feedback"><?= session('errors.login') ?? session('error') ?></div>
                <?php endif; ?>
             </div>
 
@@ -394,26 +393,20 @@
                      <input type="checkbox" name="remember" <?php if (old('remember')) : ?> checked <?php endif ?>>
                      <span><?= lang('Auth.rememberMe') ?></span>
                   </label>
-                  <?php if ($config->activeResetter) : ?>
-                     <a href="<?= url_to('forgot') ?>" class="small">Lupa password?</a>
-                  <?php endif; ?>
                </div>
             <?php endif; ?>
 
             <div class="auth-actions">
-               <button type="submit" class="btn-primary-modern"><?= lang('Auth.loginAction') ?></button>
+               <button type="submit" class="btn-primary-modern">Masuk ke Absen</button>
             </div>
 
-            <?php if (!$config->allowRemembering && $config->activeResetter) : ?>
-               <div class="links"><a href="<?= url_to('forgot') ?>">Lupa password?</a></div>
-            <?php endif; ?>
          </form>
       </div>
    </div>
 </div>
 
 <script>
-   // Submit guard & CapsLock sensor (tetap ringan, aman di mobile)
+   // Submit guard & CapsLock sensor
    (function() {
       const container = document.currentScript.previousElementSibling; // .auth-bg
       const form = container.querySelector('form');
@@ -445,3 +438,4 @@
    })();
 </script>
 <?= $this->endSection(); ?>
+

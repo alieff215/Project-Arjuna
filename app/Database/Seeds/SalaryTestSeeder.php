@@ -146,3 +146,9 @@ class SalaryTestSeeder extends Seeder
 
 
 
+
+
+
+
+
+

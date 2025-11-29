@@ -18,23 +18,25 @@
    .scan-header {
       margin-top: 2rem;
       margin-bottom: 2rem;
-      padding-top: 1.5rem;
-      padding-bottom: 1.5rem;
-      padding-left: 1rem;
-      padding-right: 1rem;
+      padding: 2rem;
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%);
+      border-radius: 16px;
+      border-left: 4px solid #667eea;
    }
    
    .scan-header h2 {
-      font-size: 2rem;
-      font-weight: 700;
+      font-size: 2.25rem;
+      font-weight: 800;
       line-height: 1.2;
       margin-bottom: 0.5rem;
+      color: #1f2937;
    }
    
    .scan-header p {
-      font-size: 1rem;
+      font-size: 1.05rem;
       font-weight: 400;
       margin-bottom: 0;
+      color: #6b7280;
    }
    
    /* Memastikan garis tidak bertabrakan */
@@ -47,9 +49,11 @@
    
    /* Memastikan tidak bertabrakan dengan sidebar */
    .container-fluid {
-      margin-left: 0;
+      margin-left: auto;
+      margin-right: auto;
       padding-left: 1rem;
       padding-right: 1rem;
+      max-width: 1400px;
    }
    
    /* Mobile-first improvements */
@@ -230,16 +234,17 @@
       top: 20px;
       right: 20px;
       z-index: 9999;
-      max-width: 400px;
-      min-width: 300px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-      border-radius: 8px;
-      animation: slideInRight 0.3s ease-out;
+      max-width: 420px;
+      min-width: 320px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      border-radius: 16px;
+      animation: slideInRight 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow: hidden;
    }
 
    .notification-content {
       background: white;
-      border-radius: 8px;
+      border-radius: 16px;
       overflow: hidden;
    }
 
@@ -247,27 +252,77 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 15px 20px;
-      border-bottom: 1px solid #e9ecef;
+      padding: 18px 24px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      position: relative;
+   }
+
+   .notification-header::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
    }
 
    .notification-header h5 {
       margin: 0;
-      font-weight: 600;
+      font-weight: 700;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+   }
+
+   .notification-header h5::before {
+      content: '';
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
    }
 
    .notification-body {
-      padding: 15px 20px;
+      padding: 20px 24px;
+      background: #f9fafb;
+   }
+
+   .notification-body p {
+      margin-bottom: 0.5rem;
+      font-size: 0.95rem;
+      color: #374151;
+   }
+
+   .notification-body p strong {
+      color: #1f2937;
+      font-weight: 600;
    }
 
    .notification-success .notification-header {
-      background: #d4edda;
-      color: #155724;
+      background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+      color: #065f46;
+   }
+
+   .notification-success .notification-header::before {
+      background: #10b981;
+   }
+
+   .notification-success .notification-header h5::before {
+      background: #10b981;
    }
 
    .notification-error .notification-header {
-      background: #f8d7da;
-      color: #721c24;
+      background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+      color: #991b1b;
+   }
+
+   .notification-error .notification-header::before {
+      background: #ef4444;
+   }
+
+   .notification-error .notification-header h5::before {
+      background: #ef4444;
    }
 
    .btn-close {
@@ -329,54 +384,69 @@
             </div>
          </div>
          
-         <div class="row mx-auto">
+         <div class="row g-4 justify-content-center">
             <div class="col-lg-3 col-xl-4">
-               <div class="card shadow-sm">
+               <div class="card shadow-sm border-0" style="border-radius: 16px; background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);">
                   <div class="card-body">
-                     <h4 class="mb-3"><b>Tips Penggunaan</b></h4>
+                     <h4 class="mb-4" style="font-weight: 700; color: #1f2937;">
+                        <i class="material-icons mr-2" style="vertical-align: middle; color: #10b981;">lightbulb</i>
+                        Tips Penggunaan
+                     </h4>
                      <div class="mb-3">
-                        <div class="d-flex align-items-start mb-2">
-                           <i class="material-icons text-success mr-2" style="font-size: 20px;">visibility</i>
-                           <small>Tunjukkan QR Code sampai terlihat jelas di kamera</small>
+                        <div class="d-flex align-items-start mb-3 p-3" style="background: white; border-radius: 12px; border-left: 4px solid #10b981;">
+                           <i class="material-icons text-success mr-3" style="font-size: 24px; margin-top: 2px;">visibility</i>
+                           <div>
+                              <strong style="color: #1f2937; display: block; margin-bottom: 4px;">Tunjukkan QR Code dengan jelas</strong>
+                              <small class="text-muted">Pastikan QR Code terlihat jelas di kamera</small>
+                           </div>
                         </div>
-                        <div class="d-flex align-items-start mb-2">
-                           <i class="material-icons text-success mr-2" style="font-size: 20px;">center_focus_strong</i>
-                           <small>Posisikan QR Code tidak terlalu jauh maupun terlalu dekat</small>
+                        <div class="d-flex align-items-start p-3" style="background: white; border-radius: 12px; border-left: 4px solid #10b981;">
+                           <i class="material-icons text-success mr-3" style="font-size: 24px; margin-top: 2px;">center_focus_strong</i>
+                           <div>
+                              <strong style="color: #1f2937; display: block; margin-bottom: 4px;">Posisikan dengan benar</strong>
+                              <small class="text-muted">Jaga jarak optimal antara QR Code dan kamera</small>
+                           </div>
                         </div>
                      </div>
                   </div>
                </div>
             </div>
             <div class="col-lg-6 col-xl-4">
-               <div class="card shadow-sm">
-                  <div class="card-header card-header-primary">
+               <div class="card shadow-sm border-0" style="border-radius: 16px;">
+                  <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 16px 16px 0 0; padding: 1.5rem;">
                      <div class="row align-items-center">
                         <div class="col">
-                           <h4 class="card-title mb-1"><b>Absen <?= $waktu; ?></b></h4>
-                           <p class="card-category mb-0">Silahkan tunjukkan QR Code anda</p>
+                           <h4 class="card-title mb-1" style="font-weight: 700; font-size: 1.5rem;">
+                              <i class="material-icons mr-2" style="vertical-align: middle; font-size: 28px;">qr_code_scanner</i>
+                              Absen <?= $waktu; ?>
+                           </h4>
+                           <p class="card-category mb-0" style="opacity: 0.9; font-size: 0.95rem;">Silahkan tunjukkan QR Code anda</p>
                         </div>
                         <div class="col-auto">
-                           <a href="<?= base_url("scan/$oppBtn"); ?>" class="btn btn-<?= $oppBtn == 'masuk' ? 'success' : 'warning'; ?> btn-sm">
-                              <i class="material-icons mr-1" style="font-size: 18px;">swap_horiz</i>
+                           <a href="<?= base_url("scan/$oppBtn"); ?>" class="btn btn-light btn-sm" style="border-radius: 8px; font-weight: 600;">
+                              <i class="material-icons mr-1" style="font-size: 18px; vertical-align: middle;">swap_horiz</i>
                               Absen <?= $oppBtn; ?>
                            </a>
                         </div>
                      </div>
                   </div>
-                  <div class="card-body">
+                  <div class="card-body" style="padding: 2rem;">
                      <!-- Toggle Scan Mode -->
-                     <div class="mb-3">
-                        <label class="form-label"><b>Mode Scan</b></label>
-                        <div class="btn-group w-100" role="group">
+                     <div class="mb-4">
+                        <label class="form-label" style="font-weight: 600; color: #1f2937; font-size: 1rem; margin-bottom: 0.75rem;">
+                           <i class="material-icons mr-2" style="vertical-align: middle; font-size: 20px;">settings</i>
+                           Mode Scan
+                        </label>
+                        <div class="btn-group w-100" role="group" style="box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-radius: 12px; overflow: hidden;">
                            <input type="radio" class="btn-check" name="scanMode" id="cameraMode" value="camera" checked>
-                           <label class="btn btn-outline-primary" for="cameraMode">
-                              <i class="material-icons mr-1" style="font-size: 16px;">camera_alt</i>
+                           <label class="btn btn-outline-primary" for="cameraMode" style="border-radius: 0; font-weight: 600; padding: 12px;">
+                              <i class="material-icons mr-2" style="font-size: 20px; vertical-align: middle;">camera_alt</i>
                               Kamera
                            </label>
                            
                            <input type="radio" class="btn-check" name="scanMode" id="usbMode" value="usb">
-                           <label class="btn btn-outline-primary" for="usbMode">
-                              <i class="material-icons mr-1" style="font-size: 16px;">usb</i>
+                           <label class="btn btn-outline-primary" for="usbMode" style="border-radius: 0; font-weight: 600; padding: 12px;">
+                              <i class="material-icons mr-2" style="font-size: 20px; vertical-align: middle;">usb</i>
                               USB Scanner
                            </label>
                         </div>
@@ -384,32 +454,44 @@
 
                      <!-- Camera Mode Section -->
                      <div id="cameraModeSection">
-                        <div class="mb-3">
-                           <label class="form-label"><b>Pilih Kamera</b></label>
-                           <select id="pilihKamera" class="form-select" aria-label="Pilih kamera">
+                        <div class="mb-4">
+                           <label class="form-label" style="font-weight: 600; color: #1f2937; font-size: 1rem; margin-bottom: 0.75rem;">
+                              <i class="material-icons mr-2" style="vertical-align: middle; font-size: 20px;">videocam</i>
+                              Pilih Kamera
+                           </label>
+                           <select id="pilihKamera" class="form-select" aria-label="Pilih kamera" style="border-radius: 12px; padding: 12px; border: 2px solid #e5e7eb; font-size: 0.95rem;">
                               <option selected>Pilih kamera yang tersedia</option>
                            </select>
                         </div>
 
                         <div class="mb-3">
-                           <div class="previewParent border rounded" style="background: #f8f9fa;">
-                              <div class="text-center py-4" id="searching">
-                                 <div class="spinner-border text-primary" role="status">
+                           <div class="previewParent border rounded" style="background: #f8f9fa; border-radius: 16px; overflow: hidden; border: 2px solid #e5e7eb !important;">
+                              <div class="text-center py-5" id="searching">
+                                 <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
                                     <span class="visually-hidden">Loading...</span>
                                  </div>
-                                 <p class="mt-2 mb-0"><b>Mencari kamera...</b></p>
+                                 <p class="mt-2 mb-0" style="font-weight: 600; color: #4b5563; font-size: 1rem;">
+                                    <i class="material-icons mr-2" style="vertical-align: middle;">search</i>
+                                    Mencari kamera...
+                                 </p>
                               </div>
-                              <video id="previewKamera" class="w-100 rounded" style="height: 300px; object-fit: cover; display: none;"></video>
+                              <video id="previewKamera" class="w-100 rounded" style="height: 350px; object-fit: cover; display: none;"></video>
                            </div>
                         </div>
                      </div>
 
                      <!-- USB Scanner Mode Section -->
                      <div id="usbModeSection" style="display: none;">
-                        <div class="mb-3">
-                           <label class="form-label"><b>Scan QR Code dengan USB Scanner</b></label>
-                           <input type="text" id="usbScanInput" class="form-control form-control-lg" placeholder="Arahkan scanner ke QR Code..." autocomplete="off">
-                           <small class="text-muted">Klik pada kolom input ini, lalu scan QR Code dengan USB scanner Anda</small>
+                        <div class="mb-4">
+                           <label class="form-label" style="font-weight: 600; color: #1f2937; font-size: 1rem; margin-bottom: 0.75rem;">
+                              <i class="material-icons mr-2" style="vertical-align: middle; font-size: 20px;">keyboard</i>
+                              Scan QR Code dengan USB Scanner
+                           </label>
+                           <input type="text" id="usbScanInput" class="form-control form-control-lg" placeholder="Arahkan USB Scanner ke QR Code dan scan..." autofocus style="font-size: 1.1rem; padding: 18px; border-radius: 12px; border: 2px solid #e5e7eb; font-weight: 500;">
+                           <small class="text-muted d-block mt-2" style="font-size: 0.875rem;">
+                              <i class="material-icons mr-1" style="vertical-align: middle; font-size: 16px;">info</i>
+                              Klik pada kolom input ini, lalu scan QR Code dengan USB scanner Anda
+                           </small>
                         </div>
                         <div class="alert alert-info">
                            <i class="material-icons mr-2" style="font-size: 18px;">info</i>
@@ -434,25 +516,40 @@
                </div>
             </div>
             <div class="col-lg-3 col-xl-4">
-               <div class="card shadow-sm">
+               <div class="card shadow-sm border-0" style="border-radius: 16px; background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);">
                   <div class="card-body">
-                     <h4 class="mb-3"><b>Panduan Penggunaan</b></h4>
+                     <h4 class="mb-4" style="font-weight: 700; color: #1f2937;">
+                        <i class="material-icons mr-2" style="vertical-align: middle; color: #3b82f6;">book</i>
+                        Panduan Penggunaan
+                     </h4>
                      <div class="mb-4">
-                        <div class="d-flex align-items-start mb-2">
-                           <i class="material-icons text-info mr-2" style="font-size: 20px;">qr_code_scanner</i>
-                           <small>Jika berhasil scan maka akan muncul data karyawan/admin dibawah preview kamera</small>
+                        <div class="d-flex align-items-start mb-3 p-3" style="background: white; border-radius: 12px; border-left: 4px solid #3b82f6;">
+                           <i class="material-icons text-info mr-3" style="font-size: 24px; margin-top: 2px;">qr_code_scanner</i>
+                           <div>
+                              <strong style="color: #1f2937; display: block; margin-bottom: 4px;">Data muncul setelah scan</strong>
+                              <small class="text-muted">Data karyawan/admin akan muncul di bawah preview kamera</small>
+                           </div>
                         </div>
-                        <div class="d-flex align-items-start mb-2">
-                           <i class="material-icons text-info mr-2" style="font-size: 20px;">swap_horiz</i>
-                           <small>Klik tombol <b><span class="text-success">Absen masuk</span> / <span class="text-warning">Absen pulang</span></b> untuk mengubah waktu absensi</small>
+                        <div class="d-flex align-items-start mb-3 p-3" style="background: white; border-radius: 12px; border-left: 4px solid #3b82f6;">
+                           <i class="material-icons text-info mr-3" style="font-size: 24px; margin-top: 2px;">swap_horiz</i>
+                           <div>
+                              <strong style="color: #1f2937; display: block; margin-bottom: 4px;">Ubah waktu absensi</strong>
+                              <small class="text-muted">Klik tombol <b><span class="text-success">Absen masuk</span> / <span class="text-warning">Absen pulang</span></b> untuk mengubah</small>
+                           </div>
                         </div>
-                        <div class="d-flex align-items-start mb-2">
-                           <i class="material-icons text-info mr-2" style="font-size: 20px;">dashboard</i>
-                           <small>Untuk melihat data absensi, klik tombol Dashboard</small>
+                        <div class="d-flex align-items-start mb-3 p-3" style="background: white; border-radius: 12px; border-left: 4px solid #3b82f6;">
+                           <i class="material-icons text-info mr-3" style="font-size: 24px; margin-top: 2px;">dashboard</i>
+                           <div>
+                              <strong style="color: #1f2937; display: block; margin-bottom: 4px;">Lihat data absensi</strong>
+                              <small class="text-muted">Klik tombol Dashboard untuk melihat data absensi</small>
+                           </div>
                         </div>
-                        <div class="d-flex align-items-start mb-2">
-                           <i class="material-icons text-info mr-2" style="font-size: 20px;">admin_panel_settings</i>
-                           <small>Untuk mengakses halaman admin anda harus login terlebih dahulu</small>
+                        <div class="d-flex align-items-start p-3" style="background: white; border-radius: 12px; border-left: 4px solid #3b82f6;">
+                           <i class="material-icons text-info mr-3" style="font-size: 24px; margin-top: 2px;">admin_panel_settings</i>
+                           <div>
+                              <strong style="color: #1f2937; display: block; margin-bottom: 4px;">Akses halaman admin</strong>
+                              <small class="text-muted">Anda harus login terlebih dahulu untuk mengakses halaman admin</small>
+                           </div>
                         </div>
                      </div>
                   </div>
@@ -659,35 +756,52 @@
       // Set title
       title.textContent = data.message;
       
-      // Set body content
-      let bodyContent = '<div class="row">';
-      bodyContent += '<div class="col">';
+      // Set body content dengan design yang lebih profesional
+      let bodyContent = '<div style="background: white; border-radius: 12px; padding: 1rem; margin-bottom: 1rem;">';
+      bodyContent += '<div class="row g-3">';
+      bodyContent += '<div class="col-md-6">';
+      bodyContent += '<div style="background: #f9fafb; padding: 1rem; border-radius: 10px; border-left: 3px solid #10b981;">';
+      bodyContent += '<p style="margin: 0; font-size: 0.75rem; color: #6b7280; text-transform: uppercase; font-weight: 600; margin-bottom: 0.5rem;">Data Karyawan</p>';
       
-      if (data.type === 'Karyawan') {
-         bodyContent += `<p><strong>Nama:</strong> ${data.data.nama_karyawan}</p>`;
-         bodyContent += `<p><strong>NIS:</strong> ${data.data.nis}</p>`;
-         bodyContent += `<p><strong>Departemen:</strong> ${data.data.departemen} ${data.data.jabatan}</p>`;
-      } else if (data.type === 'Admin') {
-         bodyContent += `<p><strong>Nama:</strong> ${data.data.nama_admin}</p>`;
-         bodyContent += `<p><strong>NUPTK:</strong> ${data.data.nuptk}</p>`;
-         bodyContent += `<p><strong>No HP:</strong> ${data.data.no_hp}</p>`;
+      // Tampilkan data karyawan/admin
+      if (data.data) {
+         if (data.type === 'Karyawan' && data.data.nama_karyawan) {
+            bodyContent += `<p style="margin: 0 0 0.5rem 0; font-size: 1rem; color: #1f2937;"><strong style="color: #374151;">Nama:</strong> ${data.data.nama_karyawan || '-'}</p>`;
+            bodyContent += `<p style="margin: 0 0 0.5rem 0; font-size: 1rem; color: #1f2937;"><strong style="color: #374151;">NIS:</strong> ${data.data.nis || '-'}</p>`;
+            const dept = data.data.departemen || '';
+            const jab = data.data.jabatan || '';
+            const deptJab = `${dept} ${jab}`.trim();
+            bodyContent += `<p style="margin: 0; font-size: 1rem; color: #1f2937;"><strong style="color: #374151;">Departemen:</strong> ${deptJab || '-'}</p>`;
+         } else if (data.type === 'Admin' && data.data.nama_admin) {
+            bodyContent += `<p style="margin: 0 0 0.5rem 0; font-size: 1rem; color: #1f2937;"><strong style="color: #374151;">Nama:</strong> ${data.data.nama_admin || '-'}</p>`;
+            bodyContent += `<p style="margin: 0 0 0.5rem 0; font-size: 1rem; color: #1f2937;"><strong style="color: #374151;">NUPTK:</strong> ${data.data.nuptk || '-'}</p>`;
+            bodyContent += `<p style="margin: 0; font-size: 1rem; color: #1f2937;"><strong style="color: #374151;">No HP:</strong> ${data.data.no_hp || '-'}</p>`;
+         }
       }
       
       bodyContent += '</div>';
-      bodyContent += '<div class="col">';
-      bodyContent += `<p><strong>Jam masuk:</strong> <span class="text-info">${data.presensi.jam_masuk || '-'}</span></p>`;
-      bodyContent += `<p><strong>Jam pulang:</strong> <span class="text-info">${data.presensi.jam_keluar || '-'}</span></p>`;
+      bodyContent += '</div>';
+      bodyContent += '<div class="col-md-6">';
+      bodyContent += '<div style="background: #f9fafb; padding: 1rem; border-radius: 10px; border-left: 3px solid #3b82f6;">';
+      bodyContent += '<p style="margin: 0; font-size: 0.75rem; color: #6b7280; text-transform: uppercase; font-weight: 600; margin-bottom: 0.5rem;">Waktu Absensi</p>';
+      if (data.presensi) {
+         bodyContent += `<p style="margin: 0 0 0.5rem 0; font-size: 1rem; color: #1f2937;"><strong style="color: #374151;">Jam masuk:</strong> <span style="color: #3b82f6; font-weight: 600;">${data.presensi.jam_masuk || '-'}</span></p>`;
+         bodyContent += `<p style="margin: 0; font-size: 1rem; color: #1f2937;"><strong style="color: #374151;">Jam pulang:</strong> <span style="color: #3b82f6; font-weight: 600;">${data.presensi.jam_keluar || '-'}</span></p>`;
+      } else {
+         bodyContent += `<p style="margin: 0 0 0.5rem 0; font-size: 1rem; color: #1f2937;"><strong style="color: #374151;">Jam masuk:</strong> <span style="color: #9ca3af;">-</span></p>`;
+         bodyContent += `<p style="margin: 0; font-size: 1rem; color: #1f2937;"><strong style="color: #374151;">Jam pulang:</strong> <span style="color: #9ca3af;">-</span></p>`;
+      }
+      bodyContent += '</div>';
+      bodyContent += '</div>';
       bodyContent += '</div>';
       bodyContent += '</div>';
       
-      // Tambahkan tombol untuk scan selanjutnya
-      bodyContent += '<div class="row mt-3">';
-      bodyContent += '<div class="col-12 text-center">';
-      bodyContent += '<button class="btn btn-success btn-sm" onclick="prepareNextScan()">';
-      bodyContent += '<i class="material-icons mr-1" style="font-size: 16px;">refresh</i>';
+      // Tambahkan tombol untuk scan selanjutnya dengan design yang lebih menarik
+      bodyContent += '<div class="text-center" style="padding-top: 0.5rem;">';
+      bodyContent += '<button class="btn btn-success" onclick="prepareNextScan()" style="border-radius: 12px; padding: 12px 24px; font-weight: 600; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2);">';
+      bodyContent += '<i class="material-icons mr-2" style="vertical-align: middle; font-size: 20px;">refresh</i>';
       bodyContent += 'Scan Karyawan Selanjutnya';
       bodyContent += '</button>';
-      bodyContent += '</div>';
       bodyContent += '</div>';
       
       body.innerHTML = bodyContent;

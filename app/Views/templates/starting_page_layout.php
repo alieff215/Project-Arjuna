@@ -122,7 +122,9 @@
       <div class="container-fluid">
          <div class="navbar-wrapper row w-100">
             <div class="col-6">
+               <?php if (!isset($hideNavbarTitle) || $hideNavbarTitle !== true): ?>
                <p class="navbar-brand"><b><?= $title ?? 'Login'; ?></b></p>
+               <?php endif; ?>
             </div>
             <div class="col-6 d-flex justify-content-end align-items-center">
                <!-- Theme Toggle Button -->
