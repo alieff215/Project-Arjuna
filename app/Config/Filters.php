@@ -41,6 +41,8 @@ class Filters extends BaseFilters
         'login'         => LoginFilter::class,
         'role'          => RoleFilter::class,
         'permission'    => PermissionFilter::class,
+        'auth'     => \App\Filters\Auth::class,
+        'role_access'  => \App\Filters\RoleAccess::class,
     ];
 
     /**
@@ -77,16 +79,35 @@ class Filters extends BaseFilters
      *     after: array<string, array{except: list<string>|string}>|list<string>
      * }
      */
+
+    
     public array $globals = [
         'before' => [
-            'honeypot',
-            'login'
-            // 'csrf',
-            // 'invalidchars',
+            'auth' => [
+                'except' => [
+                   '/',            // web profile
+                    'webprofile/*', // web profile
+                    'login',        // halaman login
+                    'login/*',      // proses login
+                ],
+            ],
+            // 'honeypot',
+            // 'webprofile',
+            // 'login'
+            // // 'csrf',
+            // // 'invalidchars',
         ],
         'after' => [
             // 'toolbar',
             // 'honeypot',
+            'toolbar',
+            'auth' => [
+                'except' => [
+                    '/',
+                    'webprofile/*',
+                    'login/*',
+                ],
+            ],
             'secureheaders',
         ],
     ];
@@ -121,6 +142,12 @@ class Filters extends BaseFilters
                 'admin/',
                 'admin/*',
                 'register/',
+            ]
+        ],
+        'role_access' => [
+            'before' => [
+                'scan/',
+                'scan/*',
             ]
         ]
     ];

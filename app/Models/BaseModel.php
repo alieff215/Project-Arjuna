@@ -1,7 +1,7 @@
 <?php namespace App\Models;
 
 use CodeIgniter\Model;
-use Config\School;
+use Config\Company;
 
 class BaseModel extends Model
 {
@@ -14,6 +14,6 @@ class BaseModel extends Model
         parent::__construct();
         $this->request = \Config\Services::request();
         $this->session = \Config\Services::session();
-        $this->generalSettings = School::$generalSettings;
+        $this->generalSettings = Company::$generalSettings;
     }
 }

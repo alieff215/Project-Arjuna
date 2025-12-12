@@ -1,60 +1,129 @@
 <!-- Navbar -->
-<nav class="navbar navbar-expand-lg navbar-transparent navbar-absolute fixed-top ">
-   <div class="container-fluid">
-      <div class="navbar-wrapper">
-         <p class="navbar-brand"><b><?= $title; ?></b></p>
-      </div>
-      <button class="navbar-toggler" type="button" data-toggle="collapse" aria-controls="navigation-index" aria-expanded="false" aria-label="Toggle navigation">
-         <span class="sr-only">Toggle navigation</span>
-         <span class="navbar-toggler-icon icon-bar"></span>
-         <span class="navbar-toggler-icon icon-bar"></span>
-         <span class="navbar-toggler-icon icon-bar"></span>
+<nav class="navbar navbar-expand-lg navbar-transparent navbar-absolute fixed-top custom-navbar-line">
+  <div class="container-fluid">
+    <div class="navbar-wrapper">
+      <!-- Tombol Kembali -->
+      <?php 
+      $current_uri = current_url();
+      $exclude_pages = ['dashboard', 'login', 'scan', 'webprofile'];
+      $show_back_button = true;
+      
+      foreach($exclude_pages as $page) {
+        if(strpos($current_uri, $page) !== false) {
+          $show_back_button = false;
+          break;
+        }
+      }
+      
+      if($show_back_button): ?>
+      <button onclick="history.back()" class="btn btn-sm btn-outline-primary me-3" title="Kembali">
+        <i class="material-icons">arrow_back</i>
       </button>
-      <div class="collapse navbar-collapse justify-content-end">
-         <!-- <form class="navbar-form">
-                <div class="input-group no-border">
-                    <input type="text" value="" class="form-control" placeholder="Search...">
-                    <button type="submit" class="btn btn-white btn-round btn-just-icon">
-                        <i class="material-icons">search</i>
-                        <div class="ripple-container"></div>
-                    </button>
-                </div>
-            </form> -->
-         <ul class="navbar-nav">
-            <li class="nav-item">
-               <a class="nav-link" href="<?= base_url('admin/dashboard'); ?>">
-                  <i class="material-icons">dashboard</i>
-                  <p class="d-lg-none d-md-block">
-                     Dashboard
-                  </p>
-               </a>
-            </li>
-            <li class="nav-item dropdown">
-               <a class="nav-link" href="javascript:;" id="navbarDropdownScan" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                  <i class="material-icons">qr_code</i>
-                  <p class="d-lg-none d-md-block">
-                     Scan
-                  </p>
-               </a>
-               <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownScan">
-                  <a class="dropdown-item" href="<?= base_url('scan/masuk'); ?>">Absen masuk</a>
-                  <a class="dropdown-item" href="<?= base_url('scan/pulang'); ?>">Absen pulang</a>
-               </div>
-            </li>
-            <li class="nav-item dropdown">
-               <a class="nav-link <?= user()->toArray()['is_superadmin'] == '1' ? 'text-danger' : ''; ?>" href="javascript:;" id="navbarDropdownProfile" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                  <i class="material-icons">person</i>
-                  <p class="d-lg-none d-md-block">
-                     Account
-                  </p>
-                  <span>User : <?= user()->toArray()['username']; ?></span>
-               </a>
-               <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownProfile">
-                  <a class="dropdown-item" href="<?= base_url('/logout'); ?>">Log out</a>
-               </div>
-            </li>
-         </ul>
-      </div>
-   </div>
+      <?php endif; ?>
+      
+      <p class="navbar-brand mb-0"><b><?= $title; ?></b></p>
+    </div>
+
+    <button class="navbar-toggler" type="button" data-toggle="collapse" aria-controls="navigation-index" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="sr-only">Toggle navigation</span>
+      <span class="navbar-toggler-icon icon-bar"></span>
+      <span class="navbar-toggler-icon icon-bar"></span>
+      <span class="navbar-toggler-icon icon-bar"></span>
+    </button>
+
+    <div class="collapse navbar-collapse justify-content-end">
+      <ul class="navbar-nav align-items-center">
+        <!-- Toggle Theme (desktop only) -->
+        <li class="nav-item d-flex align-items-center mr-lg-2">
+          <button class="theme-btn theme-btn--desktop" type="button" onclick="toggleTheme()" aria-label="Toggle theme">
+            <i class="material-icons" id="themeIcon">dark_mode</i>
+            <span id="themeText">Gelap</span>
+          </button>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link" href="<?= base_url('admin/dashboard'); ?>">
+            <i class="material-icons">dashboard</i>
+            <p class="d-lg-none d-md-block">Dashboard</p>
+          </a>
+        </li>
+
+        <li class="nav-item dropdown">
+          <a class="nav-link" href="javascript:;" id="navbarDropdownScan" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <i class="material-icons">qr_code</i>
+            <p class="d-lg-none d-md-block">Scan</p>
+          </a>
+          <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownScan">
+            <a class="dropdown-item" href="<?= base_url('scan/masuk'); ?>">Absen masuk</a>
+            <a class="dropdown-item" href="<?= base_url('scan/pulang'); ?>">Absen pulang</a>
+          </div>
+        </li>
+
+        <li class="nav-item dropdown">
+          <a class="nav-link <?= user()->toArray()['is_superadmin'] == '1' ? 'text-danger' : ''; ?>" href="javascript:;" id="navbarDropdownProfile" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <i class="material-icons">person</i>
+            <p class="d-lg-none d-md-block">Account</p>
+            <span>User : <?= user()->toArray()['username']; ?></span>
+          </a>
+          <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownProfile">
+            <a class="dropdown-item" href="<?= base_url('/logout'); ?>">Log out</a>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Garis pemisah modern (soft ice-blue) + responsif -->
+  <style>
+    .custom-navbar-line{ background:transparent!important; border:0!important; box-shadow:none!important; position:fixed; top:0; left:0; right:0; z-index:1050; }
+    .custom-navbar-line .container-fluid{ position:relative; }
+    
+    /* Styling tombol kembali */
+    .navbar-wrapper .btn-outline-primary {
+      border: 1px solid var(--primary, #3b82f6);
+      color: var(--primary, #3b82f6);
+      background: transparent;
+      border-radius: 8px;
+      padding: 6px 10px;
+      transition: all 0.2s ease;
+    }
+    
+    .navbar-wrapper .btn-outline-primary:hover {
+      background: var(--primary, #3b82f6);
+      color: white;
+      transform: translateX(-2px);
+    }
+    
+    .navbar-wrapper .btn-outline-primary i {
+      font-size: 18px;
+    }
+
+    .custom-navbar-line .container-fluid::after{
+      content:""; position:absolute; left:0; right:0; bottom:-7px; height:2px; border-radius:2px;
+      background:linear-gradient(180deg, color-mix(in oklab, var(--primary) 60%, var(--bg)) 0%, color-mix(in oklab, var(--primary) 45%, var(--bg)) 100%);
+      box-shadow:0 1px 0 rgba(255,255,255,.14) inset, 0 2px 8px -2px color-mix(in oklab, var(--primary) 34%, transparent), 0 8px 18px -10px rgba(12,20,40,.18);
+      pointer-events:none;
+    }
+    .custom-navbar-line .container-fluid::before{
+      content:""; position:absolute; left:0; right:0; bottom:-21px; height:14px;
+      background:linear-gradient(180deg, color-mix(in oklab, var(--primary) 20%, transparent) 0%, transparent 80%);
+      filter:blur(8px); opacity:.36; pointer-events:none;
+    }
+    [data-theme="dark"] .custom-navbar-line .container-fluid::after{
+      background:linear-gradient(180deg, color-mix(in oklab, var(--primary) 72%, var(--bg)) 0%, color-mix(in oklab, var(--primary) 58%, var(--bg)) 100%);
+      box-shadow:0 1px 0 rgba(0,0,0,.35) inset, 0 3px 10px -3px color-mix(in oklab, var(--primary) 32%, transparent), 0 10px 22px -12px rgba(0,0,0,.55);
+    }
+    [data-theme="dark"] .custom-navbar-line .container-fluid::before{ opacity:.28; }
+
+    /* Responsif khusus NAVBAR */
+    @media (max-width: 991.98px){
+      .navbar .nav-link, .navbar .dropdown-item{ padding:10px 12px; border-radius:10px; }
+      .custom-navbar-line .dropdown-menu{ position:static!important; float:none; width:100%; margin:4px 0 0; box-shadow:none; border:0; background:transparent; }
+    }
+    @media (max-width: 575.98px){
+      .navbar .navbar-nav .nav-item{ margin-left:4px; margin-right:4px; }
+    }
+  </style>
 </nav>
 <!-- End Navbar -->
+

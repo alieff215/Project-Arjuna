@@ -2,9 +2,9 @@
    <div class="container-fluid">
       <form id="formUbah">
 
-         <input type="hidden" name="id_siswa" value="<?= $data['id_siswa'] ?? ''; ?>">
-         <input type="hidden" name="id_guru" value="<?= $data['id_guru'] ?? ''; ?>">
-         <input type="hidden" name="id_kelas" value="<?= $data['id_kelas'] ?? ''; ?>">
+         <input type="hidden" name="id_karyawan" value="<?= $data['id_karyawan'] ?? ''; ?>">
+         <input type="hidden" name="id_admin" value="<?= $data['id_admin'] ?? ''; ?>">
+         <input type="hidden" name="id_departemen" value="<?= $data['id_departemen'] ?? ''; ?>">
 
          <label for="kehadiran">Kehadiran</label>
          <div class="form-check" id="kehadiran">
@@ -22,18 +22,82 @@
                </div>
             <?php endforeach; ?>
          </div>
-         <div class="row mb-2">
-            <div class="col">
-               <label for="jamMasuk">Jam masuk</label>
-               <input class="form-control" type="time" name="jam_masuk" id="jamMasuk" value="<?= $presensi['jam_masuk'] ?? ''; ?>">
+         
+         <!-- Input Jam Masuk dan Jam Keluar -->
+         <div class="row mt-3">
+            <div class="col-md-6">
+               <label for="jam_masuk">Jam Masuk</label>
+               <input type="time" id="jam_masuk" name="jam_masuk" class="form-control" value="<?= $presensi['jam_masuk'] ?? ''; ?>">
             </div>
-            <div class="col">
-               <label for="jamKeluar">Jam keluar</label>
-               <input class="form-control" type="time" name="jam_keluar" id="jamKeluar" value="<?= $presensi['jam_keluar'] ?? ''; ?>">
+            <div class="col-md-6">
+               <label for="jam_keluar">Jam Keluar</label>
+               <input type="time" id="jam_keluar" name="jam_keluar" class="form-control" value="<?= $presensi['jam_keluar'] ?? ''; ?>">
             </div>
          </div>
-         <label for="keterangan">Keterangan</label>
-         <textarea id="keterangan" name="keterangan" class="custom-select"><?= trim($presensi['keterangan'] ?? ''); ?></textarea>
+         
+         <div class="mt-3">
+            <label for="keterangan">Keterangan</label>
+            <textarea id="keterangan" name="keterangan" class="custom-select"><?= trim($presensi['keterangan'] ?? ''); ?></textarea>
+         </div>
+         
+         <hr>
+         <div>
+            <button type="button" class="btn btn-info" style="margin-bottom:10px;cursor:default">History Update</button>
+            <?php if (!empty($histories)) : ?>
+               <div class="card" style="border:1px solid #e5e7eb;border-radius:8px;">
+                  <div class="card-body" style="max-height:220px;overflow:auto;padding:12px;">
+                     <?php foreach ($histories as $h) : ?>
+                        <?php $kb = kehadiran(intval($h['id_kehadiran_before'] ?? 0)); $ka = kehadiran(intval($h['id_kehadiran_after'] ?? 0)); ?>
+                        <div class="mb-3" style="border-bottom:1px dashed #e5e7eb;padding-bottom:8px;">
+                           <div class="mb-1" style="font-size:12px;color:#64748b;">
+                              <?= date('d M Y H:i:s', strtotime($h['created_at'] ?? 'now')) ?>
+                           </div>
+                           <div class="row" style="font-size:14px;">
+                              <div class="col-4 col-sm-3 text-muted">Kehadiran</div>
+                              <div class="col-8 col-sm-9">
+                                 <span class="text-danger"><?= esc($kb['text'] ?? '-') ?></span>
+                                 <span class="text-muted"> → </span>
+                                 <span class="text-success"><?= esc($ka['text'] ?? '-') ?></span>
+                              </div>
+                           </div>
+                           <?php if (!empty($h['jam_masuk_before']) || !empty($h['jam_masuk_after'])) : ?>
+                           <div class="row" style="font-size:14px;">
+                              <div class="col-4 col-sm-3 text-muted">Jam Masuk</div>
+                              <div class="col-8 col-sm-9">
+                                 <span class="text-danger"><?= esc($h['jam_masuk_before'] ?? '-') ?></span>
+                                 <span class="text-muted"> → </span>
+                                 <span class="text-success"><?= esc($h['jam_masuk_after'] ?? '-') ?></span>
+                              </div>
+                           </div>
+                           <?php endif; ?>
+                           <?php if (!empty($h['jam_keluar_before']) || !empty($h['jam_keluar_after'])) : ?>
+                           <div class="row" style="font-size:14px;">
+                              <div class="col-4 col-sm-3 text-muted">Jam Keluar</div>
+                              <div class="col-8 col-sm-9">
+                                 <span class="text-danger"><?= esc($h['jam_keluar_before'] ?? '-') ?></span>
+                                 <span class="text-muted"> → </span>
+                                 <span class="text-success"><?= esc($h['jam_keluar_after'] ?? '-') ?></span>
+                              </div>
+                           </div>
+                           <?php endif; ?>
+                           <div class="row" style="font-size:14px;">
+                              <div class="col-4 col-sm-3 text-muted">Keterangan</div>
+                              <div class="col-8 col-sm-9">
+                                 <span class="text-danger"><?= esc($h['keterangan_before'] ?? '') ?></span>
+                                 <span class="text-muted"> → </span>
+                                 <span class="text-success"><?= esc($h['keterangan_after'] ?? '') ?></span>
+                              </div>
+                           </div>
+                        </div>
+                     <?php endforeach; ?>
+                  </div>
+               </div>
+            <?php else : ?>
+               <div class="alert alert-secondary" role="alert" style="margin:0">
+                  Belum ada history perubahan untuk tanggal ini.
+               </div>
+            <?php endif; ?>
+         </div>
       </form>
    </div>
 </div>

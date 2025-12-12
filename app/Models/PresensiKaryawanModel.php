@@ -1,0 +1,181 @@
+<?php
+
+namespace App\Models;
+
+use App\Models\PresensiInterface;
+use CodeIgniter\I18n\Time;
+use CodeIgniter\Model;
+use App\Libraries\enums\Kehadiran;
+
+class PresensiKaryawanModel extends Model implements PresensiInterface
+{
+   protected $primaryKey = 'id_presensi';
+
+   protected $allowedFields = [
+      'id_karyawan',
+      'id_departemen',
+      'tanggal',
+      'jam_masuk',
+      'jam_keluar',
+      'id_kehadiran',
+      'keterangan'
+   ];
+
+   protected $table = 'tb_presensi_karyawan';
+
+   public function cekAbsen(string|int $id, string|Time $date)
+   {
+      $result = $this->where(['id_karyawan' => $id, 'tanggal' => $date])->first();
+
+      if (empty($result)) return false;
+
+      return $result[$this->primaryKey];
+   }
+
+   public function absenMasuk(string $id,  $date, $time, $idDepartemen = '')
+   {
+      $this->save([
+         'id_karyawan' => $id,
+         'id_departemen' => $idDepartemen,
+         'tanggal' => $date,
+         'jam_masuk' => $time,
+         // 'jam_keluar' => '',
+         'id_kehadiran' => Kehadiran::Hadir->value,
+         'keterangan' => ''
+      ]);
+   }
+
+   public function absenKeluar(string $id, $time)
+   {
+      $this->update($id, [
+         'jam_keluar' => $time,
+         'keterangan' => ''
+      ]);
+   }
+
+   public function getPresensiByIdKaryawanTanggal($idKaryawan, $date)
+   {
+      return $this->where(['id_karyawan' => $idKaryawan, 'tanggal' => $date])->first();
+   }
+
+   public function getPresensiById(string $idPresensi)
+   {
+      return $this->where([$this->primaryKey => $idPresensi])->first();
+   }
+
+   public function getPresensiByDepartemenTanggal($idDepartemen, $tanggal)
+   {
+      // Gunakan builder spesifik agar tidak mengubah table model secara global
+      return $this->db->table('tb_karyawan')
+         ->select('*')
+         ->join(
+            "(SELECT id_presensi, id_karyawan AS id_karyawan_presensi, tanggal, jam_masuk, jam_keluar, id_kehadiran, keterangan FROM tb_presensi_karyawan) tb_presensi_karyawan",
+            "tb_karyawan.id_karyawan = tb_presensi_karyawan.id_karyawan_presensi AND tb_presensi_karyawan.tanggal = '" . $tanggal . "'",
+            'left'
+         )
+         ->join(
+            'tb_kehadiran',
+            'tb_presensi_karyawan.id_kehadiran = tb_kehadiran.id_kehadiran',
+            'left'
+         )
+         ->where('tb_karyawan.id_departemen', $idDepartemen)
+         ->orderBy('nama_karyawan')
+         ->get()
+         ->getResultArray();
+   }
+
+   public function getPresensiByKehadiran(string $idKehadiran, $tanggal)
+   {
+      $this->join(
+         'tb_karyawan',
+         "tb_presensi_karyawan.id_karyawan = tb_karyawan.id_karyawan AND tb_presensi_karyawan.tanggal = '$tanggal'",
+         'right'
+      );
+
+      if ($idKehadiran == '4') {
+         $result = $this->findAll();
+
+         $filteredResult = [];
+
+         foreach ($result as $value) {
+            if ($value['id_kehadiran'] != ('1' || '2' || '3')) {
+               array_push($filteredResult, $value);
+            }
+         }
+
+         return $filteredResult;
+      } else {
+         $this->where(['tb_presensi_karyawan.id_kehadiran' => $idKehadiran]);
+         return $this->findAll();
+      }
+   }
+
+   public function updatePresensi(
+      $idPresensi,
+      $idKaryawan,
+      $idDepartemen,
+      $tanggal,
+      $idKehadiran,
+      $jamMasuk,
+      $jamKeluar,
+      $keterangan
+   ) {
+      $presensi = $this->getPresensiByIdKaryawanTanggal($idKaryawan, $tanggal);
+
+      $data = [
+         'id_karyawan' => $idKaryawan,
+         'id_departemen' => $idDepartemen,
+         'tanggal' => $tanggal,
+         'id_kehadiran' => $idKehadiran,
+         'keterangan' => $keterangan ?? $presensi['keterangan'] ?? ''
+      ];
+
+      if ($idPresensi != null) {
+         $data[$this->primaryKey] = $idPresensi;
+      }
+
+      if ($jamMasuk != null) {
+         $data['jam_masuk'] = $jamMasuk;
+      }
+
+      if ($jamKeluar != null) {
+         $data['jam_keluar'] = $jamKeluar;
+      }
+
+      return $this->save($data);
+   }
+
+    /**
+     * Ambil presensi semua karyawan di semua departemen pada tanggal tertentu
+     * Digunakan untuk tampilan absen seluruh departemen
+     */
+    public function getPresensiAllDepartemenTanggal($tanggal)
+    {
+        // Gunakan builder spesifik agar table model tetap tb_presensi_karyawan
+        return $this->db->table('tb_karyawan')
+            ->select('*')
+            ->join(
+                "(SELECT id_presensi, id_karyawan AS id_karyawan_presensi, tanggal, jam_masuk, jam_keluar, id_kehadiran, keterangan FROM tb_presensi_karyawan) tb_presensi_karyawan",
+                "tb_karyawan.id_karyawan = tb_presensi_karyawan.id_karyawan_presensi AND tb_presensi_karyawan.tanggal = '" . $tanggal . "'",
+                'left'
+            )
+            ->join(
+                'tb_departemen',
+                'tb_karyawan.id_departemen = tb_departemen.id_departemen',
+                'left'
+            )
+            ->join(
+                'tb_jabatan',
+                'tb_departemen.id_jabatan = tb_jabatan.id',
+                'left'
+            )
+            ->join(
+                'tb_kehadiran',
+                'tb_presensi_karyawan.id_kehadiran = tb_kehadiran.id_kehadiran',
+                'left'
+            )
+            ->orderBy('nama_karyawan')
+            ->get()
+            ->getResultArray();
+    }
+}

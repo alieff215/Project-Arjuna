@@ -1,0 +1,759 @@
+<?= $this->extend('templates/admin_page_layout') ?>
+<?= $this->section('content') ?>
+
+<style>
+   /* ================= TOKENS & THEMES ================= */
+   :root {
+      /* Base Light */
+      --bg: #eef3fb;
+      --bg-accent-1: #e5efff;
+      --bg-accent-2: #f0f7ff;
+
+      --card: #ffffffcc;
+      /* translucent for glass effect */
+      --card-solid: #ffffff;
+      --text: #0b132b;
+      --muted: #6b7b93;
+      --border: rgba(16, 24, 40, .12);
+      --ring: #2563eb;
+
+      /* Accents */
+      --primary: #3b82f6;
+      /* blue */
+      --success: #10b981;
+      /* green */
+      --warning: #f59e0b;
+      --danger: #ef4444;
+
+      /* Glow + radius */
+      --radius: 18px;
+      --shadow-1: 0 10px 30px rgba(12, 20, 40, .08);
+      --shadow-2: 0 18px 60px rgba(12, 20, 40, .12);
+      --glass-blur: 8px;
+
+      /* Neon style for borders */
+      --neon: 0 0 0 1px color-mix(in oklab, var(--ring) 20%, transparent), 0 10px 30px rgba(37, 99, 235, .08);
+   }
+
+   [data-theme="dark"] {
+      --bg: #070d1a;
+      --bg-accent-1: #0a1731;
+      --bg-accent-2: #0f213f;
+
+      --card: rgba(12, 18, 36, .55);
+      --card-solid: #0f182d;
+      --text: #e6ecff;
+      --muted: #9fb1cc;
+      --border: rgba(200, 210, 230, .14);
+      --ring: #7dd3fc;
+      /* cyan */
+      --primary: #7aa8ff;
+      --success: #34d399;
+      --warning: #fbbf24;
+      --danger: #fb7185;
+
+      --shadow-1: 0 16px 36px rgba(0, 0, 0, .45);
+      --shadow-2: 0 25px 70px rgba(0, 0, 0, .55);
+      --glass-blur: 12px;
+
+      --neon: 0 0 0 1px color-mix(in oklab, var(--ring) 35%, transparent), 0 10px 40px rgba(0, 186, 255, .12);
+   }
+
+   /* =============== BACKGROUND (mesh + subtle grid) =============== */
+   .content {
+      position: relative;
+      min-height: calc(100vh - 64px);
+      padding: 18px 0 28px !important;
+      background:
+         radial-gradient(1100px 420px at 8% -10%, var(--bg-accent-2) 0%, transparent 60%),
+         radial-gradient(900px 380px at 98% -5%, var(--bg-accent-1) 0%, transparent 55%),
+         linear-gradient(180deg, var(--bg), var(--bg));
+   }
+
+   .content::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(color-mix(in oklab, var(--border) 40%, transparent) 1px, transparent 1px);
+      background-size: 12px 12px;
+      opacity: .18;
+      pointer-events: none;
+   }
+
+   .container-fluid {
+      padding: 0 16px !important;
+   }
+
+   /* =============== GLASS CARDS =============== */
+   .u-card {
+      position: relative;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-1);
+      backdrop-filter: blur(var(--glass-blur));
+      -webkit-backdrop-filter: blur(var(--glass-blur));
+      overflow: hidden;
+   }
+
+   .u-card:hover {
+      box-shadow: var(--shadow-2);
+   }
+
+   .u-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 18px;
+      background:
+         linear-gradient(180deg, color-mix(in oklab, var(--primary) 8%, transparent), transparent),
+         linear-gradient(180deg, color-mix(in oklab, var(--card-solid) 70%, transparent), transparent);
+      border-bottom: 1px solid var(--border);
+   }
+
+   .u-title {
+      margin: 0;
+      color: var(--text);
+      font-weight: 800;
+      letter-spacing: .2px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      font-size: clamp(18px, 2vw, 20px);
+      line-height: 1.25;
+   }
+
+   .u-sub {
+      margin: 0;
+      color: var(--muted);
+      font-weight: 600;
+      font-size: clamp(12.5px, 1.6vw, 13px);
+   }
+
+   .u-body {
+      padding: 16px 18px;
+   }
+
+   .u-foot {
+      padding: 12px 18px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      font-size: clamp(12px, 1.6vw, 13px);
+   }
+
+   .badge-soft {
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 12px;
+      border: 1px solid var(--border);
+      background: color-mix(in oklab, var(--card-solid) 85%, transparent);
+      color: var(--muted);
+   }
+
+   /* =============== INPUT DATE + TOOLBAR =============== */
+   .input-chip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: color-mix(in oklab, var(--card-solid) 85%, transparent);
+      box-shadow: var(--neon);
+   }
+
+   .input-chip .form-control {
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--text);
+      padding: 0;
+      height: auto;
+      min-width: 170px;
+      font-size: clamp(14px, 2.5vw, 16px);
+   }
+
+   .input-chip .form-control:focus {
+      box-shadow: none;
+   }
+
+   .btn-soft {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      padding: 10px 14px;
+      font-weight: 700;
+      background: color-mix(in oklab, var(--card-solid) 90%, transparent);
+      color: var(--text);
+      transition: transform .12s ease, box-shadow .12s ease;
+      box-shadow: var(--neon);
+   }
+
+   .btn-soft:hover {
+      transform: translateY(-1px);
+   }
+
+   .btn-refresh {
+      color: var(--success);
+      border-color: color-mix(in oklab, var(--success) 30%, var(--border));
+   }
+
+   .btn-refresh[disabled] {
+      opacity: .6;
+      cursor: not-allowed;
+      transform: none;
+   }
+
+   /* Refresh spin animation */
+   @keyframes spin360 {
+      to {
+         transform: rotate(360deg);
+      }
+   }
+
+   .btn-refresh.is-loading .material-icons {
+      animation: spin360 .9s linear infinite;
+      color: var(--ring);
+   }
+
+   /* =============== CUSTOM DROPDOWN STYLING =============== */
+   .custom-select {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: color-mix(in oklab, var(--card-solid) 90%, transparent);
+      color: var(--text);
+      font-size: clamp(14px, 2.5vw, 16px);
+      font-weight: 600;
+      box-shadow: var(--neon);
+      transition: all .12s ease;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7b93' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+      background-position: right 12px center;
+      background-repeat: no-repeat;
+      background-size: 16px;
+      padding-right: 40px;
+   }
+
+   .custom-select:focus {
+      outline: none;
+      border-color: color-mix(in oklab, var(--primary) 40%, var(--border));
+      box-shadow: 0 0 0 1px color-mix(in oklab, var(--primary) 35%, transparent), 0 10px 24px rgba(59, 130, 246, .18);
+      background: color-mix(in oklab, var(--primary) 8%, var(--card-solid));
+   }
+
+   .custom-select:hover {
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-2);
+   }
+
+   .form-group {
+      margin-bottom: 16px;
+   }
+
+   .form-label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: clamp(13px, 2.2vw, 14px);
+   }
+
+   /* =============== DATA AREA / TABLE-FRIENDLY =============== */
+   #dataKaryawan {
+      min-height: 140px;
+      overflow-x: auto;
+      /* << responsif untuk tabel lebar */
+      -webkit-overflow-scrolling: touch;
+   }
+
+   #dataKaryawan table {
+      /* jaga tabel agar tak pecah layout */
+      min-width: 760px;
+      /* bisa disesuaikan */
+      width: 100%;
+   }
+
+   /* Kolom aksi rapi dan responsif */
+   #dataKaryawan table th:last-child {
+      min-width: 132px;
+      white-space: nowrap;
+   }
+
+   #dataKaryawan table td:last-child {
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      white-space: nowrap;
+   }
+
+   #dataKaryawan table td:last-child .btn,
+   #dataKaryawan table td:last-child a.btn,
+   #dataKaryawan table td:last-child button.btn {
+      width: 40px;
+      height: 40px;
+      padding: 0 !important;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      line-height: 1;
+   }
+
+   #dataKaryawan table td:last-child .material-icons {
+      font-size: 20px;
+      line-height: 1;
+      color: #fff;
+   }
+
+   .placeholder {
+      border: 1px dashed var(--border);
+      border-radius: 12px;
+      padding: 18px;
+      color: var(--muted);
+      background: linear-gradient(180deg, color-mix(in oklab, var(--card-solid) 90%, transparent), transparent);
+      text-align: center;
+   }
+
+   .skeleton {
+      position: relative;
+      overflow: hidden;
+      border-radius: 12px;
+      height: 82px;
+      margin-bottom: 12px;
+      background: linear-gradient(180deg, color-mix(in oklab, var(--card-solid) 88%, transparent), transparent);
+   }
+
+   .skeleton::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--ring) 24%, transparent), transparent);
+      transform: translateX(-100%);
+      animation: shimmer 1.15s infinite;
+      opacity: .35;
+   }
+
+   @keyframes shimmer {
+      100% {
+         transform: translateX(100%);
+      }
+   }
+
+
+   /* Toast */
+   .toast-lite {
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      z-index: 1060;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      box-shadow: var(--shadow-2);
+      padding: 12px 14px;
+      color: var(--text);
+      display: none;
+      max-width: min(92vw, 420px);
+   }
+
+   .toast-lite i {
+      vertical-align: middle;
+      margin-right: 6px;
+   }
+
+   /* ======= RESPONSIVE TWEAKS ======= */
+   @media (max-width: 991.98px) {
+      .u-head {
+         flex-wrap: wrap;
+      }
+   }
+
+   @media (max-width: 767.98px) {
+      .u-head {
+         flex-direction: column;
+         align-items: stretch;
+         gap: 8px;
+      }
+
+      .input-chip {
+         width: 100%;
+      }
+
+      .u-foot {
+         flex-direction: column;
+         align-items: flex-start;
+      }
+   }
+
+   @media (max-width: 575.98px) {
+      .chip-btn {
+         padding: 10px 12px;
+         border-radius: 10px;
+      }
+
+      #dataKaryawan table th:last-child {
+         min-width: 112px;
+      }
+
+      #dataKaryawan table td:last-child {
+         gap: 6px;
+      }
+
+      #dataKaryawan table td:last-child .btn,
+      #dataKaryawan table td:last-child a.btn,
+      #dataKaryawan table td:last-child button.btn {
+         width: 36px;
+         height: 36px;
+         border-radius: 8px;
+      }
+
+      #dataKaryawan table td,
+      #dataKaryawan table th {
+         padding: .6rem .5rem !important;
+      }
+   }
+
+   /* Motion-reduce: kurangi animasi */
+   @media (prefers-reduced-motion: reduce) {
+      .skeleton::after {
+         animation: none;
+      }
+
+      .btn-soft,
+      .chip-btn {
+         transition: none;
+      }
+   }
+</style>
+
+<div class="content" id="pageAbsensiKaryawan">
+
+   <div class="container-fluid">
+      <!-- ====== FILTER & DEPARTEMEN ====== -->
+      <div class="u-card mb-3">
+         <div class="u-head">
+            <div>
+               <h5 class="u-title"><i class="material-icons" style="color:var(--primary)">tune</i> Filter Absensi</h5>
+               <p class="u-sub">Pilih tanggal &amp; departemen untuk menampilkan daftar kehadiran karyawan</p>
+            </div>
+            <div class="input-chip">
+               <i class="material-icons" style="color:var(--primary)">event</i>
+               <input class="form-control" type="date" name="tanggal" id="tanggal" value="<?= date('Y-m-d'); ?>">
+            </div>
+         </div>
+
+         <div class="u-body">
+            <div class="row">
+               <div class="col-12">
+                  <div class="form-group">
+                     <label for="filterDepartemenJabatan" class="form-label" style="color: var(--text); font-weight: 600; margin-bottom: 8px;">
+                        <i class="material-icons" style="vertical-align: middle; margin-right: 6px; color: var(--primary);">apartment</i>
+                        Filter Departemen & Jabatan
+                     </label>
+                     <select id="filterDepartemenJabatan" class="form-control custom-select">
+                        <option value="all">Semua Departemen & Jabatan</option>
+                        <?php foreach ($listDepartemen as $value): ?>
+                           <?php
+                           $idDepartemen   = $value['id_departemen'];
+                           $namaDepartemen = $value['departemen'] . ' - ' . $value['jabatan'];
+                           ?>
+                           <option value="<?= $idDepartemen; ?>" data-nama="<?= $namaDepartemen; ?>"><?= $namaDepartemen; ?></option>
+                        <?php endforeach; ?>
+                     </select>
+                  </div>
+               </div>
+            </div>
+         </div>
+
+         <div class="u-foot">
+            <small>Tips: ubah tanggal atau klik <b>Refresh</b> untuk memuat ulang data.</small>
+            <button id="btnRefresh" class="btn-soft btn-refresh" type="button">
+               <i class="material-icons">refresh</i> Refresh
+            </button>
+         </div>
+      </div>
+
+      <!-- ====== DATA ABSEN KARYAWAN ====== -->
+      <div class="u-card">
+         <div class="u-head">
+            <div>
+               <h4 class="u-title"><i class="material-icons" style="color:var(--success)">assignment_turned_in</i> Absen Karyawan</h4>
+               <p class="u-sub">Total Karyawan: <span style="background: var(--success); color: white; padding: 2px 8px; border-radius: 8px; font-weight: 700;"><?= $total_karyawan; ?></span> | <?= date('d M Y H:i'); ?></p>
+            </div>
+         </div>
+
+         <div class="u-body">
+            <div id="dataKaryawan" class="placeholder">
+               Memuat data absen karyawan...
+            </div>
+         </div>
+
+         <div class="u-foot">
+            <span style="display:inline-flex;align-items:center;gap:6px;">
+               <i class="material-icons" style="color:var(--primary)">info</i>
+               Data diperbarui berdasarkan tanggal &amp; departemen yang dipilih.
+            </span>
+            <span class="badge-soft">Realtime AJAX</span>
+         </div>
+      </div>
+
+      <!-- ====== HISTORY UPDATE ====== -->
+      <div class="u-card" style="margin-top:12px;">
+         <div class="u-head">
+            <div>
+               <h5 class="u-title"><i class="material-icons" style="color:var(--warning)">history</i> History Update</h5>
+               <p class="u-sub">Perubahan kehadiran karyawan pada tanggal yang dipilih</p>
+            </div>
+         </div>
+         <div class="u-body" id="historyKaryawan">
+            <div class="placeholder">Belum ada history ditampilkan. Pilih tanggal atau klik Refresh.</div>
+         </div>
+      </div>
+   </div>
+
+   <!-- ====== MODAL: Ubah Kehadiran ====== -->
+   <div class="modal fade" id="ubahModal" tabindex="-1" aria-labelledby="modalUbahKehadiran" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+         <div class="modal-content u-card" style="border-radius:16px;">
+            <div class="modal-header" style="border-bottom:1px solid var(--border);">
+               <h5 class="modal-title" id="modalUbahKehadiran">Ubah Kehadiran</h5>
+               <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true" style="color:var(--text)">&times;</span>
+               </button>
+            </div>
+            <div id="modalFormUbahKaryawan" class="u-body" style="padding-top:12px;"></div>
+         </div>
+      </div>
+   </div>
+
+   <!-- Toast -->
+   <div id="toastLite" class="toast-lite">
+      <i class="material-icons" id="toastIcon">info</i><span id="toastText">Info</span>
+   </div>
+</div>
+
+<script>
+   /* ================== TOAST MINI ================== */
+   function showToast(text, icon = 'info') {
+      const t = $('#toastLite');
+      $('#toastText').text(text);
+      $('#toastIcon').text(icon);
+      t.stop(true, true).fadeIn(120).delay(1600).fadeOut(200);
+   }
+
+   /* ================== SKELETON LOADING ================== */
+   function setLoading(isLoading) {
+      const $btn = $('#btnRefresh');
+      if (isLoading) {
+         $btn.addClass('is-loading').prop('disabled', true);
+         $('#dataKaryawan').html(`
+           <div class="skeleton"></div>
+           <div class="skeleton" style="height:64px"></div>
+           <div class="skeleton" style="height:64px"></div>
+         `);
+      } else {
+         $btn.removeClass('is-loading').prop('disabled', false);
+      }
+   }
+
+   /* ================== STATE ================== */
+   var lastIdDepartemen = 'all';
+   var lastDepartemen = 'Semua Departemen & Jabatan';
+
+   function selectDepartemenJabatan(id, nama) {
+      lastIdDepartemen = id;
+      lastDepartemen = nama;
+      fetchKaryawan();
+   }
+
+   /* ================== AJAX LOAD ================== */
+   function fetchKaryawan() {
+      const tanggal = $('#tanggal').val();
+      if (!lastIdDepartemen || !lastDepartemen) {
+         $('#dataKaryawan').html('<div class="placeholder">Silakan pilih departemen terlebih dahulu.</div>');
+         return;
+      }
+      setLoading(true);
+      $.ajax({
+         url: "<?= base_url('/admin/absen-karyawan'); ?>",
+         type: 'post',
+         data: {
+            departemen: lastDepartemen,
+            id_departemen: lastIdDepartemen,
+            tanggal: tanggal
+         },
+         success: function(res) {
+            $('#dataKaryawan').html(res);
+            $('html, body').animate({
+               scrollTop: $("#dataKaryawan").offset().top - 80
+            }, 280);
+            setLoading(false);
+         },
+         error: function(xhr, status, err) {
+            console.log(err);
+            $('#dataKaryawan').html(`<div class="placeholder">Gagal memuat data.<br><small class="text-danger">${err}</small></div>`);
+            setLoading(false);
+            showToast('Gagal memuat data', 'error');
+         }
+      });
+
+      // muat history untuk tanggal yang sama
+      $.ajax({
+         url: "<?= base_url('/admin/absen-karyawan/history'); ?>",
+         type: 'post',
+         data: {
+            tanggal
+         },
+         success: function(res) {
+            $('#historyKaryawan').html(res);
+         },
+         error: function() {
+            $('#historyKaryawan').html('<div class="placeholder">Gagal memuat history.</div>');
+         }
+      });
+   }
+
+   /* ================== EVENT BINDINGS ================== */
+   $('#btnRefresh').on('click', fetchKaryawan);
+   $('#tanggal').on('change input', debounce(fetchKaryawan, 250));
+
+   // Event handler untuk dropdown gabungan
+   $('#filterDepartemenJabatan').on('change', function() {
+      const selectedOption = $(this).find('option:selected');
+      const id = $(this).val();
+      const nama = selectedOption.data('nama') || selectedOption.text();
+      selectDepartemenJabatan(id, nama);
+   });
+
+
+   function debounce(fn, delay) {
+      let t;
+      return function() {
+         clearTimeout(t);
+         t = setTimeout(() => fn.apply(this, arguments), delay);
+      };
+   }
+
+   /* ================== MODAL ACTIONS ================== */
+   function getDataKehadiran(idPresensi, idKaryawan) {
+      $('#modalFormUbahKaryawan').html('<div class="skeleton" style="height:120px"></div>');
+      $.ajax({
+         url: "<?= base_url('/admin/absen-karyawan/kehadiran'); ?>",
+         type: 'post',
+         data: {
+            id_presensi: idPresensi,
+            id_karyawan: idKaryawan,
+            tanggal: $('#tanggal').val()
+         },
+         success: function(res) {
+            $('#modalFormUbahKaryawan').html(res);
+         },
+         error: function() {
+            $('#modalFormUbahKaryawan').html('<div class="placeholder">Gagal memuat form.</div>');
+         }
+      });
+   }
+
+   function ubahKehadiran() {
+      const tanggal = $('#tanggal').val();
+      const form = $('#formUbah').serializeArray();
+      form.push({
+         name: 'tanggal',
+         value: tanggal
+      });
+
+      $.ajax({
+         url: "<?= base_url('/admin/absen-karyawan/edit'); ?>",
+         type: 'post',
+         data: form,
+         success: function(response) {
+            if (response['status']) showToast('Berhasil ubah kehadiran: ' + response['nama_karyawan'], 'check_circle');
+            else showToast('Gagal ubah kehadiran: ' + response['nama_karyawan'], 'error');
+            fetchKaryawan();
+            // Muat ulang history setelah update
+            const tanggal = $('#tanggal').val();
+            $.ajax({
+               url: "<?= base_url('/admin/absen-karyawan/history'); ?>",
+               type: 'post',
+               data: {
+                  tanggal
+               },
+               success: function(res) {
+                  $('#historyKaryawan').html(res);
+               },
+               error: function() {
+                  $('#historyKaryawan').html('<div class="placeholder">Gagal memuat history.</div>');
+               }
+            });
+         },
+         error: function(xhr, status, err) {
+            console.log(err);
+            alert('Gagal ubah kehadiran\n' + err);
+         }
+      });
+   }
+
+   // ================== BULK UPDATE ==================
+   function ubahSemuaKehadiran() {
+      const tanggal = $('#tanggal').val();
+      const idDepartemen = $('#filterDepartemenJabatan').val();
+      const idKehadiran = $('#bulkIdKehadiran').val();
+      const jamMasuk = $('#bulkJamMasuk').val();
+      const jamKeluar = $('#bulkJamKeluar').val();
+
+      $.ajax({
+         url: "<?= base_url('/admin/absen-karyawan/edit-all'); ?>",
+         type: 'post',
+         data: {
+            id_departemen: idDepartemen,
+            tanggal: tanggal,
+            id_kehadiran: idKehadiran,
+            jam_masuk: jamMasuk,
+            jam_keluar: jamKeluar
+         },
+         success: function(response) {
+            if (response && response.status) {
+               showToast(response.message || 'Berhasil update massal', 'check_circle');
+            } else {
+               showToast((response && response.message) || 'Gagal update massal', 'error');
+            }
+            // refresh data dan history
+            fetchKaryawan();
+            $.ajax({
+               url: "<?= base_url('/admin/absen-karyawan/history'); ?>",
+               type: 'post',
+               data: { tanggal },
+               success: function(res) { $('#historyKaryawan').html(res); }
+            });
+         },
+         error: function(xhr, status, err) {
+            console.error('Bulk update error:', { status, err, response: xhr.responseText });
+            const msg = (xhr && xhr.responseText) ? xhr.responseText : err;
+            alert('Gagal update massal\n' + msg);
+         }
+      });
+   }
+
+   // Expose untuk dipakai di partial yang dirender AJAX
+   window.getDataKehadiran = getDataKehadiran;
+   window.ubahKehadiran = ubahKehadiran;
+   window.ubahSemuaKehadiran = ubahSemuaKehadiran;
+   window.selectDepartemenJabatan = selectDepartemenJabatan;
+
+   // Auto-load data saat halaman dibuka
+   $(document).ready(function() {
+      // Set dropdown ke "Semua Departemen & Jabatan"
+      $('#filterDepartemenJabatan').val('all');
+      // Load data secara otomatis
+      fetchKaryawan();
+   });
+</script>
+
+<?= $this->endSection() ?>

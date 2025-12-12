@@ -8,74 +8,96 @@ use DateTime;
 use DateInterval;
 use DatePeriod;
 
-use App\Models\GuruModel;
-use App\Models\KelasModel;
-use App\Models\PresensiGuruModel;
-use App\Models\SiswaModel;
-use App\Models\PresensiSiswaModel;
+use App\Models\AdminModel;
+use App\Models\DepartemenModel;
+use App\Models\PresensiAdminModel;
+use App\Models\KaryawanModel;
+use App\Models\PresensiKaryawanModel;
 
 class GenerateLaporan extends BaseController
 {
-   protected SiswaModel $siswaModel;
-   protected KelasModel $kelasModel;
+   protected KaryawanModel $karyawanModel;
+   protected DepartemenModel $departemenModel;
 
-   protected GuruModel $guruModel;
+   protected AdminModel $adminModel;
 
-   protected PresensiSiswaModel $presensiSiswaModel;
-   protected PresensiGuruModel $presensiGuruModel;
+   protected PresensiKaryawanModel $presensiKaryawanModel;
+   protected PresensiAdminModel $presensiAdminModel;
 
    public function __construct()
    {
-      $this->siswaModel = new SiswaModel();
-      $this->kelasModel = new KelasModel();
+      $this->karyawanModel = new KaryawanModel();
+      $this->departemenModel = new DepartemenModel();
 
-      $this->guruModel = new GuruModel();
+      $this->adminModel = new AdminModel();
 
-      $this->presensiSiswaModel = new PresensiSiswaModel();
-      $this->presensiGuruModel = new PresensiGuruModel();
+      $this->presensiKaryawanModel = new PresensiKaryawanModel();
+      $this->presensiAdminModel = new PresensiAdminModel();
    }
 
    public function index()
    {
-      $kelas = $this->kelasModel->getDataKelas();
-      $guru = $this->guruModel->getAllGuru();
+      $departemen = $this->departemenModel->getDataDepartemen();
+      $admin = $this->adminModel->getAllAdmin();
 
-      $siswaPerKelas = [];
+      $karyawanPerDepartemen = [];
 
-      foreach ($kelas as $value) {
-         array_push($siswaPerKelas, $this->siswaModel->getSiswaByKelas($value['id_kelas']));
+      foreach ($departemen as $value) {
+         array_push($karyawanPerDepartemen, $this->karyawanModel->getKaryawanByDepartemen($value['id_departemen']));
       }
 
       $data = [
          'title' => 'Generate Laporan',
          'ctx' => 'laporan',
-         'siswaPerKelas' => $siswaPerKelas,
-         'kelas' => $kelas,
-         'guru' => $guru
+         'karyawanPerDepartemen' => $karyawanPerDepartemen,
+         'departemen' => $departemen,
+         'admin' => $admin
       ];
 
       return view('admin/generate-laporan/generate-laporan', $data);
    }
 
-   public function generateLaporanSiswa()
+   public function generateLaporanKaryawan()
    {
-      $idKelas = $this->request->getVar('kelas');
-      $siswa = $this->siswaModel->getSiswaByKelas($idKelas);
+      $idDepartemen = $this->request->getVar('departemen');
+      // Jika departemen tidak dipilih, ambil semua karyawan di semua departemen
+      if (empty($idDepartemen)) {
+         $karyawan = $this->karyawanModel->getAllKaryawanWithDepartemen();
+         // Urutkan agar pengelompokan per departemen di view rapi
+         usort($karyawan, function ($a, $b) {
+            $deptA = ($a['departemen'] ?? '') . ' ' . ($a['jabatan'] ?? '');
+            $deptB = ($b['departemen'] ?? '') . ' ' . ($b['jabatan'] ?? '');
+            if ($deptA === $deptB) {
+               return strcmp($a['nama_karyawan'] ?? '', $b['nama_karyawan'] ?? '');
+            }
+            return strcmp($deptA, $deptB);
+         });
+      } else {
+         $karyawan = $this->karyawanModel->getKaryawanByDepartemen($idDepartemen);
+      }
       $type = $this->request->getVar('type');
 
-      if (empty($siswa)) {
+      if (empty($karyawan)) {
          session()->setFlashdata([
-            'msg' => 'Data siswa kosong!',
+            'msg' => 'Data karyawan kosong!',
             'error' => true
          ]);
          return redirect()->to('/admin/laporan');
       }
 
-      $kelas = $this->kelasModel->where(['id_kelas' => $idKelas])
-         ->join('tb_jurusan', 'tb_kelas.id_jurusan = tb_jurusan.id', 'left')
-         ->first();
+      // Informasi departemen untuk header laporan
+      if (empty($idDepartemen)) {
+         $departemen = [
+            'departemen' => 'Semua Departemen',
+            'jabatan' => ''
+         ];
+      } else {
+         $departemen = $this->departemenModel->where(['id_departemen' => $idDepartemen])
+            ->join('tb_jabatan', 'tb_departemen.id_jabatan = tb_jabatan.id', 'left')
+            ->first();
+      }
 
-      $bulan = $this->request->getVar('tanggalSiswa');
+      $bulan = $this->request->getVar('tanggalKaryawan');
 
       // hari pertama dalam 1 bulan
       $begin = new Time($bulan, locale: 'id');
@@ -90,12 +112,18 @@ class GenerateLaporan extends BaseController
       $dataAbsen = [];
 
       foreach ($period as $value) {
-         // kecualikan hari sabtu dan minggu
-         if (!($value->format('D') == 'Sat' || $value->format('D') == 'Sun')) {
+         // kecualikan hari minggu
+         if ($value->format('D') != 'Sun') {
             $lewat = Time::parse($value->format('Y-m-d'))->isAfter(Time::today());
 
-            $absenByTanggal = $this->presensiSiswaModel
-               ->getPresensiByKelasTanggal($idKelas, $value->format('Y-m-d'));
+            // Jika semua departemen dipilih, ambil presensi semua departemen pada tanggal tsb
+            if (empty($idDepartemen)) {
+               $absenByTanggal = $this->presensiKaryawanModel
+                  ->getPresensiAllDepartemenTanggal($value->format('Y-m-d'));
+            } else {
+               $absenByTanggal = $this->presensiKaryawanModel
+                  ->getPresensiByDepartemenTanggal($idDepartemen, $value->format('Y-m-d'));
+            }
 
             $absenByTanggal['lewat'] = $lewat;
 
@@ -106,7 +134,7 @@ class GenerateLaporan extends BaseController
 
       $laki = 0;
 
-      foreach ($siswa as $value) {
+      foreach ($karyawan as $value) {
          if ($value['jenis_kelamin'] != 'Perempuan') {
             $laki++;
          }
@@ -116,42 +144,36 @@ class GenerateLaporan extends BaseController
          'tanggal' => $arrayTanggal,
          'bulan' => $begin->toLocalizedString('MMMM'),
          'listAbsen' => $dataAbsen,
-         'listSiswa' => $siswa,
-         'jumlahSiswa' => [
+         'listKaryawan' => $karyawan,
+         'jumlahKaryawan' => [
             'laki' => $laki,
-            'perempuan' => count($siswa) - $laki
+            'perempuan' => count($karyawan) - $laki
          ],
-         'kelas' => $kelas,
-         'grup' => "kelas " . $kelas['kelas'] . " " . $kelas['jurusan'],
+         'departemen' => $departemen,
+         'grup' => empty($idDepartemen) ? 'semua departemen' : ("departemen " . $departemen['departemen'] . " " . $departemen['jabatan']),
       ];
 
-      if ($type == 'doc') {
-         $this->response->setHeader('Content-type', 'application/vnd.ms-word');
-         $this->response->setHeader(
-            'Content-Disposition',
-            'attachment;Filename=laporan_absen_' . $kelas['kelas'] . " " . $kelas['jurusan'] . '_' . $begin->toLocalizedString('MMMM-Y') . '.doc'
-         );
-
-         return view('admin/generate-laporan/laporan-siswa', $data);
+      if ($type == 'csv') {
+         return $this->generateCsvKaryawan($data, $departemen, $begin);
       }
 
-      return view('admin/generate-laporan/laporan-siswa', $data) . view('admin/generate-laporan/topdf');
+      return view('admin/generate-laporan/laporan-karyawan', $data) . view('admin/generate-laporan/topdf');
    }
 
-   public function generateLaporanGuru()
+   public function generateLaporanAdmin()
    {
-      $guru = $this->guruModel->getAllGuru();
+      $admin = $this->adminModel->getAllAdmin();
       $type = $this->request->getVar('type');
 
-      if (empty($guru)) {
+      if (empty($admin)) {
          session()->setFlashdata([
-            'msg' => 'Data guru kosong!',
+            'msg' => 'Data admin kosong!',
             'error' => true
          ]);
          return redirect()->to('/admin/laporan');
       }
 
-      $bulan = $this->request->getVar('tanggalGuru');
+      $bulan = $this->request->getVar('tanggalAdmin');
 
       // hari pertama dalam 1 bulan
       $begin = new Time($bulan, locale: 'id');
@@ -166,11 +188,11 @@ class GenerateLaporan extends BaseController
       $dataAbsen = [];
 
       foreach ($period as $value) {
-         // kecualikan hari sabtu dan minggu
-         if (!($value->format('D') == 'Sat' || $value->format('D') == 'Sun')) {
+         // kecualikan hari minggu
+         if ($value->format('D') != 'Sun') {
             $lewat = Time::parse($value->format('Y-m-d'))->isAfter(Time::today());
 
-            $absenByTanggal = $this->presensiGuruModel
+            $absenByTanggal = $this->presensiAdminModel
                ->getPresensiByTanggal($value->format('Y-m-d'));
 
             $absenByTanggal['lewat'] = $lewat;
@@ -182,7 +204,7 @@ class GenerateLaporan extends BaseController
 
       $laki = 0;
 
-      foreach ($guru as $value) {
+      foreach ($admin as $value) {
          if ($value['jenis_kelamin'] != 'Perempuan') {
             $laki++;
          }
@@ -192,24 +214,307 @@ class GenerateLaporan extends BaseController
          'tanggal' => $arrayTanggal,
          'bulan' => $begin->toLocalizedString('MMMM'),
          'listAbsen' => $dataAbsen,
-         'listGuru' => $guru,
-         'jumlahGuru' => [
+         'listAdmin' => $admin,
+         'jumlahAdmin' => [
             'laki' => $laki,
-            'perempuan' => count($guru) - $laki
+            'perempuan' => count($admin) - $laki
          ],
-         'grup' => 'guru',
+         'grup' => 'admin',
       ];
 
-      if ($type == 'doc') {
-         $this->response->setHeader('Content-type', 'application/vnd.ms-word');
-         $this->response->setHeader(
-            'Content-Disposition',
-            'attachment;Filename=laporan_absen_guru_' . $begin->toLocalizedString('MMMM-Y') . '.doc'
-         );
-
-         return view('admin/generate-laporan/laporan-guru', $data);
+      if ($type == 'csv') {
+         return $this->generateCsvAdmin($data, $begin);
       }
 
-      return view('admin/generate-laporan/laporan-guru', $data) . view('admin/generate-laporan/topdf');
+      return view('admin/generate-laporan/laporan-admin', $data) . view('admin/generate-laporan/topdf');
+   }
+
+   private function generateCsvKaryawan($data, $departemen, $begin)
+   {
+      $filename = 'laporan_absen_' . str_replace(' ', '_', $departemen['departemen'] . '_' . $departemen['jabatan']) . '_' . $begin->toLocalizedString('MMMM-Y') . '.csv';
+      
+      $this->response->setHeader('Content-Type', 'text/csv; charset=UTF-8');
+      $this->response->setHeader('Content-Disposition', 'attachment; filename="' . $filename . '"');
+      $this->response->setHeader('Pragma', 'no-cache');
+      $this->response->setHeader('Expires', '0');
+
+      // BOM untuk UTF-8 agar Excel bisa membaca dengan benar
+      echo "\xEF\xBB\xBF";
+
+      $output = fopen('php://output', 'w');
+
+      // Header utama global
+      fputcsv($output, ['DAFTAR HADIR KARYAWAN'], ';');
+      fputcsv($output, ['Bulan: ' . $data['bulan']], ';');
+      fputcsv($output, []); // Baris kosong
+
+      $isAllDepartemen = isset($departemen['departemen']) && $departemen['departemen'] === 'Semua Departemen';
+
+      // Jika semua departemen, kelompokkan berdasarkan departemen
+      if ($isAllDepartemen) {
+         // Kelompokkan karyawan berdasarkan departemen
+         $karyawanByDepartemen = [];
+         foreach ($data['listKaryawan'] as $index => $karyawan) {
+            $deptKey = ($karyawan['departemen'] ?? '') . ' ' . ($karyawan['jabatan'] ?? '');
+            if (!isset($karyawanByDepartemen[$deptKey])) {
+               $karyawanByDepartemen[$deptKey] = [];
+            }
+            $karyawanByDepartemen[$deptKey][] = [
+               'karyawan' => $karyawan,
+               'index' => $index
+            ];
+         }
+
+         // Buat tabel untuk setiap departemen
+         $tableNumber = 1;
+         foreach ($karyawanByDepartemen as $deptKey => $karyawanList) {
+            $this->writeCsvTableKaryawan($output, $data, $deptKey, $karyawanList, $tableNumber);
+            $tableNumber++;
+         }
+
+         // Footer global untuk semua departemen
+         fputcsv($output, []); // Baris kosong
+         fputcsv($output, ['=== RINGKASAN SEMUA DEPARTEMEN ==='], ';');
+         fputcsv($output, ['Jumlah karyawan', count($data['listKaryawan'])], ';');
+         fputcsv($output, ['Laki-laki', $data['jumlahKaryawan']['laki']], ';');
+         fputcsv($output, ['Perempuan', $data['jumlahKaryawan']['perempuan']], ';');
+      } else {
+         // Satu departemen saja, buat satu tabel
+         $karyawanList = [];
+         foreach ($data['listKaryawan'] as $index => $karyawan) {
+            $karyawanList[] = [
+               'karyawan' => $karyawan,
+               'index' => $index
+            ];
+         }
+         $deptKey = $departemen['departemen'] . ' ' . $departemen['jabatan'];
+         $this->writeCsvTableKaryawan($output, $data, $deptKey, $karyawanList, 1);
+
+         // Footer untuk satu departemen
+         fputcsv($output, []); // Baris kosong
+         fputcsv($output, ['Jumlah karyawan', count($data['listKaryawan'])], ';');
+         fputcsv($output, ['Laki-laki', $data['jumlahKaryawan']['laki']], ';');
+         fputcsv($output, ['Perempuan', $data['jumlahKaryawan']['perempuan']], ';');
+      }
+
+      fclose($output);
+      return;
+   }
+
+   private function writeCsvTableKaryawan($output, $data, $deptKey, $karyawanList, $tableNumber)
+   {
+      // Baris pemisah antar tabel (kecuali tabel pertama)
+      if ($tableNumber > 1) {
+         fputcsv($output, []); // Baris kosong
+         fputcsv($output, []); // Baris kosong
+      }
+
+      // Header departemen
+      fputcsv($output, ['=== TABEL ' . $tableNumber . ': ' . trim($deptKey) . ' ==='], ';');
+      fputcsv($output, []); // Baris kosong
+
+      // Header tabel
+      $header = ['No', 'Nama'];
+      foreach ($data['tanggal'] as $tanggal) {
+         $header[] = $tanggal->toLocalizedString('E') . ' ' . $tanggal->format('d');
+      }
+      $header[] = 'Total H';
+      $header[] = 'Total S';
+      $header[] = 'Total I';
+      $header[] = 'Total A';
+      fputcsv($output, $header, ';');
+
+      // Data karyawan dalam departemen ini
+      $rowNumber = 1;
+      foreach ($karyawanList as $item) {
+         $karyawan = $item['karyawan'];
+         $i = $item['index'];
+
+         // Hitung total
+         $jumlahHadir = count(array_filter($data['listAbsen'], function ($a) use ($i) {
+            if ($a['lewat'] || is_null($a[$i]['id_kehadiran'])) return false;
+            return $a[$i]['id_kehadiran'] == 1;
+         }));
+         $jumlahSakit = count(array_filter($data['listAbsen'], function ($a) use ($i) {
+            if ($a['lewat'] || is_null($a[$i]['id_kehadiran'])) return false;
+            return $a[$i]['id_kehadiran'] == 2;
+         }));
+         $jumlahIzin = count(array_filter($data['listAbsen'], function ($a) use ($i) {
+            if ($a['lewat'] || is_null($a[$i]['id_kehadiran'])) return false;
+            return $a[$i]['id_kehadiran'] == 3;
+         }));
+         $jumlahTidakHadir = count(array_filter($data['listAbsen'], function ($a) use ($i) {
+            if ($a['lewat']) return false;
+            if (is_null($a[$i]['id_kehadiran']) || $a[$i]['id_kehadiran'] == 4) return true;
+            return false;
+         }));
+
+         // Baris data
+         $row = [$rowNumber, $karyawan['nama_karyawan']];
+         
+         foreach ($data['listAbsen'] as $absen) {
+            $jm = $absen[$i]['jam_masuk'] ?? null;
+            $jk = $absen[$i]['jam_keluar'] ?? null;
+            $idKehadiran = $absen[$i]['id_kehadiran'] ?? ($absen['lewat'] ? 5 : 4);
+            
+            $cellValue = '';
+            if ($idKehadiran == 5 || $absen['lewat']) {
+               $cellValue = '';
+            } else {
+               switch ($idKehadiran) {
+                  case 1: // Hadir
+                     $hoursText = '-';
+                     if (!empty($jm) && !empty($jk)) {
+                        $durasiDetik = strtotime($jk) - strtotime($jm);
+                        if ($durasiDetik > 0) {
+                           $hoursText = number_format($durasiDetik / 3600, 1) . 'h';
+                        }
+                     }
+                     $cellValue = 'H' . ($hoursText != '-' ? ' (' . $hoursText . ')' : '');
+                     break;
+                  case 2: // Sakit
+                     $cellValue = 'S';
+                     break;
+                  case 3: // Izin
+                     $cellValue = 'I';
+                     break;
+                  case 4: // Alpha
+                     $cellValue = 'A';
+                     break;
+                  default:
+                     $cellValue = '';
+                     break;
+               }
+            }
+            $row[] = $cellValue;
+         }
+         
+         $row[] = $jumlahHadir != 0 ? $jumlahHadir : '';
+         $row[] = $jumlahSakit != 0 ? $jumlahSakit : '';
+         $row[] = $jumlahIzin != 0 ? $jumlahIzin : '';
+         $row[] = $jumlahTidakHadir != 0 ? $jumlahTidakHadir : '';
+         
+         fputcsv($output, $row, ';');
+         $rowNumber++;
+      }
+
+      // Footer per departemen
+      $lakiDept = 0;
+      $perempuanDept = 0;
+      foreach ($karyawanList as $item) {
+         if ($item['karyawan']['jenis_kelamin'] != 'Perempuan') {
+            $lakiDept++;
+         } else {
+            $perempuanDept++;
+         }
+      }
+
+      fputcsv($output, []); // Baris kosong
+      fputcsv($output, ['--- Ringkasan Departemen ---'], ';');
+      fputcsv($output, ['Jumlah karyawan', count($karyawanList)], ';');
+      fputcsv($output, ['Laki-laki', $lakiDept], ';');
+      fputcsv($output, ['Perempuan', $perempuanDept], ';');
+   }
+
+   private function generateCsvAdmin($data, $begin)
+   {
+      $filename = 'laporan_absen_admin_' . $begin->toLocalizedString('MMMM-Y') . '.csv';
+      
+      $this->response->setHeader('Content-Type', 'text/csv; charset=UTF-8');
+      $this->response->setHeader('Content-Disposition', 'attachment; filename="' . $filename . '"');
+      $this->response->setHeader('Pragma', 'no-cache');
+      $this->response->setHeader('Expires', '0');
+
+      // BOM untuk UTF-8 agar Excel bisa membaca dengan benar
+      echo "\xEF\xBB\xBF";
+
+      $output = fopen('php://output', 'w');
+
+      // Header utama
+      fputcsv($output, ['DAFTAR HADIR ADMIN'], ';');
+      fputcsv($output, ['Bulan: ' . $data['bulan']], ';');
+      fputcsv($output, []); // Baris kosong
+
+      // Header tabel
+      $header = ['No', 'Nama'];
+      foreach ($data['tanggal'] as $tanggal) {
+         $header[] = $tanggal->toLocalizedString('E') . ' ' . $tanggal->format('d');
+      }
+      $header[] = 'Total H';
+      $header[] = 'Total S';
+      $header[] = 'Total I';
+      $header[] = 'Total A';
+      fputcsv($output, $header, ';');
+
+      // Data admin
+      $i = 0;
+      foreach ($data['listAdmin'] as $admin) {
+         // Hitung total
+         $jumlahHadir = count(array_filter($data['listAbsen'], function ($a) use ($i) {
+            if ($a['lewat'] || is_null($a[$i]['id_kehadiran'])) return false;
+            return $a[$i]['id_kehadiran'] == 1;
+         }));
+         $jumlahSakit = count(array_filter($data['listAbsen'], function ($a) use ($i) {
+            if ($a['lewat'] || is_null($a[$i]['id_kehadiran'])) return false;
+            return $a[$i]['id_kehadiran'] == 2;
+         }));
+         $jumlahIzin = count(array_filter($data['listAbsen'], function ($a) use ($i) {
+            if ($a['lewat'] || is_null($a[$i]['id_kehadiran'])) return false;
+            return $a[$i]['id_kehadiran'] == 3;
+         }));
+         $jumlahTidakHadir = count(array_filter($data['listAbsen'], function ($a) use ($i) {
+            if ($a['lewat']) return false;
+            if (is_null($a[$i]['id_kehadiran']) || $a[$i]['id_kehadiran'] == 4) return true;
+            return false;
+         }));
+
+         // Baris data
+         $row = [$i + 1, $admin['nama_admin']];
+         
+         foreach ($data['listAbsen'] as $absen) {
+            $idKehadiran = $absen[$i]['id_kehadiran'] ?? ($absen['lewat'] ? 5 : 4);
+            
+            $cellValue = '';
+            if ($idKehadiran == 5 || $absen['lewat']) {
+               $cellValue = '';
+            } else {
+               switch ($idKehadiran) {
+                  case 1: // Hadir
+                     $cellValue = 'H';
+                     break;
+                  case 2: // Sakit
+                     $cellValue = 'S';
+                     break;
+                  case 3: // Izin
+                     $cellValue = 'I';
+                     break;
+                  case 4: // Alpha
+                     $cellValue = 'A';
+                     break;
+                  default:
+                     $cellValue = '';
+                     break;
+               }
+            }
+            $row[] = $cellValue;
+         }
+         
+         $row[] = $jumlahHadir != 0 ? $jumlahHadir : '';
+         $row[] = $jumlahSakit != 0 ? $jumlahSakit : '';
+         $row[] = $jumlahIzin != 0 ? $jumlahIzin : '';
+         $row[] = $jumlahTidakHadir != 0 ? $jumlahTidakHadir : '';
+         
+         fputcsv($output, $row, ';');
+         $i++;
+      }
+
+      // Footer
+      fputcsv($output, []); // Baris kosong
+      fputcsv($output, ['Jumlah admin', count($data['listAdmin'])], ';');
+      fputcsv($output, ['Laki-laki', $data['jumlahAdmin']['laki']], ';');
+      fputcsv($output, ['Perempuan', $data['jumlahAdmin']['perempuan']], ';');
+
+      fclose($output);
+      return;
    }
 }

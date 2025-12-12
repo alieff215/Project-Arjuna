@@ -3,36 +3,55 @@
 namespace App\Controllers;
 
 use CodeIgniter\I18n\Time;
-use App\Models\GuruModel;
-use App\Models\SiswaModel;
-use App\Models\PresensiGuruModel;
-use App\Models\PresensiSiswaModel;
+use App\Models\AdminModel;
+use App\Models\KaryawanModel;
+use App\Models\PresensiAdminModel;
+use App\Models\PresensiKaryawanModel;
 use App\Libraries\enums\TipeUser;
 
 class Scan extends BaseController
 {
    private bool $WANotificationEnabled;
 
-   protected SiswaModel $siswaModel;
-   protected GuruModel $guruModel;
+   protected KaryawanModel $karyawanModel;
+   protected AdminModel $adminModel;
 
-   protected PresensiSiswaModel $presensiSiswaModel;
-   protected PresensiGuruModel $presensiGuruModel;
+   protected PresensiKaryawanModel $presensiKaryawanModel;
+   protected PresensiAdminModel $presensiAdminModel;
 
    public function __construct()
    {
       $this->WANotificationEnabled = getenv('WA_NOTIFICATION') === 'true' ? true : false;
 
-      $this->siswaModel = new SiswaModel();
-      $this->guruModel = new GuruModel();
-      $this->presensiSiswaModel = new PresensiSiswaModel();
-      $this->presensiGuruModel = new PresensiGuruModel();
+      $this->karyawanModel = new KaryawanModel();
+      $this->adminModel = new AdminModel();
+      $this->presensiKaryawanModel = new PresensiKaryawanModel();
+      $this->presensiAdminModel = new PresensiAdminModel();
    }
 
-   public function index($t = 'Masuk')
+   public function index($t = null)
    {
+      // Cek apakah user sudah login
+      if (!session()->get('logged_in')) {
+         return redirect()->to('/login');
+      }
+
+      // Jika tidak ada parameter waktu, tampilkan halaman utama
+      if ($t === null) {
+         $data = ['title' => 'Absensi Karyawan dan Admin Berbasis QR Code'];
+         return view('scan/scan_main', $data);
+      }
+
       $data = ['waktu' => $t, 'title' => 'Absensi Karyawan dan Admin Berbasis QR Code'];
-      return view('scan/scan', $data);
+      
+      // Tentukan view berdasarkan role
+      $userRole = $this->roleHelper->getUserRole();
+      if ($userRole->value === 'user') {
+         return view('scan/scan_user', $data);
+      } else {
+         // Admin dan Super Admin menggunakan halaman scan khusus
+         return view('scan/scan_admin', $data);
+      }
    }
 
    public function cekKode()
@@ -42,19 +61,19 @@ class Scan extends BaseController
       $waktuAbsen = $this->request->getVar('waktu');
 
       $status = false;
-      $type = TipeUser::Siswa;
+      $type = TipeUser::Karyawan;
 
-      // cek data siswa di database
-      $result = $this->siswaModel->cekSiswa($uniqueCode);
+      // cek data karyawan di database
+      $result = $this->karyawanModel->cekKaryawan($uniqueCode);
 
       if (empty($result)) {
-         // jika cek siswa gagal, cek data guru
-         $result = $this->guruModel->cekGuru($uniqueCode);
+         // jika cek karyawan gagal, cek data admin
+         $result = $this->adminModel->cekAdmin($uniqueCode);
 
          if (!empty($result)) {
             $status = true;
 
-            $type = TipeUser::Guru;
+            $type = TipeUser::Admin;
          } else {
             $status = false;
 
@@ -65,7 +84,7 @@ class Scan extends BaseController
       }
 
       if (!$status) { // data tidak ditemukan
-         return $this->showErrorView('Data tidak ditemukan');
+         return $this->showErrorResponse('Data tidak ditemukan');
       }
 
       // jika data ditemukan
@@ -79,7 +98,7 @@ class Scan extends BaseController
             break;
 
          default:
-            return $this->showErrorView('Data tidak valid');
+            return $this->showErrorResponse('Data tidak valid');
             break;
       }
    }
@@ -95,43 +114,43 @@ class Scan extends BaseController
       $messageString = " sudah absen masuk pada tanggal $date jam $time";
       // absen masuk
       switch ($type) {
-         case TipeUser::Guru:
-            $idGuru =  $result['id_guru'];
-            $data['type'] = TipeUser::Guru;
+         case TipeUser::Admin:
+            $idAdmin =  $result['id_admin'];
+            $data['type'] = TipeUser::Admin;
 
-            $sudahAbsen = $this->presensiGuruModel->cekAbsen($idGuru, $date);
+            $sudahAbsen = $this->presensiAdminModel->cekAbsen($idAdmin, $date);
 
             if ($sudahAbsen) {
-               $data['presensi'] = $this->presensiGuruModel->getPresensiById($sudahAbsen);
-               return $this->showErrorView('Anda sudah absen hari ini', $data);
+               $data['presensi'] = $this->presensiAdminModel->getPresensiById($sudahAbsen);
+               return $this->showErrorResponse('Anda sudah absen hari ini', $data);
             }
 
-            $this->presensiGuruModel->absenMasuk($idGuru, $date, $time);
-            $messageString = $result['nama_guru'] . ' dengan NIP ' . $result['nuptk'] . $messageString;
-            $data['presensi'] = $this->presensiGuruModel->getPresensiByIdGuruTanggal($idGuru, $date);
+            $this->presensiAdminModel->absenMasuk($idAdmin, $date, $time);
+            $messageString = $result['nama_admin'] . ' dengan NIP ' . $result['nuptk'] . $messageString;
+            $data['presensi'] = $this->presensiAdminModel->getPresensiByIdAdminTanggal($idAdmin, $date);
 
             break;
 
-         case TipeUser::Siswa:
-            $idSiswa =  $result['id_siswa'];
-            $idKelas =  $result['id_kelas'];
-            $data['type'] = TipeUser::Siswa;
+         case TipeUser::Karyawan:
+            $idKaryawan =  $result['id_karyawan'];
+            $idDepartemen =  $result['id_departemen'];
+            $data['type'] = TipeUser::Karyawan;
 
-            $sudahAbsen = $this->presensiSiswaModel->cekAbsen($idSiswa, Time::today()->toDateString());
+            $sudahAbsen = $this->presensiKaryawanModel->cekAbsen($idKaryawan, Time::today()->toDateString());
 
             if ($sudahAbsen) {
-               $data['presensi'] = $this->presensiSiswaModel->getPresensiById($sudahAbsen);
-               return $this->showErrorView('Anda sudah absen hari ini', $data);
+               $data['presensi'] = $this->presensiKaryawanModel->getPresensiById($sudahAbsen);
+               return $this->showErrorResponse('Anda sudah absen hari ini', $data);
             }
 
-            $this->presensiSiswaModel->absenMasuk($idSiswa, $date, $time, $idKelas);
-            $messageString = 'Siswa ' . $result['nama_siswa'] . ' dengan NIS ' . $result['nis'] . $messageString;
-            $data['presensi'] = $this->presensiSiswaModel->getPresensiByIdSiswaTanggal($idSiswa, $date);
+            $this->presensiKaryawanModel->absenMasuk($idKaryawan, $date, $time, $idDepartemen);
+            $messageString = 'Karyawan ' . $result['nama_karyawan'] . ' dengan NIS ' . $result['nis'] . $messageString;
+            $data['presensi'] = $this->presensiKaryawanModel->getPresensiByIdKaryawanTanggal($idKaryawan, $date);
 
             break;
 
          default:
-            return $this->showErrorView('Tipe tidak valid');
+            return $this->showErrorResponse('Tipe tidak valid');
       }
 
       // kirim notifikasi ke whatsapp
@@ -147,7 +166,13 @@ class Scan extends BaseController
             log_message('error', 'Error sending notification: ' . $e->getMessage());
          }
       }
-      return view('scan/scan-result', $data);
+      return $this->response->setJSON([
+         'success' => true,
+         'message' => 'Absen ' . $data['waktu'] . ' berhasil',
+         'data' => $data['data'],
+         'type' => $data['type'],
+         'presensi' => $data['presensi']
+      ]);
    }
 
    public function absenPulang($type, $result)
@@ -162,39 +187,39 @@ class Scan extends BaseController
 
       // absen pulang
       switch ($type) {
-         case TipeUser::Guru:
-            $idGuru =  $result['id_guru'];
-            $data['type'] = TipeUser::Guru;
+         case TipeUser::Admin:
+            $idAdmin =  $result['id_admin'];
+            $data['type'] = TipeUser::Admin;
 
-            $sudahAbsen = $this->presensiGuruModel->cekAbsen($idGuru, $date);
+            $sudahAbsen = $this->presensiAdminModel->cekAbsen($idAdmin, $date);
 
             if (!$sudahAbsen) {
-               return $this->showErrorView('Anda belum absen hari ini', $data);
+               return $this->showErrorResponse('Anda belum absen hari ini', $data);
             }
 
-            $this->presensiGuruModel->absenKeluar($sudahAbsen, $time);
-            $messageString = $result['nama_guru'] . ' dengan NIP ' . $result['nuptk'] . $messageString;
-            $data['presensi'] = $this->presensiGuruModel->getPresensiById($sudahAbsen);
+            $this->presensiAdminModel->absenKeluar($sudahAbsen, $time);
+            $messageString = $result['nama_admin'] . ' dengan NIP ' . $result['nuptk'] . $messageString;
+            $data['presensi'] = $this->presensiAdminModel->getPresensiById($sudahAbsen);
 
             break;
 
-         case TipeUser::Siswa:
-            $idSiswa =  $result['id_siswa'];
-            $data['type'] = TipeUser::Siswa;
+         case TipeUser::Karyawan:
+            $idKaryawan =  $result['id_karyawan'];
+            $data['type'] = TipeUser::Karyawan;
 
-            $sudahAbsen = $this->presensiSiswaModel->cekAbsen($idSiswa, $date);
+            $sudahAbsen = $this->presensiKaryawanModel->cekAbsen($idKaryawan, $date);
 
             if (!$sudahAbsen) {
-               return $this->showErrorView('Anda belum absen hari ini', $data);
+               return $this->showErrorResponse('Anda belum absen hari ini', $data);
             }
 
-            $this->presensiSiswaModel->absenKeluar($sudahAbsen, $time);
-            $messageString = 'Siswa ' . $result['nama_siswa'] . ' dengan NIS ' . $result['nis'] . $messageString;
-            $data['presensi'] = $this->presensiSiswaModel->getPresensiById($sudahAbsen);
+            $this->presensiKaryawanModel->absenKeluar($sudahAbsen, $time);
+            $messageString = 'Karyawan ' . $result['nama_karyawan'] . ' dengan NIS ' . $result['nis'] . $messageString;
+            $data['presensi'] = $this->presensiKaryawanModel->getPresensiById($sudahAbsen);
 
             break;
          default:
-            return $this->showErrorView('Tipe tidak valid');
+            return $this->showErrorResponse('Tipe tidak valid');
       }
 
       // kirim notifikasi ke whatsapp
@@ -211,7 +236,13 @@ class Scan extends BaseController
          }
       }
 
-      return view('scan/scan-result', $data);
+      return $this->response->setJSON([
+         'success' => true,
+         'message' => 'Absen ' . $data['waktu'] . ' berhasil',
+         'data' => $data['data'],
+         'type' => $data['type'],
+         'presensi' => $data['presensi']
+      ]);
    }
 
    public function showErrorView(string $msg = 'no error message', $data = NULL)
@@ -220,6 +251,19 @@ class Scan extends BaseController
       $errdata['msg'] = $msg;
 
       return view('scan/error-scan-result', $errdata);
+   }
+
+   public function showErrorResponse(string $msg = 'no error message', $data = NULL)
+   {
+      $errdata = $data ?? [];
+      
+      return $this->response->setJSON([
+         'success' => false,
+         'message' => $msg,
+         'data' => $errdata['data'] ?? null,
+         'type' => $errdata['type'] ?? null,
+         'presensi' => $errdata['presensi'] ?? null
+      ]);
    }
 
    protected function sendNotification($message)
@@ -243,4 +287,5 @@ class Scan extends BaseController
       }
       $whatsapp->sendMessage($message);
    }
+   
 }
