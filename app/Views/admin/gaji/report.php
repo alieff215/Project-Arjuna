@@ -637,7 +637,7 @@ select.form-control {
                                 </td>
                                 <td>
                                     <span style="font-weight:600;color:var(--primary);font-size:1rem;">
-                                        Rp <?= number_format($row['gaji_per_jam'], 0, ',', '.') ?>
+                                        Rp <?= number_format((float)$row['gaji_per_jam'], 3, ',', '.') ?>
                                     </span>
                                 </td>
                                 <td>

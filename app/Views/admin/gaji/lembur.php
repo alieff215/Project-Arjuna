@@ -150,7 +150,7 @@ table.table tr:hover td { background: color-mix(in oklab, var(--card-solid, #fff
                     <td><?= esc($row['nama_karyawan']) ?></td>
                     <td><?= esc($row['departemen'] ?? '-') ?></td>
                     <td><?= esc($row['jabatan'] ?? '-') ?></td>
-                    <td>Rp <?= number_format((int)($row['gaji_per_jam'] ?? 0), 0, ',', '.') ?></td>
+                    <td>Rp <?= number_format((float)($row['gaji_per_jam'] ?? 0), 3, ',', '.') ?></td>
                     <td><?= (int)($row['hari_lembur'] ?? 0) ?></td>
                     <td><?= number_format((float)($row['total_jam_lembur'] ?? 0.0), 1, ',', '.') ?> jam</td>
                     <td>Rp <?= number_format((int)($row['total_gaji_lembur'] ?? 0), 0, ',', '.') ?></td>

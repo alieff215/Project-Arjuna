@@ -74,12 +74,12 @@
                                        name="gaji_per_jam" 
                                        value="<?= old('gaji_per_jam', $gaji['gaji_per_jam']) ?>" 
                                        min="0" 
-                                       step="100" 
+                                       step="0.001" 
                                        placeholder="Masukkan gaji per jam"
                                        required>
                             </div>
                             <small class="form-text text-muted">
-                                Masukkan gaji per jam dalam rupiah (tanpa titik atau koma)
+                                Gaji per jam boleh desimal (contoh: 13.234). Gunakan titik untuk pemisah desimal.
                             </small>
                         </div>
                     </div>
@@ -114,7 +114,7 @@
                 </div>
                 <div class="col-md-3">
                     <strong>Gaji Per Jam:</strong><br>
-                    Rp <?= number_format($gaji['gaji_per_jam'], 0, ',', '.') ?>
+                    Rp <?= number_format((float)$gaji['gaji_per_jam'], 3, ',', '.') ?>
                 </div>
                 <div class="col-md-3">
                     <strong>Tanggal Update:</strong><br>

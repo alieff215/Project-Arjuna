@@ -119,6 +119,7 @@ $routes->group('admin', function (RouteCollection $routes) {
    $routes->post('absen-karyawan', 'Admin\DataAbsenKaryawan::ambilDataKaryawan'); // ambil Karyawan berdasarkan departemen dan tanggal
    $routes->post('absen-karyawan/kehadiran', 'Admin\DataAbsenKaryawan::ambilKehadiran'); // ambil kehadiran Karyawan
    $routes->post('absen-karyawan/edit', 'Admin\DataAbsenKaryawan::ubahKehadiran'); // ubah kehadiran Karyawan
+   $routes->post('absen-karyawan/edit-all', 'Admin\DataAbsenKaryawan::ubahKehadiranSemua'); // ubah kehadiran semua Karyawan (mass update)
    $routes->post('absen-karyawan/history', 'Admin\DataAbsenKaryawan::ambilHistoryTanggal'); // ambil history presensi karyawan per tanggal
 
    // admin lihat data absen admin

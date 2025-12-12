@@ -419,7 +419,7 @@ class Gaji extends BaseController
                     $row['nis'],
                     $row['nama_karyawan'],
                     $row['jabatan'],
-                    (int)($row['gaji_per_jam'] ?? 0),
+                    number_format((float)($row['gaji_per_jam'] ?? 0), 3, ',', '.'),
                     (int)($row['total_kehadiran'] ?? 0),
                     number_format((float)$row['total_jam_kerja'], 1, ',', '.'),
                     (int)($row['total_gaji'] ?? 0)

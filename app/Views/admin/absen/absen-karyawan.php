@@ -700,9 +700,51 @@
       });
    }
 
+   // ================== BULK UPDATE ==================
+   function ubahSemuaKehadiran() {
+      const tanggal = $('#tanggal').val();
+      const idDepartemen = $('#filterDepartemenJabatan').val();
+      const idKehadiran = $('#bulkIdKehadiran').val();
+      const jamMasuk = $('#bulkJamMasuk').val();
+      const jamKeluar = $('#bulkJamKeluar').val();
+
+      $.ajax({
+         url: "<?= base_url('/admin/absen-karyawan/edit-all'); ?>",
+         type: 'post',
+         data: {
+            id_departemen: idDepartemen,
+            tanggal: tanggal,
+            id_kehadiran: idKehadiran,
+            jam_masuk: jamMasuk,
+            jam_keluar: jamKeluar
+         },
+         success: function(response) {
+            if (response && response.status) {
+               showToast(response.message || 'Berhasil update massal', 'check_circle');
+            } else {
+               showToast((response && response.message) || 'Gagal update massal', 'error');
+            }
+            // refresh data dan history
+            fetchKaryawan();
+            $.ajax({
+               url: "<?= base_url('/admin/absen-karyawan/history'); ?>",
+               type: 'post',
+               data: { tanggal },
+               success: function(res) { $('#historyKaryawan').html(res); }
+            });
+         },
+         error: function(xhr, status, err) {
+            console.error('Bulk update error:', { status, err, response: xhr.responseText });
+            const msg = (xhr && xhr.responseText) ? xhr.responseText : err;
+            alert('Gagal update massal\n' + msg);
+         }
+      });
+   }
+
    // Expose untuk dipakai di partial yang dirender AJAX
    window.getDataKehadiran = getDataKehadiran;
    window.ubahKehadiran = ubahKehadiran;
+   window.ubahSemuaKehadiran = ubahSemuaKehadiran;
    window.selectDepartemenJabatan = selectDepartemenJabatan;
 
    // Auto-load data saat halaman dibuka

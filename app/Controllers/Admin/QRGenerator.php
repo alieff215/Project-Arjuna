@@ -158,6 +158,14 @@ class QRGenerator extends BaseController
       $this->qrCode->setForegroundColor($this->foregroundColor2);
       $this->label->setTextColor($this->foregroundColor2);
 
+      // Sederhanakan QR untuk admin: gunakan ECC medium dan tanpa logo
+      try {
+         $this->qrCode->setErrorCorrectionLevel(new \Endroid\QrCode\ErrorCorrectionLevel\ErrorCorrectionLevelMedium());
+      } catch (\Throwable $th) {
+         // Abaikan jika versi library tidak mendukung, tetap lanjut
+      }
+      $this->logo = null;
+
       $this->qrCodeFilePath .= 'qr-admin/';
 
       if (!file_exists($this->qrCodeFilePath)) {
@@ -169,13 +177,14 @@ class QRGenerator extends BaseController
          nama: $this->request->getVar('nama'),
          nomor: $this->request->getVar('nomor'),
          departemen: $this->request->getVar('departemen'),
-         grade: $this->request->getVar('grade')
+         grade: $this->request->getVar('grade'),
+         simple: true
       );
 
       return $this->response->setJSON(true);
    }
 
-   public function generate($nama, $nomor, $unique_code, ?string $departemen = null, ?string $grade = null)
+   public function generate($nama, $nomor, $unique_code, ?string $departemen = null, ?string $grade = null, bool $simple = false)
    {
       $fileExt = 'png';
       $filename = url_title($nama, lowercase: true) . "_" . url_title($nomor, lowercase: true) . ".$fileExt";
@@ -183,6 +192,7 @@ class QRGenerator extends BaseController
       $this->qrCode->setData($unique_code);
       $this->label->setText('');
 
+      // Ukuran dan margin tetap sama untuk semua, sesuai permintaan
       $qrTargetPx = $this->cmToPx(2.0);
       $qrMarginPx = max(2, (int) round($this->cmToPx(0.1)));
       $qrEffectiveSize = max(40, $qrTargetPx - ($qrMarginPx * 2));
@@ -190,6 +200,15 @@ class QRGenerator extends BaseController
       $this->qrCode
          ->setMargin($qrMarginPx)
          ->setSize($qrEffectiveSize);
+
+      if ($simple) {
+         try {
+            // Turunkan tingkat koreksi kesalahan untuk pola QR yang lebih sederhana
+            $this->qrCode->setErrorCorrectionLevel(new \Endroid\QrCode\ErrorCorrectionLevel\ErrorCorrectionLevelMedium());
+         } catch (\Throwable $th) {
+            // Abaikan bila tidak tersedia
+         }
+      }
 
       [$resolvedDepartemen, $resolvedGrade] = $this->resolveCardMeta($unique_code, $departemen, $grade);
 
@@ -279,6 +298,14 @@ class QRGenerator extends BaseController
          $this->qrCode->setForegroundColor($this->foregroundColor2);
          $this->label->setTextColor($this->foregroundColor2);
 
+         // Sederhanakan QR admin pada unduhan: ECC medium, tanpa logo
+         try {
+            $this->qrCode->setErrorCorrectionLevel(new \Endroid\QrCode\ErrorCorrectionLevel\ErrorCorrectionLevelMedium());
+         } catch (\Throwable $th) {
+            // Abaikan bila tidak tersedia
+         }
+         $this->logo = null;
+
          $this->qrCodeFilePath .= 'qr-admin/';
 
          if (!file_exists($this->qrCodeFilePath)) {
@@ -292,6 +319,7 @@ class QRGenerator extends BaseController
                unique_code: $admin['unique_code'],
                departemen: $admin['departemen'] ?? null,
                grade: $admin['jabatan'] ?? null,
+               simple: true,
             ),
             null,
             true,
@@ -330,7 +358,7 @@ class QRGenerator extends BaseController
       }
 
       try {
-         $output = self::UPLOADS_PATH . 'qrcode-karyawan' . ($departemen ? "_{$departemen}.zip" : '.zip');
+         $output = $this->getWritableUploadsPath() . 'qrcode-karyawan' . ($departemen ? "_{$departemen}.zip" : '.zip');
 
          $this->zipFolder($this->qrCodeFilePath, $output);
 
@@ -357,7 +385,7 @@ class QRGenerator extends BaseController
       }
 
       try {
-         $output = self::UPLOADS_PATH . DIRECTORY_SEPARATOR . 'qrcode-admin.zip';
+         $output = $this->getWritableUploadsPath() . 'qrcode-admin.zip';
 
          $this->zipFolder($this->qrCodeFilePath, $output);
 
@@ -374,7 +402,10 @@ class QRGenerator extends BaseController
    private function zipFolder(string $folder, string $output)
    {
       $zip = new \ZipArchive;
-      $zip->open($output, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
+      $openResult = $zip->open($output, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
+      if ($openResult !== true) {
+         throw new \RuntimeException('Gagal membuka arsip ZIP: kode ' . (string) $openResult);
+      }
 
       // Create recursive directory iterator
       /** @var \SplFileInfo[] $files */
@@ -400,6 +431,15 @@ class QRGenerator extends BaseController
          }
       }
       $zip->close();
+   }
+
+   private function getWritableUploadsPath(): string
+   {
+      $path = rtrim(WRITEPATH, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR;
+      if (!file_exists($path)) {
+         mkdir($path, recursive: true);
+      }
+      return $path;
    }
 
    protected function resolveCardMeta(string $uniqueCode, ?string $departemen, ?string $grade): array

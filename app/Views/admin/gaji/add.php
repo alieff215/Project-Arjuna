@@ -201,13 +201,13 @@
                                        name="gaji_per_jam" 
                                        value="<?= old('gaji_per_jam') ?>" 
                                        min="0" 
-                                       step="100" 
+                                       step="0.001" 
                                        placeholder="Masukkan gaji per jam"
                                        required>
                             </div>
                             <small class="form-text text-muted">
                                 <i class="material-icons" style="vertical-align:middle;margin-right:4px;font-size:16px;">info</i>
-                                Masukkan gaji per jam dalam rupiah (tanpa titik atau koma)
+                                Gaji per jam boleh desimal (contoh: 13.234). Gunakan titik untuk pemisah desimal.
                             </small>
                         </div>
                     </div>

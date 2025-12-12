@@ -381,7 +381,7 @@ class GajiModel extends Model
                 'nama_karyawan' => $kar['nama_karyawan'],
                 'departemen' => $kar['departemen'],
                 'jabatan' => $kar['jabatan'],
-                'gaji_per_jam' => (int)$gaji_per_jam,
+                'gaji_per_jam' => $gaji_per_jam,
                 'hari_lembur' => $hari_lembur,
                 'total_jam_lembur' => $total_jam_lembur,
                 'total_gaji_lembur' => $total_gaji_lembur,

@@ -283,7 +283,7 @@
                     </div>
                     <div>
                         <p class="card-category">Rata-rata Gaji/Jam</p>
-                        <h3 class="card-title">Rp <?= number_format($stats['avg_salary'], 0, ',', '.') ?></h3>
+                        <h3 class="card-title">Rp <?= number_format((float)$stats['avg_salary'], 3, ',', '.') ?></h3>
                     </div>
                 </div>
                 <div class="card-footer">
@@ -300,7 +300,7 @@
                     </div>
                     <div>
                         <p class="card-category">Gaji Tertinggi/Jam</p>
-                        <h3 class="card-title">Rp <?= number_format($stats['max_salary'], 0, ',', '.') ?></h3>
+                        <h3 class="card-title">Rp <?= number_format((float)$stats['max_salary'], 3, ',', '.') ?></h3>
                     </div>
                 </div>
                 <div class="card-footer">
@@ -317,7 +317,7 @@
                     </div>
                     <div>
                         <p class="card-category">Gaji Terendah/Jam</p>
-                        <h3 class="card-title">Rp <?= number_format($stats['min_salary'], 0, ',', '.') ?></h3>
+                        <h3 class="card-title">Rp <?= number_format((float)$stats['min_salary'], 3, ',', '.') ?></h3>
                     </div>
                 </div>
                 <div class="card-footer">
@@ -400,7 +400,7 @@
                             </td>
                             <td>
                                 <span style="font-weight:600;color:var(--success);font-size:1rem;">
-                                    Rp <?= number_format($row['gaji_per_jam'], 0, ',', '.') ?>
+                                    Rp <?= number_format((float)$row['gaji_per_jam'], 3, ',', '.') ?>
                                 </span>
                             </td>
                             <td>
