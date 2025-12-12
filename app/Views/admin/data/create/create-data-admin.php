@@ -27,7 +27,7 @@
                      <?php $validation = \Config\Services::validation(); ?>
 
                      <div class="form-group mt-4">
-                        <label for="nuptk">NUPTK</label>
+                        <label for="nuptk">NIP</label>
                         <input type="text" id="nuptk" class="form-control <?= $validation->getError('nuptk') ? 'is-invalid' : ''; ?>" name="nuptk" placeholder="1234" value="<?= old('nuptk') ?? $oldInput['nuptk'] ?? '' ?>">
                         <div class="invalid-feedback">
                            <?= $validation->getError('nuptk'); ?>
@@ -40,6 +40,21 @@
                         <div class="invalid-feedback">
                            <?= $validation->getError('nama'); ?>
                         </div>
+                     </div>
+
+                     <div class="form-group mt-4">
+                        <label for="id_departemen">Departemen - Jabatan</label>
+                        <select class="form-control" id="id_departemen" name="id_departemen">
+                           <option value="">-- Pilih Departemen - Jabatan --</option>
+                           <?php if (!empty($departemen_list)): ?>
+                              <?php foreach ($departemen_list as $dept): ?>
+                                 <option value="<?= $dept['id_departemen']; ?>" <?= (old('id_departemen') ?? $oldInput['id_departemen'] ?? '') == $dept['id_departemen'] ? 'selected' : ''; ?>>
+                                    <?= $dept['departemen']; ?> - <?= $dept['jabatan']; ?>
+                                 </option>
+                              <?php endforeach; ?>
+                           <?php endif; ?>
+                        </select>
+                        <small class="form-text text-muted">Pilih kombinasi departemen dan jabatan untuk admin ini</small>
                      </div>
 
                      <div class="form-group mt-2">
@@ -94,6 +109,11 @@
                         <div class="invalid-feedback">
                            <?= $validation->getError('no_hp'); ?>
                         </div>
+                     </div>
+
+                     <div class="form-group mt-4">
+                        <label for="tanggal_join">Tanggal Join</label>
+                        <input type="date" id="tanggal_join" name="tanggal_join" class="form-control" value="<?= old('tanggal_join') ?? $oldInput['tanggal_join'] ?? '' ?>">
                      </div>
 
                      <button type="submit" class="btn btn-success btn-block">Simpan</button>

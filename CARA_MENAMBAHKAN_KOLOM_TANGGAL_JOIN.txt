@@ -1,0 +1,87 @@
+===============================================================
+PANDUAN: Menambahkan Kolom Tanggal Join ke Tabel tb_admin
+===============================================================
+
+MASALAH:
+Kolom tanggal join belum muncul di halaman Data Admin
+
+SOLUSI:
+Kolom belum ditambahkan ke database. Ikuti langkah berikut:
+
+===============================================================
+LANGKAH 1: Buka phpMyAdmin
+===============================================================
+1. Buka browser
+2. Ketik: http://localhost/phpmyadmin
+3. Login (biasanya username: root, password: kosong atau "root")
+
+===============================================================
+LANGKAH 2: Pilih Database
+===============================================================
+1. Klik database "arjuna2" di sidebar kiri
+2. Klik tab "SQL" di bagian atas
+
+===============================================================
+LANGKAH 3: Jalankan SQL Berikut
+===============================================================
+
+Copy dan paste SQL di bawah ini, lalu klik tombol "Go":
+
+-- Tambahkan kolom tanggal_join
+ALTER TABLE tb_admin ADD tanggal_join DATE NULL AFTER no_hp;
+
+-- Tambahkan record migrasi (opsional, untuk tracking)
+INSERT INTO migrations (version, class, `group`, namespace, time, batch)
+SELECT '2025-11-04-000002', 
+       'App\\Database\\Migrations\\AddTanggalJoinToAdminTable', 
+       'default', 
+       'App', 
+       UNIX_TIMESTAMP(), 
+       (SELECT IFNULL(MAX(batch), 0) + 1 FROM (SELECT batch FROM migrations) as temp)
+WHERE NOT EXISTS (SELECT 1 FROM migrations WHERE version = '2025-11-04-000002');
+
+===============================================================
+LANGKAH 4: Verifikasi
+===============================================================
+
+Setelah SQL berhasil dijalankan, jalankan query ini untuk cek:
+
+SHOW COLUMNS FROM tb_admin LIKE 'tanggal_join';
+
+Jika muncul 1 row, berarti berhasil!
+
+===============================================================
+LANGKAH 5: Refresh Halaman
+===============================================================
+1. Buka aplikasi di browser
+2. Buka halaman Data Admin
+3. Tekan Ctrl+F5 (hard refresh)
+4. Kolom "Tanggal Join" akan muncul setelah kolom "Alamat"
+
+===============================================================
+CATATAN PENTING:
+===============================================================
+- SQL di atas AMAN dijalankan berkali-kali
+- Jika kolom sudah ada, akan muncul error "Duplicate column" 
+  (ini normal, abaikan saja)
+- Kode aplikasi (Model, Controller, Views) SUDAH SIAP
+- Yang kurang hanya kolom di database saja
+
+===============================================================
+JIKA MASIH BERMASALAH:
+===============================================================
+Jika setelah langkah di atas kolom masih belum muncul:
+
+1. Pastikan Anda melihat halaman Data Admin yang benar
+   URL: http://localhost/Project-Arjuna/admin/admin
+
+2. Clear browser cache:
+   - Chrome: Ctrl+Shift+Del
+   - Firefox: Ctrl+Shift+Del
+
+3. Verifikasi file view sudah benar:
+   File: app/Views/admin/data/list-data-admin.php
+   Harus ada kolom: <th><b>Tanggal Join</b></th>
+
+===============================================================
+

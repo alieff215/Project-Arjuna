@@ -387,7 +387,7 @@
                   <div class="d-flex flex-wrap align-items-center justify-content-between">
                      <div>
                         <h4 class="title"><i class="material-icons">task_alt</i> Absen Admin</h4>
-                        <div class="subtitle">Daftar admin & status kehadiran</div>
+                        <div class="subtitle">Total Admin: <span style="background: var(--success); color: white; padding: 2px 8px; border-radius: 8px; font-weight: 700;"><?= $total_admin; ?></span> | <?= date('d M Y H:i'); ?></div>
                      </div>
                      <div class="toolbar">
                         <button type="button" class="btn-modern" id="filtersBtn">
@@ -408,7 +408,7 @@
                   <div class="toolbar mb-2">
                      <div class="input-pill">
                         <i class="material-icons" aria-hidden="true">search</i>
-                        <input id="searchAdmin" type="text" placeholder="Cari nama, email, NUPTK… (tekan / untuk fokus)" aria-label="Input pencarian" autocomplete="off">
+                        <input id="searchAdmin" type="text" placeholder="Cari nama, email, NIP… (tekan / untuk fokus)" aria-label="Input pencarian" autocomplete="off">
                         <button class="clear" id="clearSearch" aria-label="Bersihkan pencarian"><i class="material-icons">close</i></button>
                      </div>
                   </div>
@@ -465,17 +465,19 @@
                            <thead>
                               <tr>
                                  <th>NO</th>
-                                 <th>NUPTK</th>
+                                 <th>NIP</th>
                                  <th>Nama Admin</th>
                                  <th class="hide-sm">Jenis Kelamin</th>
                                  <th>No HP</th>
                                  <th class="hide-sm">Alamat</th>
+                                 <th class="hide-sm">Tanggal Join</th>
+                                 <th>Status Approval</th>
                                  <th class="col-actions">Aksi</th>
                               </tr>
                            </thead>
                            <tbody id="tbodyInit">
                               <tr>
-                                 <td colspan="7" style="padding:18px; color:var(--muted);">Memuat data…</td>
+                                 <td colspan="9" style="padding:18px; color:var(--muted);">Memuat data…</td>
                               </tr>
                            </tbody>
                         </table>

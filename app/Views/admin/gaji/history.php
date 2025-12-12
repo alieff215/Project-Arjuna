@@ -8,9 +8,6 @@
         <h1 class="h3 mb-0 text-gray-800">
             <i class="fas fa-history"></i> Riwayat Perubahan Gaji
         </h1>
-        <a href="<?= base_url('admin/gaji') ?>" class="btn btn-secondary">
-            <i class="fas fa-arrow-left"></i> Kembali ke Daftar Gaji
-        </a>
     </div>
 
     <!-- Gaji Info Card -->
@@ -245,4 +242,15 @@ $(document).ready(function() {
 });
 </script>
 <?= $this->endSection() ?>
+
+
+
+
+
+
+
+
+
+
+
 

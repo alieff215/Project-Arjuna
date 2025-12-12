@@ -22,7 +22,24 @@
                </div>
             <?php endforeach; ?>
          </div>
-         <!-- Jam masuk/keluar dinonaktifkan dari UI sesuai requirement -->
+         
+         <!-- Input Jam Masuk dan Jam Keluar -->
+         <div class="row mt-3">
+            <div class="col-md-6">
+               <label for="jam_masuk">Jam Masuk</label>
+               <input type="time" id="jam_masuk" name="jam_masuk" class="form-control" value="<?= $presensi['jam_masuk'] ?? ''; ?>">
+            </div>
+            <div class="col-md-6">
+               <label for="jam_keluar">Jam Keluar</label>
+               <input type="time" id="jam_keluar" name="jam_keluar" class="form-control" value="<?= $presensi['jam_keluar'] ?? ''; ?>">
+            </div>
+         </div>
+         
+         <div class="mt-3">
+            <label for="keterangan">Keterangan</label>
+            <textarea id="keterangan" name="keterangan" class="custom-select"><?= trim($presensi['keterangan'] ?? ''); ?></textarea>
+         </div>
+         
          <hr>
          <div>
             <button type="button" class="btn btn-info" style="margin-bottom:10px;cursor:default">History Update</button>
@@ -43,6 +60,26 @@
                                  <span class="text-success"><?= esc($ka['text'] ?? '-') ?></span>
                               </div>
                            </div>
+                           <?php if (!empty($h['jam_masuk_before']) || !empty($h['jam_masuk_after'])) : ?>
+                           <div class="row" style="font-size:14px;">
+                              <div class="col-4 col-sm-3 text-muted">Jam Masuk</div>
+                              <div class="col-8 col-sm-9">
+                                 <span class="text-danger"><?= esc($h['jam_masuk_before'] ?? '-') ?></span>
+                                 <span class="text-muted"> → </span>
+                                 <span class="text-success"><?= esc($h['jam_masuk_after'] ?? '-') ?></span>
+                              </div>
+                           </div>
+                           <?php endif; ?>
+                           <?php if (!empty($h['jam_keluar_before']) || !empty($h['jam_keluar_after'])) : ?>
+                           <div class="row" style="font-size:14px;">
+                              <div class="col-4 col-sm-3 text-muted">Jam Keluar</div>
+                              <div class="col-8 col-sm-9">
+                                 <span class="text-danger"><?= esc($h['jam_keluar_before'] ?? '-') ?></span>
+                                 <span class="text-muted"> → </span>
+                                 <span class="text-success"><?= esc($h['jam_keluar_after'] ?? '-') ?></span>
+                              </div>
+                           </div>
+                           <?php endif; ?>
                            <div class="row" style="font-size:14px;">
                               <div class="col-4 col-sm-3 text-muted">Keterangan</div>
                               <div class="col-8 col-sm-9">
@@ -60,10 +97,6 @@
                   Belum ada history perubahan untuk tanggal ini.
                </div>
             <?php endif; ?>
-         </div>
-         <div class="mt-3">
-            <label for="keterangan">Keterangan</label>
-            <textarea id="keterangan" name="keterangan" class="custom-select"><?= trim($presensi['keterangan'] ?? ''); ?></textarea>
          </div>
       </form>
    </div>

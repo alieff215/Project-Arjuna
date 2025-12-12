@@ -89,3 +89,14 @@ class ConvertInventoryLogsToIncremental extends Migration
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
+

@@ -14,6 +14,7 @@ class KaryawanModel extends Model
          'id_departemen',
          'jenis_kelamin',
          'no_hp',
+         'tanggal_join',
          'unique_code'
       ];
    }
@@ -53,15 +54,15 @@ class KaryawanModel extends Model
          'LEFT'
       );
 
+      // Hanya tambahkan filter jika parameter tidak null dan tidak kosong
       if (!empty($departemen) && !empty($jabatan)) {
-         $query = $this->where(['departemen' => $departemen, 'jabatan' => $jabatan]);
+         $query = $query->where(['departemen' => $departemen, 'jabatan' => $jabatan]);
       } else if (empty($departemen) && !empty($jabatan)) {
-         $query = $this->where(['jabatan' => $jabatan]);
+         $query = $query->where(['jabatan' => $jabatan]);
       } else if (!empty($departemen) && empty($jabatan)) {
-         $query = $this->where(['departemen' => $departemen]);
-      } else {
-         $query = $this;
+         $query = $query->where(['departemen' => $departemen]);
       }
+      // Jika kedua parameter null atau kosong, tampilkan semua data
 
       return $query->orderBy('nama_karyawan')->findAll();
    }
@@ -79,7 +80,7 @@ class KaryawanModel extends Model
          ->findAll();
    }
 
-   public function createKaryawan($nis, $nama, $idDepartemen, $jenisKelamin, $noHp)
+   public function createKaryawan($nis, $nama, $idDepartemen, $jenisKelamin, $noHp, $tanggalJoin = null)
    {
       return $this->save([
          'nis' => $nis,
@@ -87,11 +88,12 @@ class KaryawanModel extends Model
          'id_departemen' => $idDepartemen,
          'jenis_kelamin' => $jenisKelamin,
          'no_hp' => $noHp,
+         'tanggal_join' => $tanggalJoin,
          'unique_code' => generateToken()
       ]);
    }
 
-   public function updateKaryawan($id, $nis, $nama, $idDepartemen, $jenisKelamin, $noHp)
+   public function updateKaryawan($id, $nis, $nama, $idDepartemen, $jenisKelamin, $noHp, $tanggalJoin = null)
    {
       return $this->save([
          $this->primaryKey => $id,
@@ -100,6 +102,7 @@ class KaryawanModel extends Model
          'id_departemen' => $idDepartemen,
          'jenis_kelamin' => $jenisKelamin,
          'no_hp' => $noHp,
+         'tanggal_join' => $tanggalJoin,
       ]);
    }
 

@@ -152,6 +152,18 @@
       transform: none;
    }
 
+   /* Refresh spin animation */
+   @keyframes spin360 {
+      to {
+         transform: rotate(360deg);
+      }
+   }
+
+   .btn-refresh.is-loading .material-icons {
+      animation: spin360 .9s linear infinite;
+      color: var(--ring);
+   }
+
    /* =============== DATA AREA =============== */
    #dataAdmin {
       min-height: 140px;
@@ -512,7 +524,7 @@
          <div class="u-head">
             <div>
                <h4 class="u-title"><i class="material-icons" style="color:var(--success)">assignment_turned_in</i> Absen Admin</h4>
-               <p class="u-sub">Daftar admin & status kehadiran</p>
+               <p class="u-sub">Total Admin: <span style="background: var(--success); color: white; padding: 2px 8px; border-radius: 8px; font-weight: 700;"><?= $total_admin; ?></span> | <?= date('d M Y H:i'); ?></p>
             </div>
             <button id="btnRefresh" class="btn-soft btn-refresh" type="button">
                <i class="material-icons">refresh</i> Refresh
@@ -582,14 +594,14 @@
    function setLoading(isLoading) {
       const $btn = $('#btnRefresh');
       if (isLoading) {
-         $btn.prop('disabled', true);
+         $btn.addClass('is-loading').prop('disabled', true);
          $('#dataAdmin').html(`
            <div class="skeleton"></div>
            <div class="skeleton" style="height:64px"></div>
            <div class="skeleton" style="height:64px"></div>
          `);
       } else {
-         $btn.prop('disabled', false);
+         $btn.removeClass('is-loading').prop('disabled', false);
       }
    }
 
@@ -631,7 +643,9 @@
       $.ajax({
          url: "<?= base_url('/admin/absen-admin/history'); ?>",
          type: 'post',
-         data: { tanggal },
+         data: {
+            tanggal
+         },
          success: function(res) {
             $('#historyAdmin').html(res);
          },

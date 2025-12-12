@@ -10,6 +10,8 @@ use App\Controllers\BaseController;
 use App\Models\KehadiranModel;
 use App\Models\PresensiKaryawanModel;
 use App\Models\PresensiKaryawanHistoryModel;
+use App\Models\ApprovalModel;
+use App\Libraries\ApprovalHelper;
 use CodeIgniter\I18n\Time;
 
 class DataAbsenKaryawan extends BaseController
@@ -22,6 +24,8 @@ class DataAbsenKaryawan extends BaseController
 
    protected PresensiKaryawanModel $presensiKaryawan;
    protected PresensiKaryawanHistoryModel $presensiHistory;
+   protected ApprovalModel $approvalModel;
+   protected ApprovalHelper $approvalHelper;
 
    protected string $currentDate;
 
@@ -37,10 +41,17 @@ class DataAbsenKaryawan extends BaseController
 
       $this->presensiKaryawan = new PresensiKaryawanModel();
       $this->presensiHistory = new PresensiKaryawanHistoryModel();
+      $this->approvalModel = new ApprovalModel();
+      $this->approvalHelper = new ApprovalHelper();
    }
 
    public function index()
    {
+      // Cek akses masterdata
+      if (!$this->roleHelper->canAccessMasterData()) {
+         return redirect()->to('/scan');
+      }
+
       $tanggal = $this->request->getGet('tanggal') ?? date('Y-m-d');
       $departemen = $this->request->getGet('departemen');
 
@@ -59,6 +70,9 @@ class DataAbsenKaryawan extends BaseController
       $data['listDepartemen'] = $departemenModel->getAllDepartemen();
       $data['title'] = 'Data Absen Karyawan';
       $data['tanggal'] = $tanggal;
+      
+      // Ambil total karyawan untuk ditampilkan di header
+      $data['total_karyawan'] = $this->karyawanModel->countAllResults();
 
       return view('admin/absen/absen-karyawan', $data);
    }
@@ -85,7 +99,8 @@ class DataAbsenKaryawan extends BaseController
          'departemen' => $departemen,
          'data' => $result,
          'listKehadiran' => $this->kehadiranModel->getAllKehadiran(),
-         'lewat' => $lewat
+         'lewat' => $lewat,
+         'total_karyawan' => count($result)
       ];
 
       return view('admin/absen/list-absen-karyawan', $data);
@@ -132,9 +147,9 @@ class DataAbsenKaryawan extends BaseController
       $idKaryawan = $this->request->getVar('id_karyawan');
       $idDepartemen = $this->request->getVar('id_departemen');
       $tanggal = $this->request->getVar('tanggal');
-      // abaikan perubahan jam masuk/keluar dari request UI
-      $jamMasuk = null;
-      $jamKeluar = null;
+      // ambil jam masuk dan jam keluar dari request UI
+      $jamMasuk = $this->request->getVar('jam_masuk');
+      $jamKeluar = $this->request->getVar('jam_keluar');
       $keterangan = $this->request->getVar('keterangan');
 
       // ambil data sebelum perubahan (row lengkap)
@@ -142,37 +157,88 @@ class DataAbsenKaryawan extends BaseController
       // untuk kompatibilitas fungsi updatePresensi yang menerima idPresensi
       $cek = $beforeRow ? ($beforeRow['id_presensi'] ?? null) : $this->presensiKaryawan->cekAbsen($idKaryawan, $tanggal);
 
-      $result = $this->presensiKaryawan->updatePresensi(
-         $cek == false ? NULL : $cek,
-         $idKaryawan,
-         $idDepartemen,
-         $tanggal,
-         $idKehadiran,
-         $jamMasuk ?? NULL,
-         $jamKeluar ?? NULL,
-         $keterangan
-      );
+      // Data yang akan diupdate
+      $updateData = [
+         'id_karyawan' => $idKaryawan,
+         'id_departemen' => $idDepartemen,
+         'tanggal' => $tanggal,
+         'id_kehadiran' => $idKehadiran,
+         'keterangan' => $keterangan
+      ];
 
-      $response['nama_karyawan'] = $this->karyawanModel->getKaryawanById($idKaryawan)['nama_karyawan'];
+      if ($jamMasuk != null) {
+         $updateData['jam_masuk'] = $jamMasuk;
+      }
 
-      if ($result) {
-         try {
-            $afterRow = $this->presensiKaryawan->getPresensiByIdKaryawanTanggal($idKaryawan, $tanggal);
-            $this->presensiHistory->insert([
-               'id_presensi' => $afterRow['id_presensi'] ?? $cek,
-               'id_karyawan' => (int)$idKaryawan,
-               'tanggal' => $tanggal,
-               'id_kehadiran_before' => $beforeRow['id_kehadiran'] ?? null,
-               'id_kehadiran_after' => $afterRow['id_kehadiran'] ?? $idKehadiran,
-               'keterangan_before' => $beforeRow['keterangan'] ?? null,
-               'keterangan_after' => $afterRow['keterangan'] ?? $keterangan,
-            ]);
-         } catch (\Throwable $th) {
-            // jangan blokir respon
+      if ($jamKeluar != null) {
+         $updateData['jam_keluar'] = $jamKeluar;
+      }
+
+      // Cek apakah memerlukan approval
+      if ($this->approvalHelper->requiresApproval()) {
+         // Buat request approval untuk update presensi
+         $approvalId = $this->approvalHelper->createApprovalRequest(
+            'update',
+            'tb_presensi_karyawan',
+            $cek,
+            $updateData,
+            $beforeRow
+         );
+
+         if ($approvalId) {
+            $response['status'] = TRUE;
+            $response['message'] = 'Request perubahan kehadiran telah dikirim dan menunggu persetujuan superadmin';
+            $response['nama_karyawan'] = $this->karyawanModel->getKaryawanById($idKaryawan)['nama_karyawan'];
+         } else {
+            $response['status'] = FALSE;
+            $response['message'] = 'Gagal mengirim request approval';
          }
-         $response['status'] = TRUE;
       } else {
-         $response['status'] = FALSE;
+         // Langsung eksekusi untuk super admin
+         $result = $this->presensiKaryawan->updatePresensi(
+            $cek == false ? NULL : $cek,
+            $idKaryawan,
+            $idDepartemen,
+            $tanggal,
+            $idKehadiran,
+            $jamMasuk ?? NULL,
+            $jamKeluar ?? NULL,
+            $keterangan,
+            'approved',
+            null,
+            session()->get('user_id')
+         );
+
+         $response['nama_karyawan'] = $this->karyawanModel->getKaryawanById($idKaryawan)['nama_karyawan'];
+
+         if ($result) {
+            try {
+               $afterRow = $this->presensiKaryawan->getPresensiByIdKaryawanTanggal($idKaryawan, $tanggal);
+               $historyData = [
+                  'id_presensi' => $afterRow['id_presensi'] ?? $cek,
+                  'id_karyawan' => (int)$idKaryawan,
+                  'tanggal' => $tanggal,
+                  'id_kehadiran_before' => $beforeRow['id_kehadiran'] ?? null,
+                  'id_kehadiran_after' => $afterRow['id_kehadiran'] ?? $idKehadiran,
+                  'keterangan_before' => $beforeRow['keterangan'] ?? null,
+                  'keterangan_after' => $afterRow['keterangan'] ?? $keterangan,
+                  'jam_masuk_before' => $beforeRow['jam_masuk'] ?? null,
+                  'jam_masuk_after' => $afterRow['jam_masuk'] ?? $jamMasuk,
+                  'jam_keluar_before' => $beforeRow['jam_keluar'] ?? null,
+                  'jam_keluar_after' => $afterRow['jam_keluar'] ?? $jamKeluar,
+               ];
+               
+               $historyResult = $this->presensiHistory->insert($historyData);
+               if (!$historyResult) {
+                  log_message('error', 'Failed to insert history: ' . json_encode($this->presensiHistory->errors()));
+               }
+            } catch (\Throwable $th) {
+               log_message('error', 'History insert error: ' . $th->getMessage());
+            }
+            $response['status'] = TRUE;
+         } else {
+            $response['status'] = FALSE;
+         }
       }
 
       return $this->response->setJSON($response);

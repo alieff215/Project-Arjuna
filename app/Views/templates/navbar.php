@@ -2,6 +2,25 @@
 <nav class="navbar navbar-expand-lg navbar-transparent navbar-absolute fixed-top custom-navbar-line">
   <div class="container-fluid">
     <div class="navbar-wrapper">
+      <!-- Tombol Kembali -->
+      <?php 
+      $current_uri = current_url();
+      $exclude_pages = ['dashboard', 'login', 'scan', 'webprofile'];
+      $show_back_button = true;
+      
+      foreach($exclude_pages as $page) {
+        if(strpos($current_uri, $page) !== false) {
+          $show_back_button = false;
+          break;
+        }
+      }
+      
+      if($show_back_button): ?>
+      <button onclick="history.back()" class="btn btn-sm btn-outline-primary me-3" title="Kembali">
+        <i class="material-icons">arrow_back</i>
+      </button>
+      <?php endif; ?>
+      
       <p class="navbar-brand mb-0"><b><?= $title; ?></b></p>
     </div>
 
@@ -58,6 +77,26 @@
   <style>
     .custom-navbar-line{ background:transparent!important; border:0!important; box-shadow:none!important; position:fixed; top:0; left:0; right:0; z-index:1050; }
     .custom-navbar-line .container-fluid{ position:relative; }
+    
+    /* Styling tombol kembali */
+    .navbar-wrapper .btn-outline-primary {
+      border: 1px solid var(--primary, #3b82f6);
+      color: var(--primary, #3b82f6);
+      background: transparent;
+      border-radius: 8px;
+      padding: 6px 10px;
+      transition: all 0.2s ease;
+    }
+    
+    .navbar-wrapper .btn-outline-primary:hover {
+      background: var(--primary, #3b82f6);
+      color: white;
+      transform: translateX(-2px);
+    }
+    
+    .navbar-wrapper .btn-outline-primary i {
+      font-size: 18px;
+    }
 
     .custom-navbar-line .container-fluid::after{
       content:""; position:absolute; left:0; right:0; bottom:-7px; height:2px; border-radius:2px;
@@ -88,7 +127,3 @@
 </nav>
 <!-- End Navbar -->
 
-<!-- FAB Theme (muncul hanya di HP, CSS ada di HEAD) -->
-<button class="theme-fab" type="button" onclick="toggleTheme()" aria-label="Toggle theme (mobile)">
-  <i class="material-icons" id="themeFabIcon">dark_mode</i>
-</button>

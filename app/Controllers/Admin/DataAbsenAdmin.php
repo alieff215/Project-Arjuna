@@ -8,6 +8,8 @@ use App\Controllers\BaseController;
 use App\Models\KehadiranModel;
 use App\Models\PresensiAdminModel;
 use App\Models\PresensiAdminHistoryModel;
+use App\Models\ApprovalModel;
+use App\Libraries\ApprovalHelper;
 use CodeIgniter\I18n\Time;
 
 class DataAbsenAdmin extends BaseController
@@ -19,6 +21,8 @@ class DataAbsenAdmin extends BaseController
    protected KehadiranModel $kehadiranModel;
 
    protected PresensiAdminHistoryModel $presensiHistory;
+   protected ApprovalModel $approvalModel;
+   protected ApprovalHelper $approvalHelper;
 
    public function __construct()
    {
@@ -29,13 +33,24 @@ class DataAbsenAdmin extends BaseController
       $this->kehadiranModel = new KehadiranModel();
 
       $this->presensiHistory = new PresensiAdminHistoryModel();
+      $this->approvalModel = new ApprovalModel();
+      $this->approvalHelper = new ApprovalHelper();
    }
 
    public function index()
    {
+      // Cek akses masterdata
+      if (!$this->roleHelper->canAccessMasterData()) {
+         return redirect()->to('/scan');
+      }
+
+      // Ambil total admin untuk ditampilkan di header
+      $totalAdmin = $this->adminModel->countAllResults();
+      
       $data = [
          'title' => 'Data Absen Admin',
          'ctx' => 'absen-Admin',
+         'total_admin' => $totalAdmin
       ];
 
       return view('admin/absen/absen-Admin', $data);
@@ -53,7 +68,8 @@ class DataAbsenAdmin extends BaseController
       $data = [
          'data' => $result,
          'listKehadiran' => $this->kehadiranModel->getAllKehadiran(),
-         'lewat' => $lewat
+         'lewat' => $lewat,
+         'total_admin' => count($result)
       ];
 
       return view('admin/absen/list-absen-admin', $data);
@@ -109,38 +125,79 @@ class DataAbsenAdmin extends BaseController
       $cek = $this->presensiAdmin->cekAbsen($idAdmin, $tanggal);
       $beforeRow = $this->presensiAdmin->getPresensiByIdAdminTanggal($idAdmin, $tanggal);
 
-      $result = $this->presensiAdmin->updatePresensi(
-         $cek == false ? NULL : $cek,
-         $idAdmin,
-         $tanggal,
-         $idKehadiran,
-         $jamMasuk ?? NULL,
-         $jamKeluar ?? NULL,
-         $keterangan
-      );
+      // Data yang akan diupdate
+      $updateData = [
+         'id_admin' => $idAdmin,
+         'tanggal' => $tanggal,
+         'id_kehadiran' => $idKehadiran,
+         'keterangan' => $keterangan
+      ];
 
-      $response['nama_admin'] = $this->adminModel->getAdminById($idAdmin)['nama_admin'];
+      if ($jamMasuk != null) {
+         $updateData['jam_masuk'] = $jamMasuk;
+      }
 
-      if ($result) {
-         // catat history perubahan (best-effort)
-         try {
-            $afterRow = $this->presensiAdmin->getPresensiByIdAdminTanggal($idAdmin, $tanggal);
-            $this->presensiHistory->insert([
-               'id_presensi' => $afterRow['id_presensi'] ?? $cek,
-               'id_admin' => (int)$idAdmin,
-               'tanggal' => $tanggal,
-               'id_kehadiran_before' => $beforeRow['id_kehadiran'] ?? null,
-               'id_kehadiran_after' => $afterRow['id_kehadiran'] ?? $idKehadiran,
-               'keterangan_before' => $beforeRow['keterangan'] ?? null,
-               'keterangan_after' => $afterRow['keterangan'] ?? $keterangan,
-               'created_at' => date('Y-m-d H:i:s'),
-            ]);
-         } catch (\Throwable $th) {
-            // jangan blokir respon
+      if ($jamKeluar != null) {
+         $updateData['jam_keluar'] = $jamKeluar;
+      }
+
+      // Cek apakah memerlukan approval
+      if ($this->approvalHelper->requiresApproval()) {
+         // Buat request approval untuk update presensi
+         $approvalId = $this->approvalHelper->createApprovalRequest(
+            'update',
+            'tb_presensi_admin',
+            $cek,
+            $updateData,
+            $beforeRow
+         );
+
+         if ($approvalId) {
+            $response['status'] = TRUE;
+            $response['message'] = 'Request perubahan kehadiran admin telah dikirim dan menunggu persetujuan superadmin';
+            $response['nama_admin'] = $this->adminModel->getAdminById($idAdmin)['nama_admin'];
+         } else {
+            $response['status'] = FALSE;
+            $response['message'] = 'Gagal mengirim request approval';
          }
-         $response['status'] = TRUE;
       } else {
-         $response['status'] = FALSE;
+         // Langsung eksekusi untuk super admin
+         $result = $this->presensiAdmin->updatePresensi(
+            $cek == false ? NULL : $cek,
+            $idAdmin,
+            $tanggal,
+            $idKehadiran,
+            $jamMasuk ?? NULL,
+            $jamKeluar ?? NULL,
+            $keterangan,
+            'approved',
+            null,
+            session()->get('user_id')
+         );
+
+         $response['nama_admin'] = $this->adminModel->getAdminById($idAdmin)['nama_admin'];
+
+         if ($result) {
+            // catat history perubahan (best-effort)
+            try {
+               $afterRow = $this->presensiAdmin->getPresensiByIdAdminTanggal($idAdmin, $tanggal);
+               $this->presensiHistory->insert([
+                  'id_presensi' => $afterRow['id_presensi'] ?? $cek,
+                  'id_admin' => (int)$idAdmin,
+                  'tanggal' => $tanggal,
+                  'id_kehadiran_before' => $beforeRow['id_kehadiran'] ?? null,
+                  'id_kehadiran_after' => $afterRow['id_kehadiran'] ?? $idKehadiran,
+                  'keterangan_before' => $beforeRow['keterangan'] ?? null,
+                  'keterangan_after' => $afterRow['keterangan'] ?? $keterangan,
+                  'created_at' => date('Y-m-d H:i:s'),
+               ]);
+            } catch (\Throwable $th) {
+               // jangan blokir respon
+            }
+            $response['status'] = TRUE;
+         } else {
+            $response['status'] = FALSE;
+         }
       }
 
       return $this->response->setJSON($response);

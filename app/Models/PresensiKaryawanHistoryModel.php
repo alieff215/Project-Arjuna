@@ -16,6 +16,10 @@ class PresensiKaryawanHistoryModel extends Model
       'id_kehadiran_after',
       'keterangan_before',
       'keterangan_after',
+      'jam_masuk_before',
+      'jam_masuk_after',
+      'jam_keluar_before',
+      'jam_keluar_after',
       'created_at'
    ];
 

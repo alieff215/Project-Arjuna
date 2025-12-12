@@ -73,49 +73,82 @@
     padding: 20px;
   }
 
-  /* ===== Segmented (Karyawan/Admin/Semua) ===== */
-  .seg {
-    display: inline-flex;
-    gap: 6px;
-    padding: 4px;
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    background: var(--card-solid);
+  /* ===== Dropdown Filter ===== */
+  .filter-dropdown {
+    position: relative;
+    display: inline-block;
   }
 
-  .seg button {
-    min-width: 86px;
-    border: 0;
-    background: transparent;
-    border-radius: 999px;
-    padding: 8px 14px;
-    font-weight: 800;
+  .filter-select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background: var(--card-solid);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 10px 16px;
+    padding-right: 40px;
+    font-weight: 700;
+    font-size: 14px;
     color: var(--text);
     cursor: pointer;
-    transition: transform .05s, background .15s, color .15s, box-shadow .15s;
+    transition: all 0.2s ease;
+    min-width: 140px;
+    outline: none;
   }
 
-  .seg button:hover {
-    transform: translateY(-1px);
+  .filter-select:hover {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
   }
 
-  .seg button.active {
-    color: #fff;
-    background: linear-gradient(135deg, var(--primary), color-mix(in oklab, var(--primary) 55%, #60a5fa));
-    box-shadow: 0 6px 14px rgba(59, 130, 246, .22);
+  .filter-select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+  }
+
+  .filter-dropdown::after {
+    content: '▼';
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: var(--muted);
+    font-size: 12px;
+    transition: transform 0.2s ease;
+  }
+
+  .filter-select:focus+.filter-dropdown::after {
+    transform: translateY(-50%) rotate(180deg);
   }
 
   /* ===== Panels grid ===== */
   .panels {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 18px;
+    gap: 20px;
+    margin-top: 20px;
   }
 
   @media (max-width: 991.98px) {
     .panels {
       grid-template-columns: 1fr;
+      gap: 16px;
     }
+  }
+
+  /* ===== Panel visibility ===== */
+  .panel {
+    transition: all 0.3s ease;
+  }
+
+  .panel.hidden {
+    display: none !important;
+  }
+
+  .panel.visible {
+    display: block !important;
   }
 
   /* ===== Panel card ===== */
@@ -124,6 +157,7 @@
     border-radius: var(--radius);
     background: var(--card-solid);
     overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   }
 
   .panel-head {
@@ -172,47 +206,79 @@
   .actions {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 14px;
+    gap: 16px;
+    margin-bottom: 16px;
   }
 
-  @media (max-width:575.98px) {
+  @media (max-width: 575.98px) {
     .actions {
       grid-template-columns: 1fr;
+      gap: 12px;
+    }
+  }
+
+  .actions-single {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  @media (max-width: 575.98px) {
+    .actions-single {
+      flex-direction: column;
     }
   }
 
   .btn {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
-    border-radius: 14px;
-    padding: 12px 16px;
+    border-radius: 12px;
+    padding: 12px 20px;
     border: 0;
-    font-weight: 800;
+    font-weight: 700;
+    font-size: 14px;
     line-height: 1;
     cursor: pointer;
-    transition: transform .05s, opacity .15s;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    min-height: 44px;
   }
 
   .btn:hover {
-    transform: translateY(-1px);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  .btn:active {
+    transform: translateY(0);
   }
 
   .btn:disabled {
-    opacity: .6;
+    opacity: 0.6;
     cursor: not-allowed;
+    transform: none !important;
   }
 
   .btn-primary {
     background: linear-gradient(135deg, var(--primary), color-mix(in oklab, var(--primary) 55%, #60a5fa));
     color: #fff;
-    box-shadow: 0 10px 18px rgba(59, 130, 246, .18);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+  }
+
+  .btn-primary:hover {
+    box-shadow: 0 6px 16px rgba(59, 130, 246, 0.35);
   }
 
   .btn-success {
     background: linear-gradient(135deg, var(--success), color-mix(in oklab, var(--success) 60%, #34d399));
     color: #fff;
-    box-shadow: 0 10px 18px rgba(16, 185, 129, .16);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+  }
+
+  .btn-success:hover {
+    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35);
   }
 
   /* ===== Form ===== */
@@ -309,6 +375,84 @@
   h6 {
     color: var(--text) !important;
   }
+
+  /* ===== Mobile Responsive ===== */
+  @media (max-width: 768px) {
+    .shell-header {
+      flex-direction: column;
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    .filter-dropdown {
+      align-self: stretch;
+    }
+
+    .filter-select {
+      width: 100%;
+      min-width: auto;
+    }
+
+    .panels {
+      grid-template-columns: 1fr !important;
+      gap: 16px;
+    }
+
+    .actions {
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .actions-single {
+      flex-direction: column;
+    }
+
+    .btn {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .shell-body {
+      padding: 16px;
+    }
+
+    .panel-head {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .panel-sub {
+      margin-left: 0;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .shell-header {
+      padding: 16px;
+    }
+
+    .shell-title {
+      font-size: 18px;
+    }
+
+    .shell-sub {
+      font-size: 14px;
+    }
+
+    .panel-head {
+      padding: 12px 14px;
+    }
+
+    .panel-body {
+      padding: 14px;
+    }
+
+    .btn {
+      padding: 10px 16px;
+      font-size: 13px;
+    }
+  }
 </style>
 
 <div class="content">
@@ -328,10 +472,12 @@
           <h4 class="shell-title"><i class="material-icons">qr_code_2</i> Generate QR Code</h4>
           <div class="shell-sub">Buat & unduh QR berdasarkan <em>kode unik</em> karyawan & admin.</div>
         </div>
-        <div class="seg" role="tablist" aria-label="Pilih tampilan">
-          <button type="button" class="seg-btn" id="viewKar" data-view="karyawan" role="tab" aria-selected="false">Karyawan</button>
-          <button type="button" class="seg-btn" id="viewAdm" data-view="admin" role="tab" aria-selected="false">Admin</button>
-          <button type="button" class="seg-btn" id="viewAll" data-view="all" role="tab" aria-selected="true">Semua</button>
+        <div class="filter-dropdown">
+          <select id="viewFilter" class="filter-select" aria-label="Pilih tampilan">
+            <option value="karyawan">Karyawan</option>
+            <option value="admin">Admin</option>
+            <option value="all" selected>Semua</option>
+          </select>
         </div>
       </div>
 
@@ -345,25 +491,23 @@
             </div>
             <div class="panel-body">
               <div class="actions">
-                <div>
-                  <button id="btnGenAllKar" onclick="generateAllQrKaryawan()" class="btn btn-primary" aria-live="polite">
-                    <i class="material-icons" aria-hidden="true">qr_code</i><span>Generate Semua</span>
-                  </button>
+                <button id="btnGenAllKar" onclick="generateAllQrKaryawan()" class="btn btn-primary" aria-live="polite">
+                  <i class="material-icons" aria-hidden="true">qr_code</i><span>Generate Semua</span>
+                </button>
 
-                  <div id="progressKaryawan" class="progress-wrap d-none" aria-label="Progres generate karyawan">
-                    <div class="progress-meta">
-                      <span id="progressTextKaryawan">Progres: 0/0</span>
-                      <i id="progressSelesaiKaryawan" class="material-icons check-icon d-none" aria-hidden="true">check_circle</i>
-                    </div>
-                    <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="<?= count($karyawan); ?>">
-                      <div id="progressBarKaryawan" class="progress-bar"></div>
-                    </div>
-                  </div>
-                </div>
-
-                <a href="<?= base_url('admin/qr/karyawan/download'); ?>" class="btn btn-primary" style="justify-self:end;">
+                <a href="<?= base_url('admin/qr/karyawan/download'); ?>" class="btn btn-primary">
                   <i class="material-icons" aria-hidden="true">cloud_download</i><span>Download Semua</span>
                 </a>
+              </div>
+
+              <div id="progressKaryawan" class="progress-wrap d-none" aria-label="Progres generate karyawan">
+                <div class="progress-meta">
+                  <span id="progressTextKaryawan">Progres: 0/0</span>
+                  <i id="progressSelesaiKaryawan" class="material-icons check-icon d-none" aria-hidden="true">check_circle</i>
+                </div>
+                <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="<?= count($karyawan); ?>">
+                  <div id="progressBarKaryawan" class="progress-bar"></div>
+                </div>
               </div>
 
               <div class="hr"></div>
@@ -380,29 +524,27 @@
                 </select>
               </div>
 
-              <div class="actions" style="margin-top:6px;">
-                <div>
-                  <button id="btnGenDept" type="button" onclick="generateQrKaryawanByDepartemen()" class="btn btn-primary">
-                    <i class="material-icons" aria-hidden="true">qr_code</i><span>Generate per Departemen</span>
-                  </button>
+              <div class="actions-single">
+                <button id="btnGenDept" type="button" onclick="generateQrKaryawanByDepartemen()" class="btn btn-primary">
+                  <i class="material-icons" aria-hidden="true">qr_code</i><span>Generate per Departemen</span>
+                </button>
 
-                  <div id="progressDepartemen" class="progress-wrap d-none" aria-label="Progres generate per departemen">
-                    <div class="progress-meta">
-                      <span id="progressTextDepartemen">Progres: 0/0</span>
-                      <i id="progressSelesaiDepartemen" class="material-icons check-icon d-none" aria-hidden="true">check_circle</i>
-                    </div>
-                    <div id="progressBarBgDepartemen" class="progress d-none" role="progressbar">
-                      <div id="progressBarDepartemen" class="progress-bar"></div>
-                    </div>
-                  </div>
-
-                  <b class="d-block mt-2" id="textErrorDepartemen" style="font-size:14px; color:var(--danger);"></b>
-                </div>
-
-                <a href="<?= base_url('admin/qr/karyawan/download'); ?>" class="btn btn-primary" style="justify-self:end;">
+                <a href="<?= base_url('admin/qr/karyawan/download'); ?>" class="btn btn-primary">
                   <i class="material-icons" aria-hidden="true">cloud_download</i><span>Download per Departemen</span>
                 </a>
               </div>
+
+              <div id="progressDepartemen" class="progress-wrap d-none" aria-label="Progres generate per departemen">
+                <div class="progress-meta">
+                  <span id="progressTextDepartemen">Progres: 0/0</span>
+                  <i id="progressSelesaiDepartemen" class="material-icons check-icon d-none" aria-hidden="true">check_circle</i>
+                </div>
+                <div id="progressBarBgDepartemen" class="progress d-none" role="progressbar">
+                  <div id="progressBarDepartemen" class="progress-bar"></div>
+                </div>
+              </div>
+
+              <div id="textErrorDepartemen" class="d-none" style="font-size:14px; color:var(--danger); font-weight: 600; margin-top: 8px;"></div>
 
               <p class="note mt-2">
                 Untuk generate/download QR per karyawan, buka
@@ -419,25 +561,23 @@
             </div>
             <div class="panel-body">
               <div class="actions">
-                <div>
-                  <button id="btnGenAllAdmin" onclick="generateAllQrAdmin()" class="btn btn-success" aria-live="polite">
-                    <i class="material-icons" aria-hidden="true">qr_code</i><span>Generate Semua</span>
-                  </button>
+                <button id="btnGenAllAdmin" onclick="generateAllQrAdmin()" class="btn btn-success" aria-live="polite">
+                  <i class="material-icons" aria-hidden="true">qr_code</i><span>Generate Semua</span>
+                </button>
 
-                  <div id="progressAdmin" class="progress-wrap d-none" aria-label="Progres generate admin">
-                    <div class="progress-meta">
-                      <span id="progressTextAdmin">Progres: 0/0</span>
-                      <i id="progressSelesaiAdmin" class="material-icons check-icon d-none" aria-hidden="true">check_circle</i>
-                    </div>
-                    <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="<?= count($admin); ?>">
-                      <div id="progressBarAdmin" class="progress-bar"></div>
-                    </div>
-                  </div>
-                </div>
-
-                <a href="<?= base_url('admin/qr/admin/download'); ?>" class="btn btn-success" style="justify-self:end;">
+                <a href="<?= base_url('admin/qr/admin/download'); ?>" class="btn btn-success">
                   <i class="material-icons" aria-hidden="true">cloud_download</i><span>Download Semua</span>
                 </a>
+              </div>
+
+              <div id="progressAdmin" class="progress-wrap d-none" aria-label="Progres generate admin">
+                <div class="progress-meta">
+                  <span id="progressTextAdmin">Progres: 0/0</span>
+                  <i id="progressSelesaiAdmin" class="material-icons check-icon d-none" aria-hidden="true">check_circle</i>
+                </div>
+                <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="<?= count($admin); ?>">
+                  <div id="progressBarAdmin" class="progress-bar"></div>
+                </div>
               </div>
 
               <p class="note mt-2">
@@ -453,34 +593,46 @@
 </div>
 
 <script>
-  /* ===== View switch (tanpa toggle tema lokal) ===== */
+  /* ===== View switch dengan dropdown ===== */
   const VIEW_KEY = 'qr-view';
 
   function setView(view) {
     const pKar = document.getElementById('panelKaryawan');
     const pAdm = document.getElementById('panelAdmin');
-    // reset grid default (2 kolom)
-    pKar.parentElement.style.display = 'block';
-    pAdm.parentElement.style.display = 'block';
+    const panels = document.querySelector('.panels');
 
-    document.querySelectorAll('.seg button').forEach(b => {
-      b.classList.toggle('active', b.dataset.view === view);
-      b.setAttribute('aria-selected', b.dataset.view === view ? 'true' : 'false');
-    });
+    // Reset semua panel
+    pKar.classList.remove('hidden', 'visible');
+    pAdm.classList.remove('hidden', 'visible');
 
+    // Set visibility berdasarkan view
     if (view === 'karyawan') {
-      pAdm.parentElement.style.display = 'none';
+      pKar.classList.add('visible');
+      pAdm.classList.add('hidden');
+      panels.style.gridTemplateColumns = '1fr';
     } else if (view === 'admin') {
-      pKar.parentElement.style.display = 'none';
+      pKar.classList.add('hidden');
+      pAdm.classList.add('visible');
+      panels.style.gridTemplateColumns = '1fr';
+    } else if (view === 'all') {
+      pKar.classList.add('visible');
+      pAdm.classList.add('visible');
+      panels.style.gridTemplateColumns = '1fr 1fr';
     }
 
     localStorage.setItem(VIEW_KEY, view);
   }
-  document.getElementById('viewKar')?.addEventListener('click', () => setView('karyawan'));
-  document.getElementById('viewAdm')?.addEventListener('click', () => setView('admin'));
-  document.getElementById('viewAll')?.addEventListener('click', () => setView('all'));
+
+  // Event listener untuk dropdown
+  document.getElementById('viewFilter')?.addEventListener('change', function() {
+    setView(this.value);
+  });
+
+  // Initialize view
   (function initView() {
-    setView(localStorage.getItem(VIEW_KEY) || 'karyawan');
+    const savedView = localStorage.getItem(VIEW_KEY) || 'all';
+    document.getElementById('viewFilter').value = savedView;
+    setView(savedView);
   })();
 
   /* ===== Data (PHP → JS) ===== */
@@ -580,10 +732,10 @@
 
     if (!idDepartemen) {
       $wrap.addClass('d-none');
-      $err.text('Pilih departemen terlebih dahulu.');
+      $err.removeClass('d-none').text('Pilih departemen terlebih dahulu.');
       return;
     }
-    $err.text('');
+    $err.addClass('d-none').text('');
     disableBtn($btn, true);
     resetProgress($wrap, $bar, $txt);
     $bg.removeClass('d-none');
@@ -598,7 +750,7 @@
         dataKaryawanPerDepartemen = Array.isArray(response) ? response : [];
         if (dataKaryawanPerDepartemen.length < 1) {
           $wrap.addClass('d-none');
-          $err.text('Data karyawan tidak ditemukan untuk departemen terpilih.');
+          $err.removeClass('d-none').text('Data karyawan tidak ditemukan untuk departemen terpilih.');
           disableBtn($btn, false);
           return;
         }
@@ -629,7 +781,7 @@
       },
       error() {
         $wrap.addClass('d-none');
-        $err.text('Terjadi kesalahan saat mengambil data departemen.');
+        $err.removeClass('d-none').text('Terjadi kesalahan saat mengambil data departemen.');
         disableBtn($btn, false);
       }
     });
@@ -638,7 +790,7 @@
   function handleDeptSubmit() {
     const idDepartemen = $('#departemenSelect').val();
     if (!idDepartemen) {
-      $('#textErrorDepartemen').text('Pilih departemen terlebih dahulu.');
+      $('#textErrorDepartemen').removeClass('d-none').text('Pilih departemen terlebih dahulu.');
       return false;
     }
     return true;

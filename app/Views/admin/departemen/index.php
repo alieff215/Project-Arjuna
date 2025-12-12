@@ -2,109 +2,11 @@
 <?= $this->section('content') ?>
 
 <style>
-  /* ========== RESET RINGKAS & AKSESIBILITAS ========== */
-  :where(*, *::before, *::after) {
-    box-sizing: border-box
-  }
-
-  :where(html) {
-    -webkit-text-size-adjust: 100%
-  }
-
-  :where(body) {
-    margin: 0
-  }
-
-  :where(a) {
-    color: inherit;
-    text-decoration: none
-  }
-
-  :where(button) {
-    font: inherit
-  }
-
-  :where(img) {
-    display: block;
-    max-width: 100%
-  }
-
-  :where(:focus-visible) {
-    outline: 2px solid var(--ring);
-    outline-offset: 2px
-  }
-
-  /* ========== DESIGN TOKENS ========== */
-  :root {
-    --radius: 14px;
-    --radius-lg: 18px;
-    --shadow-sm: 0 4px 14px rgba(0, 0, 0, .06);
-    --shadow: 0 14px 38px rgba(15, 23, 42, .08);
-    --border-w: 1px;
-
-    --space-1: 6px;
-    --space-2: 10px;
-    --space-3: 14px;
-    --space-4: 18px;
-    --space-5: 22px;
-
-    --font-sys: ui-sans-serif, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-
-    /* ukuran ikon default */
-    --icon: 18px;
-  }
-
-  /* LIGHT */
-  html[data-theme="light"] {
-    --bg: #f6f8fc;
-    --bg-2: #eef3ff;
-    --card: #ffffff;
-    --text: #0f172a;
-    --muted: #64748b;
-    --border: rgba(2, 6, 23, .10);
-    --ring: #3b82f6;
-
-    --primary: #2563eb;
-    --primary-2: #60a5fa;
-    --chip: #eef2ff;
-    --accent-wash: radial-gradient(1100px 600px at 15% -10%, #eaf1ff 0%, transparent 45%), radial-gradient(900px 600px at 110% 0%, rgba(99, 102, 241, .10) 0%, transparent 40%);
-  }
-
-  /* DARK */
-  html[data-theme="dark"] {
-    --bg: #0b1220;
-    --bg-2: #0f172a;
-    --card: #101827;
-    --text: #e6edf6;
-    --muted: #9fb1c6;
-    --border: rgba(226, 232, 240, .10);
-    --ring: #60a5fa;
-
-    --primary: #60a5fa;
-    --primary-2: #93c5fd;
-    --chip: #0f223d;
-    --accent-wash: radial-gradient(1100px 600px at 15% -10%, rgba(32, 51, 92, .45) 0%, transparent 45%), radial-gradient(900px 600px at 110% 0%, rgba(99, 102, 241, .18) 0%, transparent 40%);
-  }
-
-  /* ========== BASE LAYOUT ========== */
-  .content {
-    font-family: var(--font-sys);
-    background: var(--bg);
-    min-height: 100%;
-  }
-
-  .content .container-fluid {
-    padding: var(--space-4) var(--space-3) var(--space-5);
-    background: var(--accent-wash);
-    border-radius: 0;
-  }
-
-  /* ========== CARD ========== */
   .ui-card {
-    background: linear-gradient(180deg, color-mix(in srgb, var(--card) 92%, transparent), var(--card));
-    border: var(--border-w) solid var(--border);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow);
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
     overflow: hidden;
   }
 
@@ -112,148 +14,204 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: var(--space-3);
-    padding: var(--space-4) var(--space-4);
-    border-bottom: var(--border-w) solid var(--border);
-    background: linear-gradient(180deg, color-mix(in srgb, var(--bg-2) 40%, transparent), transparent);
+    gap: 16px;
+    padding: 20px;
+    border-bottom: 1px solid #e2e8f0;
+    background: linear-gradient(180deg, #f8fafc 0%, transparent 100%);
   }
 
   .ui-card__title {
     margin: 0;
-    font-weight: 800;
-    letter-spacing: .2px;
-    color: var(--text);
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: #1e293b;
   }
 
   .ui-card__meta {
     margin-top: 4px;
-    color: var(--muted);
-    font-size: .92rem;
+    color: #64748b;
+    font-size: 0.875rem;
   }
 
   .ui-card__body {
-    padding: var(--space-4);
+    padding: 20px;
   }
 
-  /* ========== CHIP & ICON ========== */
   .chip {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 6px 10px;
+    padding: 6px 12px;
     border-radius: 999px;
-    border: var(--border-w) solid var(--border);
-    background: var(--chip);
-    color: var(--text);
-    font-size: .86rem;
+    border: 1px solid #e2e8f0;
+    background: #f1f5f9;
+    color: #1e293b;
+    font-size: 0.875rem;
   }
 
   .material-icons {
-    font-size: var(--icon);
+    font-size: 18px;
     line-height: 1;
-    vertical-align: middle
+    vertical-align: middle;
   }
 
-  /* ========== BUTTONS (konsisten) ========== */
   .btn {
-    --h: 40px;
     display: inline-flex;
     align-items: center;
-    gap: 10px;
-    height: var(--h);
-    padding: 0 14px;
-    border-radius: 12px;
-    border: var(--border-w) solid var(--border);
-    background: color-mix(in srgb, var(--card) 92%, transparent);
-    color: var(--text);
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    color: #1e293b;
     font-weight: 600;
+    font-size: 0.875rem;
     cursor: pointer;
-    transition: transform .12s ease, background .12s ease, border-color .12s ease, box-shadow .12s ease;
+    transition: all 0.2s ease;
+    text-decoration: none;
   }
 
   .btn:hover {
     transform: translateY(-1px);
-    background: color-mix(in srgb, var(--card) 86%, var(--bg-2) 14%)
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   }
 
   .btn:active {
-    transform: translateY(0)
+    transform: translateY(0);
   }
 
   .btn--primary {
-    background: linear-gradient(180deg, color-mix(in srgb, var(--primary) 18%, var(--card)), var(--card));
-    border-color: color-mix(in srgb, var(--primary) 32%, var(--border));
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    border-color: #3b82f6;
+    color: #ffffff;
   }
 
-  .btn--iconOnly {
-    padding: 0 10px;
-    width: 40px;
-    justify-content: center
+  .btn--primary:hover {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    box-shadow: 0 6px 12px rgba(59, 130, 246, 0.3);
   }
 
-  /* grup aksi rapi */
   .action-group {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
-    align-items: center
+    align-items: center;
   }
 
+  /* Refresh button look & animation (match data admin) */
+  .btn-refresh {
+    border-radius: 12px;
+    border-color: #e2e8f0;
+    box-shadow: 0 6px 14px rgba(80, 120, 255, 0.12);
+  }
 
-  /* ========== SKELETON ========== */
+  .btn-refresh .material-icons {
+    color: #0b132b;
+  }
+
+  .btn-refresh[disabled] {
+    opacity: .6;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  @keyframes spin360 {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .btn-refresh.is-loading .material-icons {
+    animation: spin360 .9s linear infinite;
+    color: #2563eb;
+  }
+
+  /* Collapsible table helpers */
+  .collapse-gradient {
+    position: relative;
+  }
+
+  .collapse-gradient::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 36px;
+    pointer-events: none;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, #ffffff 80%);
+    display: none;
+  }
+
+  .is-collapsed.collapse-gradient::after {
+    display: block;
+  }
+
+  .collapse-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    margin-top: 8px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    color: #1e293b;
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all .2s ease;
+  }
+
+  .collapse-toggle:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, .08);
+  }
+
   .skeleton {
     display: grid;
-    gap: 10px
+    gap: 10px;
   }
 
   .sk-line {
     height: 14px;
     border-radius: 8px;
     background: linear-gradient(90deg,
-        color-mix(in srgb, var(--card) 78%, var(--bg) 22%) 0%,
-        color-mix(in srgb, var(--card) 88%, var(--bg) 12%) 40%,
-        color-mix(in srgb, var(--card) 78%, var(--bg) 22%) 80%);
+        #f1f5f9 0%,
+        #e2e8f0 40%,
+        #f1f5f9 80%);
     background-size: 290% 100%;
     animation: shimmer 1.1s infinite;
   }
 
   @keyframes shimmer {
     0% {
-      background-position: 0% 50%
+      background-position: 0% 50%;
     }
 
     100% {
-      background-position: 100% 50%
+      background-position: 100% 50%;
     }
   }
 
-  /* ========== RESPONSIVE ========== */
-  @media (max-width:1199.98px) {
+  @media (max-width: 768px) {
     .ui-card__header {
-      flex-wrap: wrap
+      flex-wrap: wrap;
     }
-  }
 
-  @media (max-width:575.98px) {
-    .btn span.label {
-      display: none
+    .action-group {
+      width: 100%;
     }
 
     .btn {
-      padding: 0 12px
-    }
-
-    .ui-card__body {
-      padding: var(--space-3)
+      flex: 1;
+      justify-content: center;
     }
   }
 
-  /* ========== REDUCED MOTION ========== */
-  @media (prefers-reduced-motion: reduce) {
-    * {
-      animation-duration: .001ms !important;
-      animation-iteration-count: 1 !important;
-      transition: none !important
+  @media (max-width: 575px) {
+    .btn span.label {
+      display: none;
     }
   }
 </style>
@@ -274,7 +232,7 @@
               <a class="btn btn--primary" href="<?= base_url('admin/departemen/tambah'); ?>" aria-label="Tambah data departemen">
                 <i class="material-icons">add</i><span class="label">Tambah</span>
               </a>
-              <button class="btn" type="button" onclick="refreshSection('departemen','#dataDepartemen')" aria-label="Refresh daftar departemen">
+              <button class="btn btn-refresh" type="button" onclick="refreshSection('departemen','#dataDepartemen', this)" aria-label="Refresh daftar departemen">
                 <i class="material-icons">refresh</i><span class="label">Refresh</span>
               </button>
             </div>
@@ -302,7 +260,7 @@
               <a class="btn btn--primary" href="<?= base_url('admin/jabatan/tambah'); ?>" aria-label="Tambah data jabatan">
                 <i class="material-icons">add</i><span class="label">Tambah</span>
               </a>
-              <button class="btn" type="button" onclick="refreshSection('jabatan','#dataJabatan')" aria-label="Refresh daftar jabatan">
+              <button class="btn btn-refresh" type="button" onclick="refreshSection('jabatan','#dataJabatan', this)" aria-label="Refresh daftar jabatan">
                 <i class="material-icons">refresh</i><span class="label">Refresh</span>
               </button>
             </div>
@@ -325,11 +283,12 @@
 </div>
 
 <script>
-
   /* ========= LOADING UX + FETCH WRAPPER ========= */
   function setSkeleton(target) {
     const el = document.querySelector(target);
     if (!el) return;
+    // Reset flag agar collapsible dipasang ulang setelah konten diperbarui
+    el.removeAttribute('data-collapsible-applied');
     el.innerHTML = `
     <div class="skeleton">
       <div class="sk-line" style="width:58%"></div>
@@ -338,8 +297,45 @@
     </div>`;
   }
 
-  function refreshSection(kind, target) {
+  function showAlert(type, message) {
+    if (typeof swal !== 'undefined') {
+      // Gunakan SweetAlert jika tersedia
+      swal({
+        text: message,
+        icon: type === 'success' ? 'success' : 'error',
+        button: 'OK',
+      });
+    } else {
+      // Fallback ke alert biasa
+      alert(message);
+    }
+  }
+
+  function refreshSection(kind, target, btnEl) {
     setSkeleton(target);
+    // jika ada button, aktifkan animasi spin dan disable sementara
+    if (btnEl) {
+      btnEl.classList.add('is-loading');
+      btnEl.disabled = true;
+    }
+    // observer satu-kali: hentikan loading ketika konten berubah
+    try {
+      const el = document.querySelector(target);
+      if (el) {
+        const once = new MutationObserver(() => {
+          if (btnEl) {
+            btnEl.classList.remove('is-loading');
+            btnEl.disabled = false;
+          }
+          once.disconnect();
+        });
+        once.observe(el, {
+          childList: true,
+          subtree: true
+        });
+      }
+    } catch (e) {}
+
     // jeda kecil supaya transisi terasa halus
     setTimeout(() => {
       fetchDepartemenJabatanData(kind, target);
@@ -347,9 +343,83 @@
   }
 
   document.addEventListener('DOMContentLoaded', function() {
+    // Ubah angka ini untuk menentukan jumlah baris awal yang ditampilkan
+    // Contoh: window.__COLLAPSE_MAX = 8
+    if (typeof window.__COLLAPSE_MAX !== 'number') {
+      window.__COLLAPSE_MAX = 6;
+    }
+
     refreshSection('departemen', '#dataDepartemen');
     refreshSection('jabatan', '#dataJabatan');
+
+    /* ========== COLLAPSIBLE TABLE (apply on dynamic loads) ========== */
+    function applyCollapsible(container) {
+      const root = typeof container === 'string' ? document.querySelector(container) : container;
+      if (!root) return;
+      // Hindari loop observer: bila sudah diaplikasikan, jangan jalankan lagi
+      if (root.dataset.collapsibleApplied === '1') return;
+      const table = root.querySelector('table');
+      if (!table) return;
+
+      const rows = Array.from(table.querySelectorAll('tbody tr'));
+      const wrapper = root; // body container already present
+
+      // remove previous toggle if any
+      const oldBtn = root.querySelector('.collapse-toggle');
+      if (oldBtn) oldBtn.remove();
+
+      // reset any previous state
+      rows.forEach(r => r.style.removeProperty('display'));
+      wrapper.classList.remove('is-collapsed', 'collapse-gradient');
+
+      const MAX_VISIBLE = window.__COLLAPSE_MAX;
+      if (rows.length <= MAX_VISIBLE) return;
+
+      // hide beyond threshold
+      rows.slice(MAX_VISIBLE).forEach(r => r.style.display = 'none');
+      wrapper.classList.add('is-collapsed', 'collapse-gradient');
+
+      // add toggle button
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'collapse-toggle';
+      btn.innerHTML = '<i class="material-icons">unfold_more</i><span class="label">Lihat semua</span>';
+      btn.addEventListener('click', () => {
+        const collapsed = wrapper.classList.contains('is-collapsed');
+        if (collapsed) {
+          rows.forEach(r => r.style.removeProperty('display'));
+          wrapper.classList.remove('is-collapsed');
+          btn.innerHTML = '<i class="material-icons">unfold_less</i><span class="label">Sembunyikan</span>';
+        } else {
+          rows.slice(MAX_VISIBLE).forEach(r => r.style.display = 'none');
+          wrapper.classList.add('is-collapsed');
+          btn.innerHTML = '<i class="material-icons">unfold_more</i><span class="label">Lihat semua</span>';
+        }
+      });
+      root.appendChild(btn);
+      // Tandai sudah dipasang
+      root.dataset.collapsibleApplied = '1';
+    }
+
+    // Expose globally so partials can trigger if needed
+    window.__applyCollapsible = applyCollapsible;
+
+    // Observe dynamic content replacement
+    const targets = ['#dataDepartemen', '#dataJabatan'];
+    targets.forEach(sel => {
+      const el = document.querySelector(sel);
+      if (!el) return;
+      const observer = new MutationObserver(() => {
+        // Debounce agar tidak loop akibat perubahan kecil pada DOM
+        if (el.__collapsDebounce) cancelAnimationFrame(el.__collapsDebounce);
+        el.__collapsDebounce = requestAnimationFrame(() => applyCollapsible(el));
+      });
+      observer.observe(el, {
+        childList: true,
+        subtree: true
+      });
+    });
   });
 </script>
 
-<?= $this->endSection() ?> ini kan untuk tampilan data departemen dan jabatan, tetapi ini masih salah karna style untuk header dan navbar nya malah ditaruh disini, kemudian mode terang dan gelap nya juga malah ditaruh disini, tolong yang tidak sesuai dihilangkan ya dan dibenarkan, sisanya tidak perlu dirubah
+<?= $this->endSection() ?>

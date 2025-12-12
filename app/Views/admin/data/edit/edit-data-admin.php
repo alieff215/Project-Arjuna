@@ -29,7 +29,7 @@
                      <input type="hidden" name="id" value="<?= $data['id_admin'] ?>">
 
                      <div class="form-group mt-4">
-                        <label for="nuptk">NUPTK</label>
+                        <label for="nuptk">NIP</label>
                         <input type="text" id="nuptk" class="form-control <?= $validation->getError('nuptk') ? 'is-invalid' : ''; ?>" name="nuptk" placeholder="1234" value="<?= old('nuptk') ?? $oldInput['nuptk'] ?? $data['nuptk'] ?>">
                         <div class="invalid-feedback">
                            <?= $validation->getError('nuptk'); ?>
@@ -42,6 +42,21 @@
                         <div class="invalid-feedback">
                            <?= $validation->getError('nama'); ?>
                         </div>
+                     </div>
+
+                     <div class="form-group mt-4">
+                        <label for="id_departemen">Departemen - Jabatan</label>
+                        <select class="form-control" id="id_departemen" name="id_departemen">
+                           <option value="">-- Pilih Departemen - Jabatan --</option>
+                           <?php if (!empty($departemen_list)): ?>
+                              <?php foreach ($departemen_list as $dept): ?>
+                                 <option value="<?= $dept['id_departemen']; ?>" <?= (old('id_departemen') ?? $oldInput['id_departemen'] ?? $data['id_departemen'] ?? '') == $dept['id_departemen'] ? 'selected' : ''; ?>>
+                                    <?= $dept['departemen']; ?> - <?= $dept['jabatan']; ?>
+                                 </option>
+                              <?php endforeach; ?>
+                           <?php endif; ?>
+                        </select>
+                        <small class="form-text text-muted">Pilih kombinasi departemen dan jabatan untuk admin ini</small>
                      </div>
 
                      <div class="form-group mt-2">
@@ -97,6 +112,11 @@
                         </div>
                      </div>
 
+                     <div class="form-group mt-4">
+                        <label for="tanggal_join">Tanggal Join</label>
+                        <input type="date" id="tanggal_join" name="tanggal_join" class="form-control" value="<?= old('tanggal_join') ?? $oldInput['tanggal_join'] ?? $data['tanggal_join'] ?? '' ?>">
+                     </div>
+
                      <button type="submit" class="btn btn-success btn-block">Simpan</button>
                   </form>
 
@@ -121,13 +141,25 @@
                         <?php 
                         // map label field
                         $labels = [
-                           'nuptk' => 'NUPTK',
+                           'nuptk' => 'NIP',
                            'nama_admin' => 'Nama',
+                           'id_departemen' => 'Departemen',
                            'jenis_kelamin' => 'Jenis Kelamin',
                            'alamat' => 'Alamat',
                            'no_hp' => 'No HP',
+                           'tanggal_join' => 'Tanggal Join',
                         ];
                         $fmtJK = function($v){ return ($v==='1'||$v===1)?'Laki-laki':(($v==='2'||$v===2)?'Perempuan':$v); };
+                        $fmtDate = function($d){ return !empty($d) ? date('d M Y', strtotime($d)) : '-'; };
+                        $fmtDept = function($id) use ($departemen_list) {
+                           if (empty($id)) return '-';
+                           foreach ($departemen_list as $dept) {
+                              if ($dept['id_departemen'] == $id) {
+                                 return $dept['departemen'] . ' - ' . $dept['jabatan'];
+                              }
+                           }
+                           return 'ID: ' . $id;
+                        };
                         ?>
                         <?php foreach ($histories as $h) : ?>
                            <?php
@@ -158,6 +190,8 @@
                                        $old = $before[$f] ?? '';
                                        $new = $after[$f] ?? '';
                                        if ($f === 'jenis_kelamin') { $old = $fmtJK($old); $new = $fmtJK($new); }
+                                       if ($f === 'tanggal_join') { $old = $fmtDate($old); $new = $fmtDate($new); }
+                                       if ($f === 'id_departemen') { $old = $fmtDept($old); $new = $fmtDept($new); }
                                     ?>
                                        <tr>
                                           <td><b><?= esc($labels[$f] ?? $f) ?></b></td>

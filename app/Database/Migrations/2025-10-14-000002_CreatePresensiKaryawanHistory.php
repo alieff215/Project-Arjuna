@@ -68,3 +68,14 @@ class CreatePresensiKaryawanHistory extends Migration
 
 
 
+
+
+
+
+
+
+
+
+
+
+

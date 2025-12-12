@@ -1,9 +1,9 @@
 <?= $this->extend('templates/starting_page_layout'); ?>
 
 <?= $this->section('navaction') ?>
-<a href="<?= base_url('/'); ?>" class="btn btn-outline-light ms-auto d-inline-flex align-items-center gap-2 rounded-xl px-3 py-2 fw-medium">
+<a href="<?= base_url('scan/login'); ?>" class="btn btn-outline-light ms-auto d-inline-flex align-items-center gap-2 rounded-xl px-3 py-2 fw-medium">
    <i class="material-icons">qr_code</i>
-   <span class="d-none d-sm-inline">Scan QR</span>
+   <span class="d-none d-sm-inline">Login Absen</span>
 </a>
 <?= $this->endSection() ?>
 

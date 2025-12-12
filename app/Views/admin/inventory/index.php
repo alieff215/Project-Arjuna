@@ -492,6 +492,11 @@
     font-size: 0.75rem;
   }
 
+  .content .text-muted {
+    color: var(--muted) !important;
+    font-style: italic;
+  }
+
   /* ===================== BADGES ===================== */
   .content .badge {
     border-radius: 999px;
@@ -1003,6 +1008,8 @@
                 <th>#</th>
                 <th>Brand</th>
                 <th>Order</th>
+                <th>Tanggal Mulai</th>
+                <th>Tanggal Selesai</th>
                 <th>Progress</th>
                 <th>Status</th>
                 <th style="min-width:104px">Aksi</th>
@@ -1016,6 +1023,20 @@
                     <td><?= $i + 1 ?></td>
                     <td><?= esc($inv['brand']) ?></td>
                     <td><?= esc($inv['order_name']) ?></td>
+                    <td>
+                      <?php if (!empty($inv['tanggal_mulai'])): ?>
+                        <?= date('d/m/Y', strtotime($inv['tanggal_mulai'])) ?>
+                      <?php else: ?>
+                        <span class="text-muted">-</span>
+                      <?php endif; ?>
+                    </td>
+                    <td>
+                      <?php if (!empty($inv['tanggal_selesai'])): ?>
+                        <?= date('d/m/Y', strtotime($inv['tanggal_selesai'])) ?>
+                      <?php else: ?>
+                        <span class="text-muted">-</span>
+                      <?php endif; ?>
+                    </td>
                     <td>
                       <div class="progress" aria-label="Progress <?= $pp; ?>%">
                         <div class="progress-bar <?= ($inv['is_completed'] ?? false) ? 'bg-success' : '' ?>"
@@ -1046,7 +1067,7 @@
                 <?php endforeach; ?>
               <?php else: ?>
                 <tr>
-                  <td colspan="6">
+                  <td colspan="8">
                     <div class="empty">Belum ada data inventory.</div>
                   </td>
                 </tr>

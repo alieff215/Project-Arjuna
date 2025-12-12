@@ -153,4 +153,9 @@
       textCancel: "Batalkan"
     };
   </script>
+
+  <!-- FAB Theme (muncul hanya di HP) -->
+  <button class="theme-fab" type="button" onclick="toggleTheme()" aria-label="Toggle theme (mobile)">
+    <i class="material-icons" id="themeFabIcon">dark_mode</i>
+  </button>
 </head>

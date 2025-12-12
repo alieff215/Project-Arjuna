@@ -96,48 +96,178 @@ class GajiModel extends Model
     }
 
     /**
-     * Get salary report data
+     * Ambil laporan gaji dengan sistem setengah jam dan pembulatan 15 menit
      */
     public function getSalaryReport($start_date = null, $end_date = null, $id_departemen = null)
     {
         if (!$start_date) {
-            $start_date = date('Y-m-01'); // First day of current month
+            $start_date = date('Y-m-01');
         }
         if (!$end_date) {
-            $end_date = date('Y-m-t'); // Last day of current month
+            $end_date = date('Y-m-t');
         }
-
-        $query = "
-            SELECT 
-                k.id_karyawan,
-                k.nis,
-                k.nama_karyawan,
-                d.departemen,
-                j.jabatan,
-                g.gaji_per_jam,
-                COUNT(pk.id_presensi) as total_kehadiran,
-                COALESCE(SUM(TIMESTAMPDIFF(HOUR, pk.jam_masuk, pk.jam_keluar)), 0) as total_jam_kerja,
-                (COALESCE(SUM(TIMESTAMPDIFF(HOUR, pk.jam_masuk, pk.jam_keluar)), 0) * g.gaji_per_jam) as total_gaji
-            FROM tb_karyawan k
-            LEFT JOIN tb_departemen d ON k.id_departemen = d.id_departemen
-            LEFT JOIN tb_jabatan j ON d.id_jabatan = j.id
-            LEFT JOIN tb_gaji g ON d.id_departemen = g.id_departemen AND j.id = g.id_jabatan
-            LEFT JOIN tb_presensi_karyawan pk ON k.id_karyawan = pk.id_karyawan 
-                AND DATE(pk.tanggal) BETWEEN ? AND ?
-                AND pk.id_kehadiran = 1
-        ";
-
-        $params = [$start_date, $end_date];
-
+        $presensiModel = new PresensiKaryawanModel();
+        $builder = $this->db->table('tb_karyawan as k')
+            ->select('k.id_karyawan, k.nis, k.nama_karyawan, d.departemen, j.jabatan, g.gaji_per_jam')
+            ->join('tb_departemen as d', 'k.id_departemen = d.id_departemen', 'left')
+            ->join('tb_jabatan as j', 'd.id_jabatan = j.id', 'left')
+            ->join('tb_gaji as g', 'd.id_departemen = g.id_departemen AND j.id = g.id_jabatan', 'left');
         if ($id_departemen) {
-            $query .= " WHERE k.id_departemen = ?";
-            $params[] = $id_departemen;
+            $builder->where('k.id_departemen', $id_departemen);
         }
+        $karyawanList = $builder->get()->getResultArray();
+        $results = [];
+        foreach ($karyawanList as $kar) {
+            $total_kehadiran = 0;
+            $total_menit_kerja = 0;
+            $reportJamPerHari = [];
+            
+            // Hitung total hari kerja (Senin-Sabtu) dalam periode
+            $totalHariKerjaDalamPeriode = 0;
+            $currentDate = new \DateTime($start_date);
+            $endDateTime = new \DateTime($end_date);
+            while ($currentDate <= $endDateTime) {
+                $dayOfWeek = (int)$currentDate->format('N'); // 1=Senin, 7=Minggu
+                if ($dayOfWeek <= 6) { // Senin-Sabtu
+                    $totalHariKerjaDalamPeriode++;
+                }
+                $currentDate->modify('+1 day');
+            }
+            
+            // Ambil presensi selama rentang tanggal
+            $presensis = $this->db->table('tb_presensi_karyawan')
+                ->where('id_karyawan', $kar['id_karyawan'])
+                ->where('id_kehadiran', 1)
+                ->where('tanggal >=', $start_date)
+                ->where('tanggal <=', $end_date)
+                ->orderBy('tanggal', 'ASC')
+                ->get()->getResultArray();
+            foreach ($presensis as $presensi) {
+                // Ambil waktu/hari
+                $jam_masuk = $presensi['jam_masuk'];
+                $jam_keluar = $presensi['jam_keluar'];
+                $tanggal = $presensi['tanggal'];
+                if (!$jam_masuk || !$jam_keluar) continue;
+                // Parsing waktu
+                $dt_masuk = strtotime($tanggal.' '.substr($jam_masuk,0,5));
+                $dt_keluar = strtotime($tanggal.' '.substr($jam_keluar,0,5));
+                // Cek bila keluar < masuk (shift malam?)
+                if ($dt_keluar < $dt_masuk) continue;
+                // Dapatkan hari dalam format angka 1 (Senin) s/d 6 (Sabtu)
+                $hari = date('N', strtotime($tanggal));
+                // Jam kerja efektif
+                if ($hari == 6) { // Sabtu: 07:45-13:00 semua dihitung, tidak ada istirahat
+                    $jam_kerja_mulai = strtotime($tanggal.' 07:45');
+                    $jam_kerja_selesai = strtotime($tanggal.' 13:00');
+                    // Batasi jika datang sebelum/jam kerja mulai atau keluar setelah kerja selesai
+                    $masuk = max($dt_masuk, $jam_kerja_mulai);
+                    $keluar = min($dt_keluar, $jam_kerja_selesai);
+                } else {
+                    // Senin-Jumat: 07:45-16:45, istirahat 12:00-13:00 tidak dihitung
+                    $jam_kerja_mulai = strtotime($tanggal.' 07:45');
+                    $jam_istirahat_mulai = strtotime($tanggal.' 12:00');
+                    $jam_istirahat_selesai = strtotime($tanggal.' 13:00');
+                    $jam_kerja_selesai = strtotime($tanggal.' 16:45');
+                    $masuk = max($dt_masuk, $jam_kerja_mulai);
+                    $keluar = min($dt_keluar, $jam_kerja_selesai);
+                }
+                // Koreksi range (jika absen keluar sebelum absen masuk, skip)
+                if ($keluar <= $masuk) continue;
+                // Apakah hari Sabtu?
+                if ($hari == 6) {
+                    $menit_kerja = ($keluar - $masuk) / 60;
+                } else {
+                    // Senin-Jumat: pecah jadi sebelum istirahat & sesudah istirahat
+                    if ($masuk < $jam_istirahat_mulai && $keluar > $jam_istirahat_selesai) {
+                        // Kerja dari sebelum istirahat sampai sesudah istirahat
+                        $menit_pagi = ($jam_istirahat_mulai - $masuk) / 60;
+                        $menit_siang = ($keluar - $jam_istirahat_selesai) / 60;
+                        $menit_kerja = max($menit_pagi,0) + max($menit_siang,0);
+                    } elseif ($keluar <= $jam_istirahat_mulai) {
+                        // Hanya pagi
+                        $menit_kerja = ($keluar - $masuk) / 60;
+                    } elseif ($masuk >= $jam_istirahat_selesai) {
+                        // Hanya siang
+                        $menit_kerja = ($keluar - $masuk) / 60;
+                    } else {
+                        // Shift tidak normal, misal masuk saat istirahat, skip
+                        $menit_kerja = 0;
+                    }
+                }
+                
+                // Kurangi 1 jam (60 menit) sebagai punishment wajib yang tidak dibayar
+                $menit_kerja = max(0, $menit_kerja - 60);
+                
+                // Pembulatan kelipatan 30 menit dengan toleransi 15 menit (jam normal)
+                $blocks30 = 0;
+                if ($menit_kerja > 0) {
+                    $sisa = $menit_kerja % 30;
+                    if ($sisa >= 15) {
+                        $blocks30 = ceil($menit_kerja/30);
+                    } else {
+                        $blocks30 = floor($menit_kerja/30);
+                    }
+                }
+                $total_menit_kerja += $blocks30 * 30;
+                if ($blocks30 > 0) $total_kehadiran++;
+                $reportJamPerHari[$tanggal] = ($reportJamPerHari[$tanggal] ?? 0) + ($blocks30 * 0.5); // 1 blok 30menit = 0.5 jam
 
-        $query .= " GROUP BY k.id_karyawan, k.nis, k.nama_karyawan, d.departemen, j.jabatan, g.gaji_per_jam
-                   ORDER BY d.departemen, k.nama_karyawan";
+                // Lembur: dihitung jika absen keluar lebih dari 17:00, rate sama dengan regular
+                $lembur_mulai = strtotime($tanggal.' 17:00');
+                if ($dt_keluar > $lembur_mulai) {
+                    $startLembur = max($lembur_mulai, $dt_masuk);
+                    $menit_lembur = max(0, ($dt_keluar - $startLembur) / 60);
 
-        return $this->db->query($query, $params)->getResultArray();
+                    $blocks30Lembur = 0;
+                    if ($menit_lembur > 0) {
+                        $sisaL = $menit_lembur % 30;
+                        if ($sisaL >= 15) {
+                            $blocks30Lembur = ceil($menit_lembur/30);
+                        } else {
+                            $blocks30Lembur = floor($menit_lembur/30);
+                        }
+                    }
+
+                    if ($blocks30Lembur > 0) {
+                        $total_menit_kerja += $blocks30Lembur * 30;
+                        $reportJamPerHari[$tanggal] = ($reportJamPerHari[$tanggal] ?? 0) + ($blocks30Lembur * 0.5);
+                    }
+                }
+            }
+            $gaji_per_jam = $kar['gaji_per_jam'] ?? 0;
+            $blok_30menit_total = $total_menit_kerja / 30;
+            $total_jam_kerja = $blok_30menit_total * 0.5;
+            
+            // Logika jam kerja per bulan:
+            // 1. Jika karyawan hadir FULL (100% hari kerja), otomatis dapat 173 jam
+            // 2. Jika tidak full, hitung berdasarkan jam aktual
+            // 3. Maksimal tetap 173 jam (cap)
+            
+            if ($total_kehadiran >= $totalHariKerjaDalamPeriode && $totalHariKerjaDalamPeriode > 0) {
+                // Karyawan hadir full (100%), berikan 173 jam standar
+                $total_jam_kerja = 173;
+                $blok_30menit_total = 173 * 2; // 173 jam = 346 blok 30 menit
+            } elseif ($total_jam_kerja > 173) {
+                // Jika jam kerja melebihi 173, cap menjadi 173 jam
+                $total_jam_kerja = 173;
+                $blok_30menit_total = 173 * 2;
+            }
+            
+            $gaji_per_30menit = $gaji_per_jam / 2;
+            $total_gaji = $blok_30menit_total * $gaji_per_30menit;
+            $results[] = [
+                'id_karyawan' => $kar['id_karyawan'],
+                'nis' => $kar['nis'],
+                'nama_karyawan' => $kar['nama_karyawan'],
+                'departemen' => $kar['departemen'],
+                'jabatan' => $kar['jabatan'],
+                'gaji_per_jam' => $gaji_per_jam,
+                'total_kehadiran' => $total_kehadiran,
+                'total_jam_kerja' => $total_jam_kerja,
+                'total_gaji' => $total_gaji,
+            ];
+        }
+        return $results;
     }
 
     /**

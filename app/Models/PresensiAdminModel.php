@@ -17,7 +17,11 @@ class PresensiAdminModel extends Model implements PresensiInterface
       'jam_masuk',
       'jam_keluar',
       'id_kehadiran',
-      'keterangan'
+      'keterangan',
+      'approval_status',
+      'approval_request_id',
+      'approved_by',
+      'approved_at'
    ];
 
    protected $table = 'tb_presensi_admin';
@@ -112,7 +116,10 @@ class PresensiAdminModel extends Model implements PresensiInterface
       $idKehadiran,
       $jamMasuk,
       $jamKeluar,
-      $keterangan
+      $keterangan,
+      $approvalStatus = 'approved',
+      $approvalRequestId = null,
+      $approvedBy = null
    ) {
       $presensi = $this->getPresensiByIdAdminTanggal($idAdmin, $tanggal);
 
@@ -120,7 +127,11 @@ class PresensiAdminModel extends Model implements PresensiInterface
          'id_admin' => $idAdmin,
          'tanggal' => $tanggal,
          'id_kehadiran' => $idKehadiran,
-         'keterangan' => $keterangan ?? $presensi['keterangan'] ?? ''
+         'keterangan' => $keterangan ?? $presensi['keterangan'] ?? '',
+         'approval_status' => $approvalStatus,
+         'approval_request_id' => $approvalRequestId,
+         'approved_by' => $approvedBy,
+         'approved_at' => $approvalStatus === 'approved' ? date('Y-m-d H:i:s') : null
       ];
 
       if ($idPresensi != null) {

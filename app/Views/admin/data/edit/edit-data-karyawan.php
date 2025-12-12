@@ -29,7 +29,7 @@
                      <input type="hidden" name="id" value="<?= $data['id_karyawan']; ?>">
 
                      <div class="form-group mt-4">
-                        <label for="nis">NIS</label>
+                        <label for="nis">NIP</label>
                         <input type="text" id="nis" class="form-control <?= $validation->getError('nis') ? 'is-invalid' : ''; ?>" name="nis" placeholder="1234" value="<?= old('nis') ?? $oldInput['nis'] ?? $data['nis'] ?>">
                         <div class="invalid-feedback">
                            <?= $validation->getError('nis'); ?>
@@ -107,6 +107,14 @@
                         </div>
                      </div>
 
+                     <div class="form-group mt-4">
+                        <label for="tanggal_join">Tanggal Join</label>
+                        <input type="date" id="tanggal_join" name="tanggal_join" class="form-control <?= $validation->getError('tanggal_join') ? 'is-invalid' : ''; ?>" value="<?= old('tanggal_join') ?? $oldInput['tanggal_join'] ?? ($data['tanggal_join'] ?? '') ?>">
+                        <div class="invalid-feedback">
+                           <?= $validation->getError('tanggal_join'); ?>
+                        </div>
+                     </div>
+
                      <button type="submit" class="btn btn-primary btn-block">Simpan</button>
                   </form>
 
@@ -131,7 +139,7 @@
                            <?php 
                            // map label field
                            $labels = [
-                              'nis' => 'NIS',
+                              'nis' => 'NIP',
                               'nama_karyawan' => 'Nama',
                               'id_departemen' => 'Departemen',
                               'jenis_kelamin' => 'Jenis Kelamin',

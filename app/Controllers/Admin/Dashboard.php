@@ -37,6 +37,11 @@ class Dashboard extends BaseController
 
    public function index()
    {
+      // Cek akses masterdata
+      if (!$this->roleHelper->canAccessMasterData()) {
+         return redirect()->to($this->roleHelper->redirectBasedOnRole());
+      }
+
       $now = Time::now();
 
       $dateRange = [];

@@ -212,35 +212,58 @@
       transform: none;
    }
 
-   /* =============== DEPARTEMEN GRID =============== */
-   .chip-btn {
+   /* Refresh spin animation */
+   @keyframes spin360 {
+      to {
+         transform: rotate(360deg);
+      }
+   }
+
+   .btn-refresh.is-loading .material-icons {
+      animation: spin360 .9s linear infinite;
+      color: var(--ring);
+   }
+
+   /* =============== CUSTOM DROPDOWN STYLING =============== */
+   .custom-select {
       width: 100%;
-      margin-bottom: 10px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      border-radius: 12px;
+      padding: 12px 16px;
       border: 1px solid var(--border);
-      padding: 12px 14px;
-      font-weight: 700;
+      border-radius: 12px;
+      background: color-mix(in oklab, var(--card-solid) 90%, transparent);
       color: var(--text);
-      background: color-mix(in oklab, var(--card-solid) 92%, transparent);
-      transition: transform .12s ease, box-shadow .12s ease, background .12s ease;
+      font-size: clamp(14px, 2.5vw, 16px);
+      font-weight: 600;
       box-shadow: var(--neon);
-      min-height: 44px;
-      /* touch target */
-      font-size: clamp(14px, 2.6vw, 16px);
+      transition: all .12s ease;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7b93' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+      background-position: right 12px center;
+      background-repeat: no-repeat;
+      background-size: 16px;
+      padding-right: 40px;
    }
 
-   .chip-btn:hover {
-      transform: translateY(-1px);
-   }
-
-   .chip-btn.active {
+   .custom-select:focus {
+      outline: none;
       border-color: color-mix(in oklab, var(--primary) 40%, var(--border));
       box-shadow: 0 0 0 1px color-mix(in oklab, var(--primary) 35%, transparent), 0 10px 24px rgba(59, 130, 246, .18);
       background: color-mix(in oklab, var(--primary) 8%, var(--card-solid));
+   }
+
+   .custom-select:hover {
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-2);
+   }
+
+   .form-group {
+      margin-bottom: 16px;
+   }
+
+   .form-label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: clamp(13px, 2.2vw, 14px);
    }
 
    /* =============== DATA AREA / TABLE-FRIENDLY =============== */
@@ -323,32 +346,6 @@
       }
    }
 
-   /* =============== THEME TOGGLE =============== */
-   .theme-toggle {
-      position: sticky;
-      top: 12px;
-      z-index: 40;
-      display: flex;
-      justify-content: flex-end;
-      padding: 0 16px 10px;
-   }
-
-   .theme-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      background: color-mix(in oklab, var(--card-solid) 80%, transparent);
-      color: var(--text);
-      padding: 10px 14px;
-      cursor: pointer;
-      box-shadow: var(--neon);
-   }
-
-   .theme-btn .material-icons {
-      font-size: 20px;
-   }
 
    /* Toast */
    .toast-lite {
@@ -437,13 +434,6 @@
 </style>
 
 <div class="content" id="pageAbsensiKaryawan">
-   <!-- THEME TOGGLE -->
-   <div class="theme-toggle">
-      <button class="theme-btn" type="button" id="themeBtn" aria-label="Toggle theme">
-         <i class="material-icons" id="themeIcon">dark_mode</i>
-         <span id="themeText">Dark Mode</span>
-      </button>
-   </div>
 
    <div class="container-fluid">
       <!-- ====== FILTER & DEPARTEMEN ====== -->
@@ -461,30 +451,24 @@
 
          <div class="u-body">
             <div class="row">
-               <div class="col-12 col-sm-6 col-md-4 col-lg-3">
-                  <button id="departemen-all"
-                     class="chip-btn"
-                     type="button"
-                     onclick="selectDepartemen('all', 'Semua Departemen')">
-                     <i class="material-icons" aria-hidden="true">apartment</i>
-                     <span>Semua Departemen</span>
-                  </button>
-               </div>
-               <?php foreach ($listDepartemen as $value): ?>
-                  <?php
-                  $idDepartemen   = $value['id_departemen'];
-                  $namaDepartemen = $value['departemen'] . ' ' . $value['jabatan'];
-                  ?>
-                  <div class="col-12 col-sm-6 col-md-4 col-lg-3">
-                     <button id="departemen-<?= $idDepartemen; ?>"
-                        class="chip-btn"
-                        type="button"
-                        onclick="selectDepartemen(<?= $idDepartemen; ?>, '<?= $namaDepartemen; ?>')">
-                        <i class="material-icons" aria-hidden="true">apartment</i>
-                        <span><?= $namaDepartemen; ?></span>
-                     </button>
+               <div class="col-12">
+                  <div class="form-group">
+                     <label for="filterDepartemenJabatan" class="form-label" style="color: var(--text); font-weight: 600; margin-bottom: 8px;">
+                        <i class="material-icons" style="vertical-align: middle; margin-right: 6px; color: var(--primary);">apartment</i>
+                        Filter Departemen & Jabatan
+                     </label>
+                     <select id="filterDepartemenJabatan" class="form-control custom-select">
+                        <option value="all">Semua Departemen & Jabatan</option>
+                        <?php foreach ($listDepartemen as $value): ?>
+                           <?php
+                           $idDepartemen   = $value['id_departemen'];
+                           $namaDepartemen = $value['departemen'] . ' - ' . $value['jabatan'];
+                           ?>
+                           <option value="<?= $idDepartemen; ?>" data-nama="<?= $namaDepartemen; ?>"><?= $namaDepartemen; ?></option>
+                        <?php endforeach; ?>
+                     </select>
                   </div>
-               <?php endforeach; ?>
+               </div>
             </div>
          </div>
 
@@ -501,13 +485,13 @@
          <div class="u-head">
             <div>
                <h4 class="u-title"><i class="material-icons" style="color:var(--success)">assignment_turned_in</i> Absen Karyawan</h4>
-               <p class="u-sub">Daftar karyawan &amp; status kehadiran</p>
+               <p class="u-sub">Total Karyawan: <span style="background: var(--success); color: white; padding: 2px 8px; border-radius: 8px; font-weight: 700;"><?= $total_karyawan; ?></span> | <?= date('d M Y H:i'); ?></p>
             </div>
          </div>
 
          <div class="u-body">
             <div id="dataKaryawan" class="placeholder">
-               Silakan pilih departemen terlebih dahulu, lalu pilih tanggal atau tekan <b>Refresh</b>.
+               Memuat data absen karyawan...
             </div>
          </div>
 
@@ -556,37 +540,6 @@
 </div>
 
 <script>
-   /* ================= THEME TOGGLE (persist) ================= */
-   (function() {
-      const root = document.documentElement;
-      const saved = localStorage.getItem('absen-theme');
-      if (saved) root.setAttribute('data-theme', saved);
-
-      const btn = document.getElementById('themeBtn');
-      const icon = document.getElementById('themeIcon');
-      const text = document.getElementById('themeText');
-
-      function sync() {
-         const mode = root.getAttribute('data-theme') || 'light';
-         if (mode === 'dark') {
-            icon.textContent = 'light_mode';
-            text.textContent = 'Terang';
-         } else {
-            icon.textContent = 'dark_mode';
-            text.textContent = 'Gelap';
-         }
-      }
-      sync();
-
-      btn.addEventListener('click', () => {
-         const current = root.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
-         const next = current === 'dark' ? 'light' : 'dark';
-         root.setAttribute('data-theme', next);
-         localStorage.setItem('absen-theme', next);
-         sync();
-      });
-   })();
-
    /* ================== TOAST MINI ================== */
    function showToast(text, icon = 'info') {
       const t = $('#toastLite');
@@ -599,33 +552,25 @@
    function setLoading(isLoading) {
       const $btn = $('#btnRefresh');
       if (isLoading) {
-         $btn.prop('disabled', true);
+         $btn.addClass('is-loading').prop('disabled', true);
          $('#dataKaryawan').html(`
            <div class="skeleton"></div>
            <div class="skeleton" style="height:64px"></div>
            <div class="skeleton" style="height:64px"></div>
          `);
       } else {
-         $btn.prop('disabled', false);
+         $btn.removeClass('is-loading').prop('disabled', false);
       }
    }
 
    /* ================== STATE ================== */
-   var lastIdDepartemen = null;
-   var lastDepartemen = null;
+   var lastIdDepartemen = 'all';
+   var lastDepartemen = 'Semua Departemen & Jabatan';
 
-   function selectDepartemen(id, nama) {
+   function selectDepartemenJabatan(id, nama) {
       lastIdDepartemen = id;
       lastDepartemen = nama;
-      updateBtnActive(id);
       fetchKaryawan();
-   }
-
-   function updateBtnActive(activeId) {
-      <?php foreach ($listDepartemen as $value): ?>
-         $('#departemen-<?= $value['id_departemen']; ?>')
-            .toggleClass('active', <?= $value['id_departemen']; ?> === activeId);
-      <?php endforeach; ?>
    }
 
    /* ================== AJAX LOAD ================== */
@@ -663,7 +608,9 @@
       $.ajax({
          url: "<?= base_url('/admin/absen-karyawan/history'); ?>",
          type: 'post',
-         data: { tanggal },
+         data: {
+            tanggal
+         },
          success: function(res) {
             $('#historyKaryawan').html(res);
          },
@@ -676,6 +623,15 @@
    /* ================== EVENT BINDINGS ================== */
    $('#btnRefresh').on('click', fetchKaryawan);
    $('#tanggal').on('change input', debounce(fetchKaryawan, 250));
+
+   // Event handler untuk dropdown gabungan
+   $('#filterDepartemenJabatan').on('change', function() {
+      const selectedOption = $(this).find('option:selected');
+      const id = $(this).val();
+      const nama = selectedOption.data('nama') || selectedOption.text();
+      selectDepartemenJabatan(id, nama);
+   });
+
 
    function debounce(fn, delay) {
       let t;
@@ -693,8 +649,8 @@
          type: 'post',
          data: {
             id_presensi: idPresensi,
-           id_karyawan: idKaryawan,
-           tanggal: $('#tanggal').val()
+            id_karyawan: idKaryawan,
+            tanggal: $('#tanggal').val()
          },
          success: function(res) {
             $('#modalFormUbahKaryawan').html(res);
@@ -721,6 +677,21 @@
             if (response['status']) showToast('Berhasil ubah kehadiran: ' + response['nama_karyawan'], 'check_circle');
             else showToast('Gagal ubah kehadiran: ' + response['nama_karyawan'], 'error');
             fetchKaryawan();
+            // Muat ulang history setelah update
+            const tanggal = $('#tanggal').val();
+            $.ajax({
+               url: "<?= base_url('/admin/absen-karyawan/history'); ?>",
+               type: 'post',
+               data: {
+                  tanggal
+               },
+               success: function(res) {
+                  $('#historyKaryawan').html(res);
+               },
+               error: function() {
+                  $('#historyKaryawan').html('<div class="placeholder">Gagal memuat history.</div>');
+               }
+            });
          },
          error: function(xhr, status, err) {
             console.log(err);
@@ -732,7 +703,15 @@
    // Expose untuk dipakai di partial yang dirender AJAX
    window.getDataKehadiran = getDataKehadiran;
    window.ubahKehadiran = ubahKehadiran;
-   window.selectDepartemen = selectDepartemen;
+   window.selectDepartemenJabatan = selectDepartemenJabatan;
+
+   // Auto-load data saat halaman dibuka
+   $(document).ready(function() {
+      // Set dropdown ke "Semua Departemen & Jabatan"
+      $('#filterDepartemenJabatan').val('all');
+      // Load data secara otomatis
+      fetchKaryawan();
+   });
 </script>
 
 <?= $this->endSection() ?>
