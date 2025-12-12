@@ -151,7 +151,7 @@ function nav_active(string $current, string $key, array $patterns = []): string
         <li class="nav-item <?= nav_active($context, 'absen-admin', ['admin/absen-admin*']) ?>">
           <a class="nav-link" href="<?= base_url('admin/absen-admin'); ?>">
             <i class="material-icons">checklist</i>
-            <p>Absensi Admin</p>
+            <p>Absensi Supervisor</p>
           </a>
         </li>
       <?php endif; ?>
@@ -166,22 +166,22 @@ function nav_active(string $current, string $key, array $patterns = []): string
         </li>
       <?php endif; ?>
 
-      <!-- Data Admin (untuk admin dan super admin) -->
+      <!-- Data Supervisor (untuk admin dan super admin) -->
       <?php if ($accessibleMenus['data_admin'] ?? false): ?>
         <li class="nav-item <?= nav_active($context, 'admin', ['admin/admin*']) ?>">
           <a class="nav-link" href="<?= base_url('admin/admin'); ?>">
             <i class="material-icons">person_4</i>
-            <p>Data Admin</p>
+            <p>Data Supervisor</p>
           </a>
         </li>
       <?php endif; ?>
 
-      <!-- Departemen & Jabatan (untuk admin dan super admin) -->
+      <!-- Departemen & Grade (untuk admin dan super admin) -->
       <?php if ($accessibleMenus['data_departemen'] ?? false): ?>
         <li class="nav-item <?= nav_active($context, 'departemen', ['admin/departemen*', 'admin/jabatan*']) ?>">
           <a class="nav-link" href="<?= base_url('admin/departemen'); ?>">
             <i class="material-icons">school</i>
-            <p>Data Departemen &amp; Jabatan</p>
+            <p>Data Departemen &amp; Grade</p>
           </a>
         </li>
       <?php endif; ?>

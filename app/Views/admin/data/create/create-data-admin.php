@@ -6,7 +6,7 @@
          <div class="col-lg-12 col-md-12">
             <div class="card">
                <div class="card-header card-header-success">
-                  <h4 class="card-title"><b>Form Tambah Admin</b></h4>
+                  <h4 class="card-title"><b>Form Tambah Supervisor</b></h4>
 
                </div>
                <div class="card-body mx-5 my-3">
@@ -43,9 +43,9 @@
                      </div>
 
                      <div class="form-group mt-4">
-                        <label for="id_departemen">Departemen - Jabatan</label>
+                        <label for="id_departemen">Departemen - Grade</label>
                         <select class="form-control" id="id_departemen" name="id_departemen">
-                           <option value="">-- Pilih Departemen - Jabatan --</option>
+                           <option value="">-- Pilih Departemen - Grade --</option>
                            <?php if (!empty($departemen_list)): ?>
                               <?php foreach ($departemen_list as $dept): ?>
                                  <option value="<?= $dept['id_departemen']; ?>" <?= (old('id_departemen') ?? $oldInput['id_departemen'] ?? '') == $dept['id_departemen'] ? 'selected' : ''; ?>>
@@ -54,7 +54,7 @@
                               <?php endforeach; ?>
                            <?php endif; ?>
                         </select>
-                        <small class="form-text text-muted">Pilih kombinasi departemen dan jabatan untuk admin ini</small>
+                        <small class="form-text text-muted">Pilih kombinasi departemen dan grade untuk supervisor ini</small>
                      </div>
 
                      <div class="form-group mt-2">

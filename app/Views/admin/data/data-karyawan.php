@@ -454,9 +454,23 @@
                <h4 class="u-title"><i class="material-icons" style="color:var(--success)">people</i> Data Karyawan</h4>
                <p class="u-sub">Total Karyawan: <span style="background: var(--success); color: white; padding: 2px 8px; border-radius: 8px; font-weight: 700;"><?= $total_karyawan; ?></span> | <?= date('d M Y H:i'); ?></p>
             </div>
-            <button class="btn-hero btn-refresh btn-refresh-table" type="button" onclick="loadKaryawan()">
-               <i class="material-icons" style="color:var(--success)">refresh</i> Refresh
-            </button>
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+               <div class="input-chip" style="max-width:420px;">
+                  <i class="material-icons" style="color:var(--primary)">search</i>
+                  <input type="text" id="searchKaryawanInput" class="form-control" placeholder="Cari (nama, NIP, departemen, jabatan, no hp)">
+                  <button class="btn-hero" type="button" onclick="performSearch()" title="Cari">
+                     <i class="material-icons" style="color:var(--primary)">search</i>
+                     Cari
+                  </button>
+                  <button class="btn-hero" type="button" onclick="clearSearch()" title="Reset pencarian">
+                     <i class="material-icons" style="color:var(--danger)">close</i>
+                     Reset
+                  </button>
+               </div>
+               <button class="btn-hero btn-refresh btn-refresh-table" type="button" onclick="loadKaryawan()">
+                  <i class="material-icons" style="color:var(--success)">refresh</i> Refresh
+               </button>
+            </div>
          </div>
 
          <div class="u-body" id="dataKaryawan">
@@ -478,6 +492,7 @@
    /* ============ STATE & FILTER ============ */
    var lastIdDepartemen = 'all';
    var lastDepartemen = 'Semua Departemen & Jabatan';
+   var lastSearchTerm = '';
 
    function selectDepartemenJabatan(id, nama) {
       lastIdDepartemen = id;
@@ -508,7 +523,8 @@
          type: 'post',
          data: {
             'departemen': lastDepartemen,
-            'id_departemen': lastIdDepartemen
+            'id_departemen': lastIdDepartemen,
+            'q': lastSearchTerm
          },
          success: function(res) {
             $('#dataKaryawan').html(res);
@@ -547,6 +563,24 @@
       const nama = selectedOption.data('nama') || selectedOption.text();
       selectDepartemenJabatan(id, nama);
    });
+
+   // Trigger pencarian (enter)
+   $('#searchKaryawanInput').on('keypress', function(e) {
+      if (e.which === 13) {
+         performSearch();
+      }
+   });
+
+   function performSearch() {
+      lastSearchTerm = ($('#searchKaryawanInput').val() || '').trim();
+      loadKaryawan();
+   }
+
+   function clearSearch() {
+      $('#searchKaryawanInput').val('');
+      lastSearchTerm = '';
+      loadKaryawan();
+   }
 
 
    // checkbox "select all" bila ada di partial

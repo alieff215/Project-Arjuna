@@ -3,7 +3,7 @@
     <table class="table table-hover">
       <thead class="text-primary">
         <th><b>No</b></th>
-        <th><b>Jabatan</b></th>
+        <th><b>Grade</b></th>
         <th><b>Aksi</b></th>
       </thead>
       <tbody>
@@ -31,7 +31,7 @@
 <?php else: ?>
   <div class="card-body text-center py-4">
     <i class="material-icons text-muted" style="font-size: 48px;">inbox</i>
-    <p class="text-muted mt-2">Belum ada data jabatan</p>
+    <p class="text-muted mt-2">Belum ada data grade</p>
   </div>
 <?php endif; ?>
 

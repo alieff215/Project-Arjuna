@@ -301,6 +301,27 @@ class Gaji extends BaseController
     }
 
     /**
+     * Show overtime-only report page
+     */
+    public function lembur()
+    {
+        $start_date = $this->request->getGet('start_date') ?? date('Y-m-01');
+        $end_date = $this->request->getGet('end_date') ?? date('Y-m-t');
+        $id_departemen = $this->request->getGet('id_departemen');
+
+        $data = [
+            'title' => 'Laporan Lembur Karyawan',
+            'report_data' => $this->gajiModel->getOvertimeReport($start_date, $end_date, $id_departemen),
+            'departemen' => $this->departemenModel->getAllDepartemen(),
+            'start_date' => $start_date,
+            'end_date' => $end_date,
+            'id_departemen' => $id_departemen
+        ];
+
+        return view('admin/gaji/lembur', $data);
+    }
+
+    /**
      * Export salary report to CSV
      */
     public function export()
@@ -398,7 +419,7 @@ class Gaji extends BaseController
                     $row['nis'],
                     $row['nama_karyawan'],
                     $row['jabatan'],
-                    (int)($row['gaji_per_jam'] ?? 0),
+                    number_format((float)($row['gaji_per_jam'] ?? 0), 3, ',', '.'),
                     (int)($row['total_kehadiran'] ?? 0),
                     number_format((float)$row['total_jam_kerja'], 1, ',', '.'),
                     (int)($row['total_gaji'] ?? 0)

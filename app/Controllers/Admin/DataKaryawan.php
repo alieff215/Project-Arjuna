@@ -81,23 +81,38 @@ class DataKaryawan extends BaseController
       $departemen = $this->request->getVar('departemen') ?? null;
       $jabatan = $this->request->getVar('jabatan') ?? null;
       $id_departemen = $this->request->getVar('id_departemen') ?? null;
+      $q = $this->request->getVar('q') ?? null;
+      $q = is_string($q) ? trim($q) : null;
 
       // Debug: log parameter yang diterima
       log_message('debug', 'ambilDataKaryawan - departemen: ' . ($departemen ?? 'null'));
       log_message('debug', 'ambilDataKaryawan - jabatan: ' . ($jabatan ?? 'null'));
       log_message('debug', 'ambilDataKaryawan - id_departemen: ' . ($id_departemen ?? 'null'));
 
-      // Jika id_departemen dikirim dan bukan 'all', gunakan untuk filter
-      if (!empty($id_departemen) && $id_departemen !== 'all') {
-         $result = $this->karyawanModel->getKaryawanByDepartemen($id_departemen);
-         log_message('debug', 'Menggunakan getKaryawanByDepartemen dengan id: ' . $id_departemen);
+      // Jika ada kata kunci pencarian, gunakan metode search
+      if (!empty($q)) {
+         if (!empty($id_departemen) && $id_departemen !== 'all') {
+            $result = $this->karyawanModel->searchKaryawan($q, (int) $id_departemen);
+            log_message('debug', 'Pencarian dengan kata kunci dan filter departemen id=' . $id_departemen);
+         } else {
+            $departemenFilter = ($departemen === 'Semua Departemen & Jabatan') ? null : $departemen;
+            $jabatanFilter = ($jabatan === 'Semua Departemen & Jabatan') ? null : $jabatan;
+            $result = $this->karyawanModel->searchKaryawan($q, null, $departemenFilter, $jabatanFilter);
+            log_message('debug', 'Pencarian dengan kata kunci, filter: departemen=' . ($departemenFilter ?? 'null') . ', jabatan=' . ($jabatanFilter ?? 'null'));
+         }
       } else {
-         // Jika memilih "Semua Departemen & Jabatan", kirim null untuk mendapatkan semua data
-         $departemenFilter = ($departemen === 'Semua Departemen & Jabatan') ? null : $departemen;
-         $jabatanFilter = ($jabatan === 'Semua Departemen & Jabatan') ? null : $jabatan;
-         
-         $result = $this->karyawanModel->getAllKaryawanWithDepartemen($departemenFilter, $jabatanFilter);
-         log_message('debug', 'Menggunakan getAllKaryawanWithDepartemen dengan filter: departemen=' . ($departemenFilter ?? 'null') . ', jabatan=' . ($jabatanFilter ?? 'null'));
+         // Jika id_departemen dikirim dan bukan 'all', gunakan untuk filter
+         if (!empty($id_departemen) && $id_departemen !== 'all') {
+            $result = $this->karyawanModel->getKaryawanByDepartemen($id_departemen);
+            log_message('debug', 'Menggunakan getKaryawanByDepartemen dengan id: ' . $id_departemen);
+         } else {
+            // Jika memilih "Semua Departemen & Jabatan", kirim null untuk mendapatkan semua data
+            $departemenFilter = ($departemen === 'Semua Departemen & Jabatan') ? null : $departemen;
+            $jabatanFilter = ($jabatan === 'Semua Departemen & Jabatan') ? null : $jabatan;
+            
+            $result = $this->karyawanModel->getAllKaryawanWithDepartemen($departemenFilter, $jabatanFilter);
+            log_message('debug', 'Menggunakan getAllKaryawanWithDepartemen dengan filter: departemen=' . ($departemenFilter ?? 'null') . ', jabatan=' . ($jabatanFilter ?? 'null'));
+         }
       }
 
       log_message('debug', 'Jumlah hasil: ' . count($result));

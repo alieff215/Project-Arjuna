@@ -73,6 +73,48 @@ class Dashboard extends BaseController
 
       $today = $now->toDateString();
 
+      // Hitung karyawan yang tidak hadir berturut-turut lebih dari 3 hari kerja (Senin-Sabtu)
+      $allKaryawan = $this->karyawanModel->getAllKaryawanWithDepartemen();
+      $karyawanTidakHadirLebih3Hari = [];
+      foreach ($allKaryawan as $kar) {
+         $streak = 0;
+         $offset = 0;
+         // Maksimal lihat ke belakang 14 hari kalender untuk mencari streak
+         while ($offset < 14) {
+            $dateCheck = $now->subDays($offset)->toDateString();
+            $dayOfWeek = (int) date('N', strtotime($dateCheck)); // 1=Senin, 7=Minggu
+            // Lewati Minggu (non-hari kerja)
+            if ($dayOfWeek === 7) {
+               $offset++;
+               continue;
+            }
+
+            $rec = $this->presensiKaryawanModel->getPresensiByIdKaryawanTanggal($kar['id_karyawan'], $dateCheck);
+            $isAbsent = true; // default: tidak hadir bila tidak ada record
+            if (!empty($rec)) {
+               $kehadiran = (string) ($rec['id_kehadiran'] ?? '');
+               // 1=hadir, 2=sakit, 3=izin dianggap bukan absen
+               if (in_array($kehadiran, ['1', '2', '3'], true)) {
+                  $isAbsent = false;
+               }
+            }
+
+            if ($isAbsent) {
+               $streak++;
+               $offset++;
+               continue;
+            }
+
+            // Ketemu hari hadir/sakit/izin → hentikan streak
+            break;
+         }
+
+         if ($streak >= 3) { // minimal 3 hari kerja berturut-turut
+            $kar['streak_days'] = $streak;
+            $karyawanTidakHadirLebih3Hari[] = $kar;
+         }
+      }
+
       $data = [
          'title' => 'Dashboard',
          'ctx' => 'dashboard',
@@ -103,6 +145,9 @@ class Dashboard extends BaseController
          ],
 
          'petugas' => $this->petugasModel->getAllPetugas(),
+
+         'karyawanTidakHadirLebih3Hari' => $karyawanTidakHadirLebih3Hari,
+         'jumlahTidakHadirLebih3Hari' => count($karyawanTidakHadirLebih3Hari),
       ];
 
       return view('admin/dashboard', $data);

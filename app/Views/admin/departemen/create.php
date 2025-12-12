@@ -117,9 +117,9 @@
             </div>
             
             <div class="form-group">
-              <label for="id_jabatan">Jabatan</label>
+              <label for="id_jabatan">Grade</label>
               <select class="custom-select <?= invalidFeedback('id_jabatan') ? 'is-invalid' : ''; ?>" id="id_jabatan" name="id_jabatan">
-                <option value="">--Pilih Jabatan--</option>
+                <option value="">--Pilih Grade--</option>
                 <?php foreach ($jabatan as $value) : ?>
                   <option value="<?= $value['id']; ?>" <?= old('id_jabatan') == $value['id'] ? 'selected' : ''; ?>>
                     <?= $value['jabatan']; ?>

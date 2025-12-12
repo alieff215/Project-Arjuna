@@ -105,7 +105,8 @@
    const previewParent = document.getElementById('previewParent');
    const preview = document.getElementById('previewKamera');
 
-   function initScanner() {
+  function initScanner() {
+     $('#searching').removeClass('d-none').html('<b>Mencari...</b>');
       codeReader.listVideoInputDevices()
          .then(videoInputDevices => {
             videoInputDevices.forEach(device =>
@@ -113,7 +114,10 @@
             );
 
             if (videoInputDevices.length < 1) {
-               alert("Camera not found!");
+               sourceSelect.html('<option value="">Kamera tidak tersedia</option>');
+               $('#previewParent').addClass('unpreview');
+               $('#previewKamera').addClass('d-none');
+               $('#searching').removeClass('d-none').html('<b>Kamera tidak ditemukan.</b>');
                return;
             }
 

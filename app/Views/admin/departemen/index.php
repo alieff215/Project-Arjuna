@@ -251,16 +251,16 @@
         <section class="ui-card" aria-labelledby="title-jbt">
           <header class="ui-card__header">
             <div>
-              <h4 id="title-jbt" class="ui-card__title">Daftar Jabatan</h4>
+              <h4 id="title-jbt" class="ui-card__title">Daftar Grade</h4>
               <div class="ui-card__meta">
                 <span class="chip"><i class="material-icons">calendar_month</i> Angkatan <?= esc($generalSettings->company_year); ?></span>
               </div>
             </div>
             <div class="action-group">
-              <a class="btn btn--primary" href="<?= base_url('admin/jabatan/tambah'); ?>" aria-label="Tambah data jabatan">
+              <a class="btn btn--primary" href="<?= base_url('admin/jabatan/tambah'); ?>" aria-label="Tambah data grade">
                 <i class="material-icons">add</i><span class="label">Tambah</span>
               </a>
-              <button class="btn btn-refresh" type="button" onclick="refreshSection('jabatan','#dataJabatan', this)" aria-label="Refresh daftar jabatan">
+              <button class="btn btn-refresh" type="button" onclick="refreshSection('jabatan','#dataJabatan', this)" aria-label="Refresh daftar grade">
                 <i class="material-icons">refresh</i><span class="label">Refresh</span>
               </button>
             </div>

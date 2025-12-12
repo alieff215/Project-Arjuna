@@ -112,8 +112,8 @@ class GenerateLaporan extends BaseController
       $dataAbsen = [];
 
       foreach ($period as $value) {
-         // kecualikan hari sabtu dan minggu
-         if (!($value->format('D') == 'Sat' || $value->format('D') == 'Sun')) {
+         // kecualikan hari minggu
+         if ($value->format('D') != 'Sun') {
             $lewat = Time::parse($value->format('Y-m-d'))->isAfter(Time::today());
 
             // Jika semua departemen dipilih, ambil presensi semua departemen pada tanggal tsb
@@ -153,14 +153,8 @@ class GenerateLaporan extends BaseController
          'grup' => empty($idDepartemen) ? 'semua departemen' : ("departemen " . $departemen['departemen'] . " " . $departemen['jabatan']),
       ];
 
-      if ($type == 'doc') {
-         $this->response->setHeader('Content-type', 'application/vnd.ms-word');
-         $this->response->setHeader(
-            'Content-Disposition',
-            'attachment;Filename=laporan_absen_' . $departemen['departemen'] . " " . $departemen['jabatan'] . '_' . $begin->toLocalizedString('MMMM-Y') . '.doc'
-         );
-
-         return view('admin/generate-laporan/laporan-karyawan', $data);
+      if ($type == 'csv') {
+         return $this->generateCsvKaryawan($data, $departemen, $begin);
       }
 
       return view('admin/generate-laporan/laporan-karyawan', $data) . view('admin/generate-laporan/topdf');
@@ -194,8 +188,8 @@ class GenerateLaporan extends BaseController
       $dataAbsen = [];
 
       foreach ($period as $value) {
-         // kecualikan hari sabtu dan minggu
-         if (!($value->format('D') == 'Sat' || $value->format('D') == 'Sun')) {
+         // kecualikan hari minggu
+         if ($value->format('D') != 'Sun') {
             $lewat = Time::parse($value->format('Y-m-d'))->isAfter(Time::today());
 
             $absenByTanggal = $this->presensiAdminModel
@@ -228,16 +222,299 @@ class GenerateLaporan extends BaseController
          'grup' => 'admin',
       ];
 
-      if ($type == 'doc') {
-         $this->response->setHeader('Content-type', 'application/vnd.ms-word');
-         $this->response->setHeader(
-            'Content-Disposition',
-            'attachment;Filename=laporan_absen_admin_' . $begin->toLocalizedString('MMMM-Y') . '.doc'
-         );
-
-         return view('admin/generate-laporan/laporan-admin', $data);
+      if ($type == 'csv') {
+         return $this->generateCsvAdmin($data, $begin);
       }
 
       return view('admin/generate-laporan/laporan-admin', $data) . view('admin/generate-laporan/topdf');
+   }
+
+   private function generateCsvKaryawan($data, $departemen, $begin)
+   {
+      $filename = 'laporan_absen_' . str_replace(' ', '_', $departemen['departemen'] . '_' . $departemen['jabatan']) . '_' . $begin->toLocalizedString('MMMM-Y') . '.csv';
+      
+      $this->response->setHeader('Content-Type', 'text/csv; charset=UTF-8');
+      $this->response->setHeader('Content-Disposition', 'attachment; filename="' . $filename . '"');
+      $this->response->setHeader('Pragma', 'no-cache');
+      $this->response->setHeader('Expires', '0');
+
+      // BOM untuk UTF-8 agar Excel bisa membaca dengan benar
+      echo "\xEF\xBB\xBF";
+
+      $output = fopen('php://output', 'w');
+
+      // Header utama global
+      fputcsv($output, ['DAFTAR HADIR KARYAWAN'], ';');
+      fputcsv($output, ['Bulan: ' . $data['bulan']], ';');
+      fputcsv($output, []); // Baris kosong
+
+      $isAllDepartemen = isset($departemen['departemen']) && $departemen['departemen'] === 'Semua Departemen';
+
+      // Jika semua departemen, kelompokkan berdasarkan departemen
+      if ($isAllDepartemen) {
+         // Kelompokkan karyawan berdasarkan departemen
+         $karyawanByDepartemen = [];
+         foreach ($data['listKaryawan'] as $index => $karyawan) {
+            $deptKey = ($karyawan['departemen'] ?? '') . ' ' . ($karyawan['jabatan'] ?? '');
+            if (!isset($karyawanByDepartemen[$deptKey])) {
+               $karyawanByDepartemen[$deptKey] = [];
+            }
+            $karyawanByDepartemen[$deptKey][] = [
+               'karyawan' => $karyawan,
+               'index' => $index
+            ];
+         }
+
+         // Buat tabel untuk setiap departemen
+         $tableNumber = 1;
+         foreach ($karyawanByDepartemen as $deptKey => $karyawanList) {
+            $this->writeCsvTableKaryawan($output, $data, $deptKey, $karyawanList, $tableNumber);
+            $tableNumber++;
+         }
+
+         // Footer global untuk semua departemen
+         fputcsv($output, []); // Baris kosong
+         fputcsv($output, ['=== RINGKASAN SEMUA DEPARTEMEN ==='], ';');
+         fputcsv($output, ['Jumlah karyawan', count($data['listKaryawan'])], ';');
+         fputcsv($output, ['Laki-laki', $data['jumlahKaryawan']['laki']], ';');
+         fputcsv($output, ['Perempuan', $data['jumlahKaryawan']['perempuan']], ';');
+      } else {
+         // Satu departemen saja, buat satu tabel
+         $karyawanList = [];
+         foreach ($data['listKaryawan'] as $index => $karyawan) {
+            $karyawanList[] = [
+               'karyawan' => $karyawan,
+               'index' => $index
+            ];
+         }
+         $deptKey = $departemen['departemen'] . ' ' . $departemen['jabatan'];
+         $this->writeCsvTableKaryawan($output, $data, $deptKey, $karyawanList, 1);
+
+         // Footer untuk satu departemen
+         fputcsv($output, []); // Baris kosong
+         fputcsv($output, ['Jumlah karyawan', count($data['listKaryawan'])], ';');
+         fputcsv($output, ['Laki-laki', $data['jumlahKaryawan']['laki']], ';');
+         fputcsv($output, ['Perempuan', $data['jumlahKaryawan']['perempuan']], ';');
+      }
+
+      fclose($output);
+      return;
+   }
+
+   private function writeCsvTableKaryawan($output, $data, $deptKey, $karyawanList, $tableNumber)
+   {
+      // Baris pemisah antar tabel (kecuali tabel pertama)
+      if ($tableNumber > 1) {
+         fputcsv($output, []); // Baris kosong
+         fputcsv($output, []); // Baris kosong
+      }
+
+      // Header departemen
+      fputcsv($output, ['=== TABEL ' . $tableNumber . ': ' . trim($deptKey) . ' ==='], ';');
+      fputcsv($output, []); // Baris kosong
+
+      // Header tabel
+      $header = ['No', 'Nama'];
+      foreach ($data['tanggal'] as $tanggal) {
+         $header[] = $tanggal->toLocalizedString('E') . ' ' . $tanggal->format('d');
+      }
+      $header[] = 'Total H';
+      $header[] = 'Total S';
+      $header[] = 'Total I';
+      $header[] = 'Total A';
+      fputcsv($output, $header, ';');
+
+      // Data karyawan dalam departemen ini
+      $rowNumber = 1;
+      foreach ($karyawanList as $item) {
+         $karyawan = $item['karyawan'];
+         $i = $item['index'];
+
+         // Hitung total
+         $jumlahHadir = count(array_filter($data['listAbsen'], function ($a) use ($i) {
+            if ($a['lewat'] || is_null($a[$i]['id_kehadiran'])) return false;
+            return $a[$i]['id_kehadiran'] == 1;
+         }));
+         $jumlahSakit = count(array_filter($data['listAbsen'], function ($a) use ($i) {
+            if ($a['lewat'] || is_null($a[$i]['id_kehadiran'])) return false;
+            return $a[$i]['id_kehadiran'] == 2;
+         }));
+         $jumlahIzin = count(array_filter($data['listAbsen'], function ($a) use ($i) {
+            if ($a['lewat'] || is_null($a[$i]['id_kehadiran'])) return false;
+            return $a[$i]['id_kehadiran'] == 3;
+         }));
+         $jumlahTidakHadir = count(array_filter($data['listAbsen'], function ($a) use ($i) {
+            if ($a['lewat']) return false;
+            if (is_null($a[$i]['id_kehadiran']) || $a[$i]['id_kehadiran'] == 4) return true;
+            return false;
+         }));
+
+         // Baris data
+         $row = [$rowNumber, $karyawan['nama_karyawan']];
+         
+         foreach ($data['listAbsen'] as $absen) {
+            $jm = $absen[$i]['jam_masuk'] ?? null;
+            $jk = $absen[$i]['jam_keluar'] ?? null;
+            $idKehadiran = $absen[$i]['id_kehadiran'] ?? ($absen['lewat'] ? 5 : 4);
+            
+            $cellValue = '';
+            if ($idKehadiran == 5 || $absen['lewat']) {
+               $cellValue = '';
+            } else {
+               switch ($idKehadiran) {
+                  case 1: // Hadir
+                     $hoursText = '-';
+                     if (!empty($jm) && !empty($jk)) {
+                        $durasiDetik = strtotime($jk) - strtotime($jm);
+                        if ($durasiDetik > 0) {
+                           $hoursText = number_format($durasiDetik / 3600, 1) . 'h';
+                        }
+                     }
+                     $cellValue = 'H' . ($hoursText != '-' ? ' (' . $hoursText . ')' : '');
+                     break;
+                  case 2: // Sakit
+                     $cellValue = 'S';
+                     break;
+                  case 3: // Izin
+                     $cellValue = 'I';
+                     break;
+                  case 4: // Alpha
+                     $cellValue = 'A';
+                     break;
+                  default:
+                     $cellValue = '';
+                     break;
+               }
+            }
+            $row[] = $cellValue;
+         }
+         
+         $row[] = $jumlahHadir != 0 ? $jumlahHadir : '';
+         $row[] = $jumlahSakit != 0 ? $jumlahSakit : '';
+         $row[] = $jumlahIzin != 0 ? $jumlahIzin : '';
+         $row[] = $jumlahTidakHadir != 0 ? $jumlahTidakHadir : '';
+         
+         fputcsv($output, $row, ';');
+         $rowNumber++;
+      }
+
+      // Footer per departemen
+      $lakiDept = 0;
+      $perempuanDept = 0;
+      foreach ($karyawanList as $item) {
+         if ($item['karyawan']['jenis_kelamin'] != 'Perempuan') {
+            $lakiDept++;
+         } else {
+            $perempuanDept++;
+         }
+      }
+
+      fputcsv($output, []); // Baris kosong
+      fputcsv($output, ['--- Ringkasan Departemen ---'], ';');
+      fputcsv($output, ['Jumlah karyawan', count($karyawanList)], ';');
+      fputcsv($output, ['Laki-laki', $lakiDept], ';');
+      fputcsv($output, ['Perempuan', $perempuanDept], ';');
+   }
+
+   private function generateCsvAdmin($data, $begin)
+   {
+      $filename = 'laporan_absen_admin_' . $begin->toLocalizedString('MMMM-Y') . '.csv';
+      
+      $this->response->setHeader('Content-Type', 'text/csv; charset=UTF-8');
+      $this->response->setHeader('Content-Disposition', 'attachment; filename="' . $filename . '"');
+      $this->response->setHeader('Pragma', 'no-cache');
+      $this->response->setHeader('Expires', '0');
+
+      // BOM untuk UTF-8 agar Excel bisa membaca dengan benar
+      echo "\xEF\xBB\xBF";
+
+      $output = fopen('php://output', 'w');
+
+      // Header utama
+      fputcsv($output, ['DAFTAR HADIR ADMIN'], ';');
+      fputcsv($output, ['Bulan: ' . $data['bulan']], ';');
+      fputcsv($output, []); // Baris kosong
+
+      // Header tabel
+      $header = ['No', 'Nama'];
+      foreach ($data['tanggal'] as $tanggal) {
+         $header[] = $tanggal->toLocalizedString('E') . ' ' . $tanggal->format('d');
+      }
+      $header[] = 'Total H';
+      $header[] = 'Total S';
+      $header[] = 'Total I';
+      $header[] = 'Total A';
+      fputcsv($output, $header, ';');
+
+      // Data admin
+      $i = 0;
+      foreach ($data['listAdmin'] as $admin) {
+         // Hitung total
+         $jumlahHadir = count(array_filter($data['listAbsen'], function ($a) use ($i) {
+            if ($a['lewat'] || is_null($a[$i]['id_kehadiran'])) return false;
+            return $a[$i]['id_kehadiran'] == 1;
+         }));
+         $jumlahSakit = count(array_filter($data['listAbsen'], function ($a) use ($i) {
+            if ($a['lewat'] || is_null($a[$i]['id_kehadiran'])) return false;
+            return $a[$i]['id_kehadiran'] == 2;
+         }));
+         $jumlahIzin = count(array_filter($data['listAbsen'], function ($a) use ($i) {
+            if ($a['lewat'] || is_null($a[$i]['id_kehadiran'])) return false;
+            return $a[$i]['id_kehadiran'] == 3;
+         }));
+         $jumlahTidakHadir = count(array_filter($data['listAbsen'], function ($a) use ($i) {
+            if ($a['lewat']) return false;
+            if (is_null($a[$i]['id_kehadiran']) || $a[$i]['id_kehadiran'] == 4) return true;
+            return false;
+         }));
+
+         // Baris data
+         $row = [$i + 1, $admin['nama_admin']];
+         
+         foreach ($data['listAbsen'] as $absen) {
+            $idKehadiran = $absen[$i]['id_kehadiran'] ?? ($absen['lewat'] ? 5 : 4);
+            
+            $cellValue = '';
+            if ($idKehadiran == 5 || $absen['lewat']) {
+               $cellValue = '';
+            } else {
+               switch ($idKehadiran) {
+                  case 1: // Hadir
+                     $cellValue = 'H';
+                     break;
+                  case 2: // Sakit
+                     $cellValue = 'S';
+                     break;
+                  case 3: // Izin
+                     $cellValue = 'I';
+                     break;
+                  case 4: // Alpha
+                     $cellValue = 'A';
+                     break;
+                  default:
+                     $cellValue = '';
+                     break;
+               }
+            }
+            $row[] = $cellValue;
+         }
+         
+         $row[] = $jumlahHadir != 0 ? $jumlahHadir : '';
+         $row[] = $jumlahSakit != 0 ? $jumlahSakit : '';
+         $row[] = $jumlahIzin != 0 ? $jumlahIzin : '';
+         $row[] = $jumlahTidakHadir != 0 ? $jumlahTidakHadir : '';
+         
+         fputcsv($output, $row, ';');
+         $i++;
+      }
+
+      // Footer
+      fputcsv($output, []); // Baris kosong
+      fputcsv($output, ['Jumlah admin', count($data['listAdmin'])], ';');
+      fputcsv($output, ['Laki-laki', $data['jumlahAdmin']['laki']], ';');
+      fputcsv($output, ['Perempuan', $data['jumlahAdmin']['perempuan']], ';');
+
+      fclose($output);
+      return;
    }
 }

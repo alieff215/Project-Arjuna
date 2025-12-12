@@ -556,6 +556,16 @@
    const preview = document.getElementById('previewKamera');
 
    function initScanner() {
+      const searchingWrapper = $('#searching');
+      const searchingSpinner = searchingWrapper.find('.spinner-border');
+      const searchingText = searchingWrapper.find('p');
+      searchingWrapper.show();
+      if (searchingSpinner.length) {
+         searchingSpinner.show();
+      }
+      if (searchingText.length) {
+         searchingText.html('<b>Mencari kamera...</b>');
+      }
       codeReader.listVideoInputDevices()
          .then(videoInputDevices => {
             videoInputDevices.forEach(device =>
@@ -563,7 +573,20 @@
             );
 
             if (videoInputDevices.length < 1) {
-               alert("Camera not found!");
+               sourceSelect.html('<option value="">Kamera tidak tersedia</option>');
+               if (searchingSpinner.length) {
+                  searchingSpinner.hide();
+               }
+               if (searchingText.length) {
+                  searchingText.html('<b>Kamera tidak ditemukan.</b>');
+               } else {
+                  searchingWrapper.html('<b>Kamera tidak ditemukan.</b>');
+               }
+               $('#previewParent').addClass('unpreview');
+               $('#previewKamera').hide();
+               if (typeof hideNotification === 'function') {
+                  hideNotification();
+               }
                return;
             }
 

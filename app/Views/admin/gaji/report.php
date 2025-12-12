@@ -333,6 +333,36 @@ select.form-control {
     background: var(--bg-accent-1, #e5efff);
 }
 
+/* Icon-only button for toolbar */
+.btn-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    background: var(--card, #fff);
+    border: 1px solid var(--border, rgba(16, 24, 40, .12));
+    color: var(--text, #0b132b);
+    cursor: pointer;
+    transition: all .2s ease;
+    text-decoration: none;
+}
+.btn-icon:hover { background: var(--bg-accent-1, #e5efff); transform: translateY(-1px); }
+.csv-logo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 20px;
+    border-radius: 5px;
+    font-weight: 800;
+    font-size: 11px;
+    letter-spacing: .6px;
+    background: var(--success, #10b981);
+    color: #fff;
+}
+
 /* Responsive */
 @media (max-width: 575.98px) {
     .card.card-stats .card-header.card-header-icon {
@@ -382,98 +412,10 @@ select.form-control {
 
 <div class="content app-content-bg">
    <div class="container-fluid">
-    <!-- Page Header -->
-    <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <div>
-            <h1 class="h3 mb-0" style="color: var(--text); font-weight: 700;">📊 Laporan Gaji Karyawan</h1>
-            <p class="text-muted mb-0">Analisis dan monitoring gaji karyawan berdasarkan periode dan departemen</p>
-        </div>
-        <div class="d-flex gap-2">
-            <button class="btn btn-success" onclick="exportToCSV()">
-                <i class="material-icons" style="font-size:18px;">file_download</i> Export CSV
-            </button>
-            <a href="<?= base_url('admin/gaji') ?>" class="btn btn-secondary">
-                <i class="material-icons" style="font-size:18px;">arrow_back</i> Kembali
-            </a>
-        </div>
-    </div>
+    <!-- Page Header removed per request -->
+    <div class="mb-2"></div>
 
-    <!-- Filter Card -->
-    <div class="card">
-        <div class="card-header">
-            <h6 class="m-0 font-weight-bold" style="color: var(--text);">
-                <i class="material-icons" style="vertical-align:middle;margin-right:8px;font-size:18px;">filter_list</i>
-                Filter Laporan
-            </h6>
-        </div>
-        <div class="card-body">
-            <form method="get" action="<?= base_url('admin/gaji/report') ?>" id="filterForm">
-                <div class="row">
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            <label for="start_date">
-                                <i class="material-icons" style="vertical-align:middle;margin-right:6px;font-size:16px;">date_range</i>
-                                Tanggal Mulai
-                            </label>
-                            <input type="date" 
-                                   class="form-control" 
-                                   id="start_date" 
-                                   name="start_date" 
-                                   value="<?= $start_date ?>" 
-                                   required>
-                        </div>
-                    </div>
-                    
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            <label for="end_date">
-                                <i class="material-icons" style="vertical-align:middle;margin-right:6px;font-size:16px;">date_range</i>
-                                Tanggal Akhir
-                            </label>
-                            <input type="date" 
-                                   class="form-control" 
-                                   id="end_date" 
-                                   name="end_date" 
-                                   value="<?= $end_date ?>" 
-                                   required>
-                        </div>
-                    </div>
-                    
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            <label for="id_departemen">
-                                <i class="material-icons" style="vertical-align:middle;margin-right:6px;font-size:16px;">business</i>
-                                Departemen
-                            </label>
-                            <select class="form-control" id="id_departemen" name="id_departemen">
-                                <option value="">Semua Departemen</option>
-                                <?php foreach ($departemen as $dept): ?>
-                                    <option value="<?= $dept['id_departemen'] ?>" 
-                                            <?= ($id_departemen == $dept['id_departemen']) ? 'selected' : '' ?>>
-                                        <?= $dept['departemen'] ?> - <?= $dept['jabatan'] ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            <label>&nbsp;</label>
-                            <div class="d-flex gap-2">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="material-icons" style="font-size:18px;">search</i> Filter
-                                </button>
-                                <a href="<?= base_url('admin/gaji/report') ?>" class="btn btn-secondary">
-                                    <i class="material-icons" style="font-size:18px;">refresh</i> Reset
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
+    
 
     <!-- Report Summary -->
     <div class="row equal-cards-row">
@@ -551,6 +493,83 @@ select.form-control {
         </div>
     </div>
 
+    <!-- Filter Card moved above report table -->
+    <div class="card">
+        <div class="card-header">
+            <h6 class="m-0 font-weight-bold" style="color: var(--text);">
+                <i class="material-icons" style="vertical-align:middle;margin-right:8px;font-size:18px;">filter_list</i>
+                Filter Laporan
+            </h6>
+        </div>
+        <div class="card-body">
+            <form method="get" action="<?= base_url('admin/gaji/report') ?>" id="filterForm">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="start_date">
+                                <i class="material-icons" style="vertical-align:middle;margin-right:6px;font-size:16px;">date_range</i>
+                                Tanggal Mulai
+                            </label>
+                            <input type="date" 
+                                   class="form-control" 
+                                   id="start_date" 
+                                   name="start_date" 
+                                   value="<?= $start_date ?>" 
+                                   required>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="end_date">
+                                <i class="material-icons" style="vertical-align:middle;margin-right:6px;font-size:16px;">date_range</i>
+                                Tanggal Akhir
+                            </label>
+                            <input type="date" 
+                                   class="form-control" 
+                                   id="end_date" 
+                                   name="end_date" 
+                                   value="<?= $end_date ?>" 
+                                   required>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="id_departemen">
+                                <i class="material-icons" style="vertical-align:middle;margin-right:6px;font-size:16px;">business</i>
+                                Departemen
+                            </label>
+                            <select class="form-control" id="id_departemen" name="id_departemen">
+                                <option value="">Semua Departemen</option>
+                                <?php foreach ($departemen as $dept): ?>
+                                    <option value="<?= $dept['id_departemen'] ?>" 
+                                            <?= ($id_departemen == $dept['id_departemen']) ? 'selected' : '' ?>>
+                                        <?= $dept['departemen'] ?> - <?= $dept['jabatan'] ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>&nbsp;</label>
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="material-icons" style="font-size:18px;">search</i> Filter
+                                </button>
+                                <a href="<?= base_url('admin/gaji/report') ?>" class="btn btn-secondary">
+                                    <i class="material-icons" style="font-size:18px;">refresh</i> Reset
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Report Data Table -->
     <div class="panel">
         <div class="panel__head">
@@ -559,6 +578,11 @@ select.form-control {
                 Data Laporan Gaji 
                 (<?= date('d/m/Y', strtotime($start_date)) ?> - <?= date('d/m/Y', strtotime($end_date)) ?>)
             </h4>
+            <div class="toolbar">
+                <button class="btn-icon" onclick="exportToCSV()" title="Export CSV" aria-label="Export CSV">
+                    <span class="csv-logo">CSV</span>
+                </button>
+            </div>
         </div>
         <div class="panel__body">
             <?php if (empty($report_data)): ?>
@@ -576,7 +600,7 @@ select.form-control {
                                 <th>NIP</th>
                                 <th>Nama Karyawan</th>
                                 <th>Departemen</th>
-                                <th>Jabatan</th>
+                                <th>Grade</th>
                                 <th>Gaji/Jam</th>
                                 <th>Kehadiran</th>
                                 <th>Total Jam (Kelipatan 0.5)</th>
@@ -613,7 +637,7 @@ select.form-control {
                                 </td>
                                 <td>
                                     <span style="font-weight:600;color:var(--primary);font-size:1rem;">
-                                        Rp <?= number_format($row['gaji_per_jam'], 0, ',', '.') ?>
+                                        Rp <?= number_format((float)$row['gaji_per_jam'], 3, ',', '.') ?>
                                     </span>
                                 </td>
                                 <td>

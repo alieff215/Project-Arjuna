@@ -553,10 +553,10 @@
             </div>
           </div>
 
-          <!-- ===== Panel Admin ===== -->
+          <!-- ===== Panel Supervisor ===== -->
           <div class="panel" id="panelAdmin">
             <div class="panel-head">
-              <h5 class="panel-title"><i class="material-icons" style="color:var(--success)">admin_panel_settings</i> Data Admin</h5>
+              <h5 class="panel-title"><i class="material-icons" style="color:var(--success)">admin_panel_settings</i> Data Supervisor</h5>
               <div class="panel-sub">Total: <b><?= count($admin); ?></b> • <a href="<?= base_url('admin/admin'); ?>" style="color:var(--success)">Lihat data</a></div>
             </div>
             <div class="panel-body">
@@ -570,7 +570,7 @@
                 </a>
               </div>
 
-              <div id="progressAdmin" class="progress-wrap d-none" aria-label="Progres generate admin">
+              <div id="progressAdmin" class="progress-wrap d-none" aria-label="Progres generate supervisor">
                 <div class="progress-meta">
                   <span id="progressTextAdmin">Progres: 0/0</span>
                   <i id="progressSelesaiAdmin" class="material-icons check-icon d-none" aria-hidden="true">check_circle</i>
@@ -581,8 +581,8 @@
               </div>
 
               <p class="note mt-2">
-                File QR tersimpan di <code>/public/uploads/</code>. Untuk generate/download per admin, buka
-                <a href="<?= base_url('admin/admin'); ?>"><b>Data Admin</b></a>
+                File QR tersimpan di <code>/public/uploads/</code>. Untuk generate/download per supervisor, buka
+                <a href="<?= base_url('admin/admin'); ?>"><b>Data Supervisor</b></a>
               </p>
             </div>
           </div>
@@ -641,7 +641,9 @@
       echo "{
         nama: `$value[nama_admin]`,
         unique_code: `$value[unique_code]`,
-        nomor: `$value[nuptk]`
+        nomor: `$value[nuptk]`,
+        departemen: `" . addslashes($value['departemen'] ?? '') . "`,
+        grade: `" . addslashes($value['jabatan'] ?? '') . "`
       },";
     } ?>
   ];
@@ -651,7 +653,9 @@
         nama: `$value[nama_karyawan]`,
         unique_code: `$value[unique_code]`,
         id_departemen: `$value[id_departemen]`,
-        nomor: `$value[nis]`
+        nomor: `$value[nis]`,
+        departemen: `" . addslashes($value['departemen'] ?? '') . "`,
+        grade: `" . addslashes($value['jabatan'] ?? '') . "`
       },";
     } ?>
   ];
@@ -704,7 +708,9 @@
           nama: el['nama'],
           unique_code: el['unique_code'],
           id_departemen: el['id_departemen'],
-          nomor: el['nomor']
+          nomor: el['nomor'],
+          departemen: el['departemen'],
+          grade: el['grade']
         },
         success() {
           i++;
@@ -764,7 +770,9 @@
               nama: el['nama_karyawan'],
               unique_code: el['unique_code'],
               id_departemen: el['id_departemen'],
-              nomor: el['nis']
+              nomor: el['nis'],
+              departemen: el['departemen'] || '',
+              grade: el['grade'] || el['jabatan'] || ''
             },
             success() {
               i++;
@@ -814,7 +822,9 @@
         data: {
           nama: el['nama'],
           unique_code: el['unique_code'],
-          nomor: el['nomor']
+          nomor: el['nomor'],
+          departemen: el['departemen'],
+          grade: el['grade']
         },
         success() {
           i++;

@@ -98,7 +98,7 @@
         <div class="form-card">
           <div class="form-card__header">
             <h4 class="form-card__title">
-              ➕ Form Tambah Jabatan
+              ➕ Form Tambah Grade
             </h4>
           </div>
 
@@ -106,7 +106,7 @@
             <?= csrf_field() ?>
 
             <div class="form-group">
-              <label for="jabatan">Nama Jabatan</label>
+              <label for="jabatan">Nama Grade</label>
               <input type="text" id="jabatan" class="form-control <?= invalidFeedback('jabatan') ? 'is-invalid' : ''; ?>" name="jabatan" placeholder="IPA, IPS" value="<?= old('jabatan'); ?>" required>
               <div class="invalid-feedback">
                 <?= invalidFeedback('jabatan'); ?>

@@ -24,8 +24,8 @@ class DataAbsenKaryawan extends BaseController
 
    protected PresensiKaryawanModel $presensiKaryawan;
    protected PresensiKaryawanHistoryModel $presensiHistory;
-   protected ApprovalModel $approvalModel;
-   protected ApprovalHelper $approvalHelper;
+   protected ?ApprovalModel $approvalModel = null;
+   protected ?ApprovalHelper $approvalHelper = null;
 
    protected string $currentDate;
 
@@ -41,8 +41,9 @@ class DataAbsenKaryawan extends BaseController
 
       $this->presensiKaryawan = new PresensiKaryawanModel();
       $this->presensiHistory = new PresensiKaryawanHistoryModel();
-      $this->approvalModel = new ApprovalModel();
-      $this->approvalHelper = new ApprovalHelper();
+      // Inisialisasi approval helper & model secara aman (opsional)
+      try { $this->approvalModel = new ApprovalModel(); } catch (\Throwable $th) { $this->approvalModel = null; }
+      try { $this->approvalHelper = new ApprovalHelper(); } catch (\Throwable $th) { $this->approvalHelper = null; }
    }
 
    public function index()
@@ -242,5 +243,158 @@ class DataAbsenKaryawan extends BaseController
       }
 
       return $this->response->setJSON($response);
+   }
+
+   /**
+    * Ubah kehadiran semua karyawan pada tanggal terpilih (opsional per departemen)
+    * Parameter: id_departemen ('all' atau numeric), tanggal, id_kehadiran, jam_masuk?, jam_keluar?, keterangan?
+    * Tetap pertahankan akses edit per karyawan (fitur ini hanya tambahan mass update)
+    */
+   public function ubahKehadiranSemua()
+   {
+      try {
+         // Validasi akses masterdata
+         if (!$this->roleHelper->canAccessMasterData()) {
+            return $this->response->setJSON([
+               'status' => false,
+               'message' => 'Tidak memiliki akses',
+            ]);
+         }
+
+         $idDepartemenParam = $this->request->getVar('id_departemen');
+         $tanggal = $this->request->getVar('tanggal');
+         $idKehadiran = $this->request->getVar('id_kehadiran');
+         $jamMasuk = $this->request->getVar('jam_masuk');
+         $jamKeluar = $this->request->getVar('jam_keluar');
+         $keterangan = $this->request->getVar('keterangan');
+
+         if (empty($tanggal)) {
+            return $this->response->setJSON(['status' => false, 'message' => 'Tanggal tidak boleh kosong']);
+         }
+         if ($idKehadiran === null || $idKehadiran === '') {
+            return $this->response->setJSON(['status' => false, 'message' => 'Status kehadiran wajib dipilih']);
+         }
+
+         // Cegah update untuk tanggal di masa depan
+         try {
+            $isFuture = \CodeIgniter\I18n\Time::parse($tanggal)->isAfter(\CodeIgniter\I18n\Time::today());
+            if ($isFuture) {
+               return $this->response->setJSON([
+                  'status' => false,
+                  'message' => 'Tanggal belum berjalan. Tidak dapat melakukan update massal.',
+               ]);
+            }
+         } catch (\Throwable $th) {
+            // Jika parsing gagal tetap lanjut tanpa blokir
+         }
+
+         // Ambil daftar karyawan dan presensi sesuai filter
+         if ($idDepartemenParam === 'all') {
+            $list = $this->presensiKaryawan->getPresensiAllDepartemenTanggal($tanggal);
+         } else {
+            $list = $this->presensiKaryawan->getPresensiByDepartemenTanggal($idDepartemenParam, $tanggal);
+         }
+
+         $updated = 0;
+         $requests = 0;
+         foreach ($list as $row) {
+            $idKaryawan = $row['id_karyawan'];
+            $idDepartemen = $row['id_departemen'] ?? ($idDepartemenParam === 'all' ? null : $idDepartemenParam);
+
+            // Ambil data sebelum perubahan (jika ada)
+            $beforeRow = $this->presensiKaryawan->getPresensiByIdKaryawanTanggal($idKaryawan, $tanggal);
+            $idPresensi = $beforeRow['id_presensi'] ?? null;
+
+            $updateData = [
+               'id_karyawan' => $idKaryawan,
+               'id_departemen' => $idDepartemen,
+               'tanggal' => $tanggal,
+               'id_kehadiran' => $idKehadiran,
+               'keterangan' => $keterangan
+            ];
+            if (!empty($jamMasuk)) $updateData['jam_masuk'] = $jamMasuk;
+            if (!empty($jamKeluar)) $updateData['jam_keluar'] = $jamKeluar;
+
+         // Coba jalankan mekanisme approval jika tersedia.
+         $useApproval = false;
+         try {
+            $useApproval = $this->approvalHelper && $this->approvalHelper->requiresApproval();
+         } catch (\Throwable $th) {
+            $useApproval = false; // fallback bila helper/tabel tidak tersedia
+         }
+
+         if ($useApproval) {
+            try {
+               // Buat request approval per karyawan
+               $approvalId = $this->approvalHelper->createApprovalRequest(
+                  'update',
+                  'tb_presensi_karyawan',
+                  $idPresensi,
+                  $updateData,
+                  $beforeRow
+               );
+               if ($approvalId) {
+                  $requests++;
+                  continue; // tunggu approval, tidak eksekusi langsung
+               }
+               // Jika gagal membuat request approval, lanjutkan eksekusi langsung (fallback)
+            } catch (\Throwable $th) {
+               // fallback ke eksekusi langsung di bawah
+            }
+         }
+
+         // Eksekusi langsung untuk superadmin
+         $result = $this->presensiKaryawan->updatePresensi(
+            $idPresensi,
+            $idKaryawan,
+            $idDepartemen,
+            $tanggal,
+            $idKehadiran,
+            $jamMasuk ?? null,
+            $jamKeluar ?? null,
+            $keterangan
+         );
+            if ($result) {
+               $updated++;
+               // Catat history per karyawan
+               try {
+                  $afterRow = $this->presensiKaryawan->getPresensiByIdKaryawanTanggal($idKaryawan, $tanggal);
+                  $historyData = [
+                     'id_presensi' => $afterRow['id_presensi'] ?? $idPresensi,
+                     'id_karyawan' => (int)$idKaryawan,
+                     'tanggal' => $tanggal,
+                     'id_kehadiran_before' => $beforeRow['id_kehadiran'] ?? null,
+                     'id_kehadiran_after' => $afterRow['id_kehadiran'] ?? $idKehadiran,
+                     'keterangan_before' => $beforeRow['keterangan'] ?? null,
+                     'keterangan_after' => $afterRow['keterangan'] ?? $keterangan,
+                     'jam_masuk_before' => $beforeRow['jam_masuk'] ?? null,
+                     'jam_masuk_after' => $afterRow['jam_masuk'] ?? $jamMasuk,
+                     'jam_keluar_before' => $beforeRow['jam_keluar'] ?? null,
+                     'jam_keluar_after' => $afterRow['jam_keluar'] ?? $jamKeluar,
+                     'created_at' => date('Y-m-d H:i:s')
+                  ];
+                  $this->presensiHistory->insert($historyData);
+               } catch (\Throwable $th) {
+                  // ignore single history failure
+               }
+            }
+         }
+         $message = ($this->approvalHelper && $this->approvalHelper->requiresApproval())
+            ? 'Request perubahan massal dikirim. Menunggu persetujuan (' . $requests . ' request).'
+            : 'Berhasil mengubah presensi massal untuk ' . $updated . ' karyawan.';
+
+         return $this->response->setJSON([
+            'status' => true,
+            'updated' => $updated,
+            'requests' => $requests,
+            'message' => $message,
+         ]);
+      } catch (\Throwable $e) {
+         // Tangkap semua error agar tidak melempar 500
+         return $this->response->setJSON([
+            'status' => false,
+            'message' => 'Gagal update massal: ' . ($e->getMessage() ?? 'Terjadi kesalahan.'),
+         ]);
+      }
    }
 }

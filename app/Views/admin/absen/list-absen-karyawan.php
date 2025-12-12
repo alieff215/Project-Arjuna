@@ -33,6 +33,44 @@
                     <?= date('d M Y H:i'); ?>
                 </div>
             </div>
+
+            <!-- Bulk Update Bar -->
+            <div class="mb-3" style="display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; border:1px solid #e0e0e0; border-radius:10px; padding:12px; background:#fafafa">
+                <div>
+                    <label class="mb-1"><b>Status Kehadiran</b></label>
+                    <select id="bulkIdKehadiran" class="form-control" style="min-width:180px">
+                        <?php if (isset($listKehadiran) && is_array($listKehadiran)) : ?>
+                            <?php foreach ($listKehadiran as $kh) : ?>
+                                <option value="<?= $kh['id_kehadiran']; ?>"><?= $kh['kehadiran']; ?></option>
+                            <?php endforeach; ?>
+                        <?php else : ?>
+                            <option value="1">Hadir</option>
+                            <option value="2">Sakit</option>
+                            <option value="3">Izin</option>
+                            <option value="4">Tanpa keterangan</option>
+                        <?php endif; ?>
+                    </select>
+                </div>
+                <div>
+                    <label class="mb-1"><b>Jam Masuk</b></label>
+                    <input id="bulkJamMasuk" type="time" class="form-control" placeholder="HH:MM">
+                </div>
+                <div>
+                    <label class="mb-1"><b>Jam Keluar</b></label>
+                    <input id="bulkJamKeluar" type="time" class="form-control" placeholder="HH:MM">
+                </div>
+                <div style="margin-left:auto; display:flex; gap:8px;">
+                    <?php if (!$lewat) : ?>
+                        <button type="button" class="btn btn-success" onclick="ubahSemuaKehadiran()">
+                            <i class="material-icons mr-1">update</i> Ubah Semua
+                        </button>
+                    <?php else : ?>
+                        <button type="button" class="btn btn-disabled" disabled>
+                            Tidak bisa ubah massal untuk tanggal mendatang
+                        </button>
+                    <?php endif; ?>
+                </div>
+            </div>
             
             <table class="table table-hover">
                 <thead class="text-primary">

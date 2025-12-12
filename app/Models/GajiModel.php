@@ -107,6 +107,11 @@ class GajiModel extends Model
             $end_date = date('Y-m-t');
         }
         $presensiModel = new PresensiKaryawanModel();
+        $startDateObj = new \DateTime($start_date);
+        $endDateObj = new \DateTime($end_date);
+        $isFullMonthRange = $startDateObj->format('Y-m') === $endDateObj->format('Y-m')
+            && $startDateObj->format('Y-m-d') === $startDateObj->format('Y-m-01')
+            && $endDateObj->format('Y-m-d') === $endDateObj->format('Y-m-t');
         $builder = $this->db->table('tb_karyawan as k')
             ->select('k.id_karyawan, k.nis, k.nama_karyawan, d.departemen, j.jabatan, g.gaji_per_jam')
             ->join('tb_departemen as d', 'k.id_departemen = d.id_departemen', 'left')
@@ -121,6 +126,7 @@ class GajiModel extends Model
             $total_kehadiran = 0;
             $total_menit_kerja = 0;
             $reportJamPerHari = [];
+            $reportJamPerHariRegular = [];
             
             // Hitung total hari kerja (Senin-Sabtu) dalam periode
             $totalHariKerjaDalamPeriode = 0;
@@ -211,6 +217,8 @@ class GajiModel extends Model
                 $total_menit_kerja += $blocks30 * 30;
                 if ($blocks30 > 0) $total_kehadiran++;
                 $reportJamPerHari[$tanggal] = ($reportJamPerHari[$tanggal] ?? 0) + ($blocks30 * 0.5); // 1 blok 30menit = 0.5 jam
+                // Catat jam reguler per hari (tanpa lembur) untuk perhitungan minus jam
+                $reportJamPerHariRegular[$tanggal] = ($reportJamPerHariRegular[$tanggal] ?? 0) + ($blocks30 * 0.5);
 
                 // Lembur: dihitung jika absen keluar lebih dari 17:00, rate sama dengan regular
                 $lembur_mulai = strtotime($tanggal.' 17:00');
@@ -229,6 +237,8 @@ class GajiModel extends Model
                     }
 
                     if ($blocks30Lembur > 0) {
+                        // Tetap catat lembur ke total_menit_kerja dan report harian,
+                        // namun tidak memengaruhi perhitungan minus jam (minus hanya dari jam reguler)
                         $total_menit_kerja += $blocks30Lembur * 30;
                         $reportJamPerHari[$tanggal] = ($reportJamPerHari[$tanggal] ?? 0) + ($blocks30Lembur * 0.5);
                     }
@@ -237,21 +247,35 @@ class GajiModel extends Model
             $gaji_per_jam = $kar['gaji_per_jam'] ?? 0;
             $blok_30menit_total = $total_menit_kerja / 30;
             $total_jam_kerja = $blok_30menit_total * 0.5;
-            
-            // Logika jam kerja per bulan:
-            // 1. Jika karyawan hadir FULL (100% hari kerja), otomatis dapat 173 jam
-            // 2. Jika tidak full, hitung berdasarkan jam aktual
-            // 3. Maksimal tetap 173 jam (cap)
-            
-            if ($total_kehadiran >= $totalHariKerjaDalamPeriode && $totalHariKerjaDalamPeriode > 0) {
-                // Karyawan hadir full (100%), berikan 173 jam standar
-                $total_jam_kerja = 173;
-                $blok_30menit_total = 173 * 2; // 173 jam = 346 blok 30 menit
-            } elseif ($total_jam_kerja > 173) {
-                // Jika jam kerja melebihi 173, cap menjadi 173 jam
-                $total_jam_kerja = 173;
-                $blok_30menit_total = 173 * 2;
+
+            // Logika baru: Total jam bulanan dipatok 173 jam,
+            // lalu dikurangi akumulasi "minus jam" harian (telat, pulang cepat, atau absen).
+            // Minus jam dihitung dari selisih antara jam reguler ideal per hari
+            // dengan jam reguler aktual yang tercatat (tanpa lembur).
+
+            $minus_jam_total = 0.0;
+            $curDateForMinus = new \DateTime($start_date);
+            $endDateForMinus = new \DateTime($end_date);
+            while ($curDateForMinus <= $endDateForMinus) {
+                $dow = (int)$curDateForMinus->format('N'); // 1=Senin..6=Sabtu, 7=Minggu
+                if ($dow <= 6) {
+                    // Jam ideal reguler per hari: Senin-Jumat = 7.0 jam, Sabtu = 4.5 jam
+                    // Diselaraskan ke kelipatan 0.5 agar konsisten dengan pembulatan blok 30 menit
+                    $expectedJam = ($dow === 6) ? 4.5 : 7.0;
+                    $tglKey = $curDateForMinus->format('Y-m-d');
+                    $actualRegularJam = (float)($reportJamPerHariRegular[$tglKey] ?? 0.0);
+                    // Batasi actual ke maksimum expected (lembur tidak mengurangi minus)
+                    $actualCapped = min($actualRegularJam, $expectedJam);
+                    $minusHariIni = max(0.0, $expectedJam - $actualCapped);
+                    $minus_jam_total += $minusHariIni;
+                }
+                $curDateForMinus->modify('+1 day');
             }
+
+            // Total jam akhir: 173 dikurangi minus jam total, tidak kurang dari 0 dan tidak lebih dari 173
+            $total_jam_kerja = max(0.0, 173.0 - $minus_jam_total);
+            // Untuk konsistensi gaji, gunakan total_jam_kerja yang sudah dipatok
+            $blok_30menit_total = $total_jam_kerja * 2; // 1 jam = 2 blok 30 menit
             
             $gaji_per_30menit = $gaji_per_jam / 2;
             $total_gaji = $blok_30menit_total * $gaji_per_30menit;
@@ -267,6 +291,103 @@ class GajiModel extends Model
                 'total_gaji' => $total_gaji,
             ];
         }
+        return $results;
+    }
+
+    /**
+     * Ambil laporan lembur saja untuk periode tertentu
+     * - Lembur dihitung jika absen pulang > 17:00
+     * - Pembulatan tetap 15 menit ke kelipatan 30 menit
+     * - Rate lembur sama dengan gaji reguler per jam
+     */
+    public function getOvertimeReport($start_date = null, $end_date = null, $id_departemen = null)
+    {
+        if (!$start_date) {
+            $start_date = date('Y-m-01');
+        }
+        if (!$end_date) {
+            $end_date = date('Y-m-t');
+        }
+
+        $builder = $this->db->table('tb_karyawan as k')
+            ->select('k.id_karyawan, k.nis, k.nama_karyawan, d.departemen, j.jabatan, g.gaji_per_jam')
+            ->join('tb_departemen as d', 'k.id_departemen = d.id_departemen', 'left')
+            ->join('tb_jabatan as j', 'd.id_jabatan = j.id', 'left')
+            ->join('tb_gaji as g', 'd.id_departemen = g.id_departemen AND j.id = g.id_jabatan', 'left');
+
+        if ($id_departemen) {
+            $builder->where('k.id_departemen', $id_departemen);
+        }
+
+        $karyawanList = $builder->get()->getResultArray();
+
+        $results = [];
+        foreach ($karyawanList as $kar) {
+            $total_lembur_menit = 0;
+            $hari_lembur = 0;
+
+            // Ambil presensi hadir selama rentang tanggal
+            $presensis = $this->db->table('tb_presensi_karyawan')
+                ->where('id_karyawan', $kar['id_karyawan'])
+                ->where('id_kehadiran', 1)
+                ->where('tanggal >=', $start_date)
+                ->where('tanggal <=', $end_date)
+                ->orderBy('tanggal', 'ASC')
+                ->get()->getResultArray();
+
+            foreach ($presensis as $presensi) {
+                $jam_masuk = $presensi['jam_masuk'];
+                $jam_keluar = $presensi['jam_keluar'];
+                $tanggal = $presensi['tanggal'];
+                if (!$jam_masuk || !$jam_keluar) continue;
+
+                $dt_masuk = strtotime($tanggal.' '.substr($jam_masuk,0,5));
+                $dt_keluar = strtotime($tanggal.' '.substr($jam_keluar,0,5));
+                if ($dt_keluar <= $dt_masuk) continue;
+
+                // Lembur mulai pukul 17:00
+                $lembur_mulai = strtotime($tanggal.' 17:00');
+                if ($dt_keluar > $lembur_mulai) {
+                    $startLembur = max($lembur_mulai, $dt_masuk);
+                    $menit_lembur = max(0, ($dt_keluar - $startLembur) / 60);
+
+                    // Pembulatan ke blok 30 menit, toleransi 15 menit
+                    $blocks30Lembur = 0;
+                    if ($menit_lembur > 0) {
+                        $sisaL = $menit_lembur % 30;
+                        if ($sisaL >= 15) {
+                            $blocks30Lembur = (int)ceil($menit_lembur / 30);
+                        } else {
+                            $blocks30Lembur = (int)floor($menit_lembur / 30);
+                        }
+                    }
+
+                    if ($blocks30Lembur > 0) {
+                        $total_lembur_menit += $blocks30Lembur * 30;
+                        $hari_lembur++;
+                    }
+                }
+            }
+
+            $gaji_per_jam = (float)($kar['gaji_per_jam'] ?? 0);
+            $blok_30menit_lembur = $total_lembur_menit / 30;
+            $total_jam_lembur = $blok_30menit_lembur * 0.5; // 1 blok = 0.5 jam
+            $gaji_per_30menit = $gaji_per_jam / 2.0;
+            $total_gaji_lembur = (int)round($blok_30menit_lembur * $gaji_per_30menit);
+
+            $results[] = [
+                'id_karyawan' => $kar['id_karyawan'],
+                'nis' => $kar['nis'],
+                'nama_karyawan' => $kar['nama_karyawan'],
+                'departemen' => $kar['departemen'],
+                'jabatan' => $kar['jabatan'],
+                'gaji_per_jam' => $gaji_per_jam,
+                'hari_lembur' => $hari_lembur,
+                'total_jam_lembur' => $total_jam_lembur,
+                'total_gaji_lembur' => $total_gaji_lembur,
+            ];
+        }
+
         return $results;
     }
 
